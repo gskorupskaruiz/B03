@@ -1,8 +1,9 @@
 import torch
 import datetime
-
+import pandas as pd
+from scipy.io import loadmat
 def load_data(battery):
-    mat = loadmat('C:\Users\alexi\OneDrive - Delft University of Technology\BSc2 AE\Q3\Project\B03\data' + battery + '.mat')
+    mat =  loadmat('data/' + battery + '.mat' )
     print('Total data in dataset: ', len(mat[battery][0, 0]['cycle'][0]))
     counter = 0
     dataset = []
@@ -11,12 +12,12 @@ def load_data(battery):
     for i in range(len(mat[battery][0, 0]['cycle'][0])):
         row = mat[battery][0, 0]['cycle'][0, i]
         if row['type'][0] == 'discharge':
-        ambient_temperature = row['ambient_temperature'][0][0]
-        date_time = datetime.datetime(int(row['time'][0][0]),
-                                    int(row['time'][0][1]),
-                                    int(row['time'][0][2]),
-                                    int(row['time'][0][3]),
-                                    int(row['time'][0][4])) + datetime.timedelta(seconds=int(row['time'][0][5]))
+            ambient_temperature = row['ambient_temperature'][0][0]
+            date_time = datetime.datetime(int(row['time'][0][0]),
+                                        int(row['time'][0][1]),
+                                        int(row['time'][0][2]),
+                                        int(row['time'][0][3]),
+                                        int(row['time'][0][4])) + datetime.timedelta(seconds=int(row['time'][0][5]))
         data = row['data']
         capacity = data[0][0]['Capacity'][0][0]
         for j in range(len(data[0][0]['Voltage_measured'][0])):
@@ -31,7 +32,7 @@ def load_data(battery):
                             temperature_measured, current_load,
                             voltage_load, time])
         capacity_data.append([counter + 1, ambient_temperature, date_time, capacity])
-        counter = counter + 1
+        counter += 1
     print(dataset[0])
     return [pd.DataFrame(data=dataset,
                         columns=['cycle', 'ambient_temperature', 'datetime',
@@ -47,23 +48,7 @@ def load_data(battery):
 
 
 def main():
-	
-
-
-
-
-
-
-
-    return
-
-
-
-
-
-
-
-
+	load_data("B0005")
 
 
 if __name__ == '__main__': 
