@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
+from filterpy.kalman import ExtendedKalmanFilter
 
 # Define Thevenin model function
 def thevenin_model(t, Voc, R0, C, I):
@@ -8,7 +9,7 @@ def thevenin_model(t, Voc, R0, C, I):
     return Vt * np.exp(-t / (R0 * C)) + R0 * I
 
 # Define function to calculate Jacobian matrix
-def calc_jacobian(f, x, delta):
+"""def calc_jacobian(f, x, delta):
     n = len(x)
     J = np.zeros((n, n))
     fx = f(x)
@@ -16,7 +17,7 @@ def calc_jacobian(f, x, delta):
         x1 = x.copy()
         x1[i] += delta
         J[:, i] = (f(x1) - fx) / delta
-    return J
+    return J"""
 
 # Initialize the state variables
 SoC = [100]  # Start with a fully charged battery
@@ -88,10 +89,41 @@ def ekf(battery_data):
 
 """ 
 
-def ekf(battery_data):
+discharged = False
+i = 0
+while not discharged:
     delta_t = time[i+1] - time[i]  # Time step
     I = current[i]  # Current at time i
     V = voltage[i]  # Voltage at time i
 
+    state_model = state_transition(x, I, V, delta_t, capacity, R0, RC)
+    V_thevenin_predicted = state_model[2, 0]
+    R_thevenin_predicted = state_model[3, 0]
+    V_predicted = V_thevenin_predicted - I * R_thevenin_predicted
+
+    EK = ExtendedKalmanFilter(dim=, dim=)
+    ekfmodel = 
+    for i in range(1, len(battery_data)):
+        ekfmodel.update( , , )
+
+
+        # Save the estimated SoC
+        SoC.append(x[0, 0])
+
+        # Check if the battery has discharged
+        if SoC[-1] <= 0:
+            discharged = True
+        else:
+            # Update the state variables for the next iteration
+            OCV.append(x[1, 0])
+            V_thevenin = x[2, 0]
+            R_thevenin = x[3, 0]
+            i += 1
+
     
+
+
+
+
+
 
