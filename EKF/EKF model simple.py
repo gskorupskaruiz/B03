@@ -18,6 +18,29 @@ def calc_jacobian(f, x, delta):
         J[:, i] = (f(x1) - fx) / delta
     return J
 
+# Initialize the state variables
+SoC = [100]  # Start with a fully charged battery
+OCV = [V_thevenin + R_thevenin * current[0]]  # Assume the battery's fully charged voltage is the Thevenin voltage
+x = np.array([SoC[0], OCV[0], V_thevenin, R_thevenin]).reshape(-1, 1)
+
+# Define the state transition function
+def state_transition(x, current, voltage, delta_t, capacity, R0, RC):
+    SoC, OCV, V_thevenin, R_thevenin = x.ravel()
+    I = current
+    V = voltage
+
+    # Update the Thevenin voltage and resistance
+    V_thevenin_new = OCV - I * R_thevenin
+    R_thevenin_new = R0 + RC / (delta_t + RC) * R_thevenin
+
+    # Calculate SoC and OCV
+    SoC_new = SoC - (I * delta_t) / capacity
+    OCV_new = V_thevenin_new
+
+    # Return the updated state vector
+    x_new = np.array([SoC_new, OCV_new, V_thevenin_new, R_thevenin_new]).reshape(-1, 1)
+    return x_new
+"""
 # Define extended Kalman filter function
 def ekf(battery_data):
     # Initialize parameters and variables
@@ -62,3 +85,13 @@ def ekf(battery_data):
             time_to_discharge = i
 
     return time_to_discharge
+
+""" 
+
+def ekf(battery_data):
+    delta_t = time[i+1] - time[i]  # Time step
+    I = current[i]  # Current at time i
+    V = voltage[i]  # Voltage at time i
+
+    
+
