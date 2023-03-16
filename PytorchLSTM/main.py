@@ -1,12 +1,12 @@
 import torch
 import datetime
 import pandas as pd
-from scipy.io import loadmat
+from scipy.io import loadcsv
 
 
 def load_data(battery): #read csv save a torch tensors
-	data = loadmat("data/" + battery + ".csv") #ask Twan for name of csv with TTD
-    
+	data = loadcsv("data/" + battery + ".csv") #ask Twan for name of csv with TTD
+
 	print(data)
 	
 	
