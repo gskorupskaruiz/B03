@@ -1,7 +1,8 @@
 import torch
+import datetime
 
 def load_data(battery):
-    mat = loadmat('C:/Users/alexi/OneDrive/Documents/GitHub/GitHub/Data-Driven-Modelling-of-Lithium-ion-batteries/' + battery + '.mat')
+    mat = loadmat('C:\Users\alexi\OneDrive - Delft University of Technology\BSc2 AE\Q3\Project\B03\data' + battery + '.mat')
     print('Total data in dataset: ', len(mat[battery][0, 0]['cycle'][0]))
     counter = 0
     dataset = []
@@ -40,7 +41,6 @@ def load_data(battery):
             pd.DataFrame(data=capacity_data,
                         columns=['cycle', 'ambient_temperature', 'datetime',
                                     'capacity'])]
-      return 
 
 
 
