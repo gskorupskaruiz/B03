@@ -40,7 +40,7 @@ def ekf(battery_data):
     # Loop through battery data and update state estimate
     for i in range(1, len(battery_data)):
         # Predict next state and Jacobian matrix
-        x_predicted = thevenin_model(1, *x)
+        x_predicted = thevenin_model(1, x)
         J = calc_jacobian(thevenin_model, x, delta)
 
         # Update error covariance matrix
