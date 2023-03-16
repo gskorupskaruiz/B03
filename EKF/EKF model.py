@@ -1,9 +1,11 @@
 import numpy as np
 import pandas as pd
 
+
+
 # Step 1: Data preprocessing
 df = pd.read_csv("C:/Users/gowri/OneDrive - Delft University of Technology/BSC-2/AE2224/Prognostics/B0006.csv")
-time = df["Time"][:790].values
+time = df["Time"].values
 voltage = df["Voltage_charge"].values
 current = df["Current_charge"].values
 
