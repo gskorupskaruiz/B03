@@ -4,8 +4,8 @@ import pandas as pd
 # Step 1: Data preprocessing
 df = pd.read_csv("C:/Users/gowri/OneDrive - Delft University of Technology/BSC-2/AE2224/Prognostics/B0006.csv")
 time = df["Time"][:790].values
-voltage = df["Voltage_charge"][:790].values
-current = df["Current_charge"][:790].values
+voltage = df["Voltage_charge"].values
+current = df["Current_charge"].values
 
 # Initialize the battery parameters
 capacity = 1.5  # Battery capacity (in Ah)
@@ -94,3 +94,4 @@ while not discharged:
 # Print the estimated time to discharge
 TTE = time[i] + (capacity * SoC[-2]) / current[i]
 print("Estimated time to discharge:", TTE, "seconds")
+
