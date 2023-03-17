@@ -6,8 +6,8 @@ import pandas as pd
 # Step 1: Data preprocessing
 df = pd.read_csv("C:/Users/gowri/OneDrive - Delft University of Technology/BSC-2/AE2224/Prognostics/B0006.csv")
 time = df["Time"].values
-voltage = df["Voltage_charge"].values
-current = df["Current_charge"].values
+voltage = df["Voltage_charge"][0].values
+current = df["Current_charge"][0].values
 
 # Initialize the battery parameters
 capacity = 1.5  # Battery capacity (in Ah)
@@ -50,7 +50,7 @@ def measurement(x, current, R0):
 
 # Implement the extended Kalman filter algorithm
 discharged = False
-i = 0
+i = 790
 while not discharged:
     delta_t = time[i+1] - time[i]  # Time step
     I = current[i]  # Current at time i
@@ -92,6 +92,8 @@ while not discharged:
         V_thevenin = x[2, 0]
         R_thevenin = x[3, 0]
         i += 1
+
+    print(SoC)
 
 # Print the estimated time to discharge
 TTE = time[i] + (capacity * SoC[-2]) / current[i]
