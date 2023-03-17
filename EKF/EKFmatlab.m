@@ -24,7 +24,7 @@ plot(LiPoly.RecordingTime_Hours,Vt_Estimated);
 hold off;
 legend('Measured','Estimated EKF');
 ylabel('Terminal Voltage[V]');xlabel('Time[hr]');
-title('Measured vs. Estimated Terminal Voltage (V) at 0 Deg C')
+title('Measured vs. Estimated Terminal Voltage (V)')
 grid minor
 
 % Terminal Voltage Error
@@ -41,7 +41,7 @@ plot (LiPoly.RecordingTime_Hours,SOC_Estimated*100);
 hold off;
 % legend('Coulomb Counting','Estimated EKF');
 ylabel('SOC[%]');xlabel('Time[hr]');
-title('Coulomb Counting vs. SOC Estimated at 0 Deg C')
+title('Coulomb Counting vs. SOC Estimated ')
 grid minor
 
 % Vt Error
