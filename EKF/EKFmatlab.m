@@ -1,10 +1,10 @@
 clc; clear; close all;
 
-load('B0005.mat');
-LiPoly.RecordingTime            = B0005.cycle(4).data.Time;
-LiPoly.Measured_Voltage         = B0005.cycle(4).data.Voltage_measured;
-LiPoly.Measured_Current         = B0005.cycle(4).data.Current_measured;
-LiPoly.Measured_Temperature     = B0005.cycle(4).data.Temperature_measured;
+load('B0006.mat');
+LiPoly.RecordingTime            = B0006.cycle(4).data.Time;
+LiPoly.Measured_Voltage         = B0006.cycle(4).data.Voltage_measured;
+LiPoly.Measured_Current         = B0006.cycle(4).data.Current_measured;
+LiPoly.Measured_Temperature     = B0006.cycle(4).data.Temperature_measured;
 
 nominalCap                      = 2.3; % Battery capacity in Ah taken from data.
 
