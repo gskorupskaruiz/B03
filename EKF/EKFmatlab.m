@@ -41,7 +41,7 @@ plot (LiPoly.RecordingTime_Hours,SOC_Estimated*100);
 hold off;
 % legend('Coulomb Counting','Estimated EKF');
 ylabel('SOC[%]');xlabel('Time[hr]');
-title('Coulomb Counting vs. SOC Estimated ')
+title('SOC Estimated ')
 grid minor
 
 % Vt Error
