@@ -5,7 +5,7 @@ from sklearn import preprocessing
 import numpy as np
 
 def load_data_split_normalise(battery):
-	data = pd.read_csv("data/" + battery + "_TTUD.csv")
+    data = pd.read_csv("data/" + battery + "_TTD.csv")
     data = preprocessing.fit_transform(data)
     return data
 
@@ -27,7 +27,7 @@ def train_test_validation_split(X, y, test_size, cv_size):
     # return split data
     return [X_train, y_train, X_test, y_test, X_cv, y_cv]
 
-def testing_function(num, group_for_test):
+def testing_func(num, group_for_test):
     rmse_test, result_test = 0, list()
 
     for ite in range(1, num + 1):
@@ -67,7 +67,7 @@ def train(model, num_train, group):
         if epoch % 1 == 0:
              
             model.eval() # evaluate model
-            result, rmse = testing_func(num_test, group_test)  #run test through model
+            result, rmse = testing_func( , group_test)  #run test through model
 
             if rmse_temp < rmse and rmse_temp <5:
                 result, rmse = result_temp, rmse_temp
