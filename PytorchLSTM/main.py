@@ -11,7 +11,7 @@ def load_data_split_normalise(battery):
     scale = StandardScaler()
     data = scale.fit_transform(data)
     return data
-    
+print(load_data_split_normalise('B0005'))
 
 
 def train_test_validation_split(X, y, test_size, cv_size):
@@ -87,7 +87,12 @@ def train(model, num_train, group):
 	
 if __name__ == '__main__': 
 	# import data
+ 
+    battery = 'B0005'
+    data = load_data_split_normalise(battery)
     
+    input_size = len(data[0]) - 1
+
     input_size = 8 # shouldn't be hard coded
     n_hidden = input_size
     n_layer = 2
