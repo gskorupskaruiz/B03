@@ -96,7 +96,7 @@ if __name__ == '__main__':
 	# import data
  
     battery = 'B0005'
-    data = load_data_split_normalise(battery)
+    data = load_data_normalise(battery)
     
     input_size = len(data.columns) - 1
 
