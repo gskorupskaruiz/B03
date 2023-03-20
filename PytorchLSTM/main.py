@@ -94,8 +94,13 @@ def train(model, battery):
 	
 if __name__ == '__main__': 
 	# import data
-    battery = "B0005"
-    input_size = 7 # shouldn't be hard coded
+ 
+    battery = 'B0005'
+    data = load_data_split_normalise(battery)
+    
+    input_size = len(data.columns) - 1
+
+    input_size = 8 # shouldn't be hard coded
     n_hidden = input_size
     n_layer = 2
     n_epoch = 150
@@ -103,6 +108,7 @@ if __name__ == '__main__':
     test_size = 0.2
     cv_size = 0.2
     # gpu?
+
 
     # LSTM Model initialization
     model = LSTM1(input_size, n_hidden, n_layer)
