@@ -72,7 +72,7 @@ def train(model, num_train, group):
         if epoch % 1 == 0:
              
             model.eval() # evaluate model
-            result, rmse = testing_func( , group_test)  #run test through model
+            result, rmse = testing_func(num_test , group_test)  #run test through model
 
             if rmse_temp < rmse and rmse_temp <5:
                 result, rmse = result_temp, rmse_temp
@@ -80,10 +80,7 @@ def train(model, num_train, group):
             
             rmse_temp, result_temp = rmse, result #store last rmse
             print("Epoch: %d, loss: %1.5f, rmse: %1.5f" % (epoch, epoch_loss / num_train, rmse))
-
-
-
-     
+   
 	
 if __name__ == '__main__': 
 	# import data
