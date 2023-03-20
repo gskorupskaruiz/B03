@@ -3,7 +3,6 @@ import torch
 import torch.nn as nn
 
 
-
 class LSTM1(nn.Module):
     """LSTM architecture"""
 
@@ -28,8 +27,8 @@ class LSTM1(nn.Module):
         :param x: input features
         :return: prediction results
         """
-        h_0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).requires_grad() # hidden state
-        c_0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).requires_grad() # internal state
+        h_0 = torch.zeros((self.num_layers, x.size(0), self.hidden_size)) # hidden state
+        c_0 = torch.zeros((self.num_layers, x.size(0), self.hidden_size)) # internal state
         print(h_0.shape)
         print(c_0.shape)
         output, (hn, cn) = self.lstm(x, (h_0.detach() , c_0.detach()))  # lstm with input, hidden, and internal state
