@@ -1,10 +1,10 @@
 clc; clear; close all;
 
-load('B0005.mat');
-LiPoly.RecordingTime            = B0005.cycle(4).data.Time;
-LiPoly.Measured_Voltage         = B0005.cycle(4).data.Voltage_measured;
-LiPoly.Measured_Current         = B0005.cycle(4).data.Current_measured;
-LiPoly.Measured_Temperature     = B0005.cycle(4).data.Temperature_measured;
+load('B0006.mat');
+LiPoly.RecordingTime            = B0006.cycle(4).data.Time;
+LiPoly.Measured_Voltage         = B0006.cycle(4).data.Voltage_measured;
+LiPoly.Measured_Current         = B0006.cycle(4).data.Current_measured;
+LiPoly.Measured_Temperature     = B0006.cycle(4).data.Temperature_measured;
 
 nominalCap                      = 2.3; % Battery capacity in Ah taken from data.
 
@@ -24,7 +24,7 @@ plot(LiPoly.RecordingTime_Hours,Vt_Estimated);
 hold off;
 legend('Measured','Estimated EKF');
 ylabel('Terminal Voltage[V]');xlabel('Time[hr]');
-title('Measured vs. Estimated Terminal Voltage (V) at 0 Deg C')
+title('Measured vs. Estimated Terminal Voltage (V)')
 grid minor
 
 % Terminal Voltage Error
@@ -41,7 +41,7 @@ plot (LiPoly.RecordingTime_Hours,SOC_Estimated*100);
 hold off;
 % legend('Coulomb Counting','Estimated EKF');
 ylabel('SOC[%]');xlabel('Time[hr]');
-title('Coulomb Counting vs. SOC Estimated at 0 Deg C')
+title('SOC Estimated ')
 grid minor
 
 % Vt Error

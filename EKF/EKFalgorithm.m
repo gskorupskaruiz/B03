@@ -6,7 +6,7 @@ load 'SOC-OCV.mat'; % Load the SOC-OCV curve
 SOC_Init    = 1; % intial SOC
 X           = [SOC_Init; 0; 0]; % state space x parameter intializations
 DeltaT      = 1; % sample time in seconds
-Qn_rated    = 4.81 * 3600; % Ah to Amp-seconds
+Qn_rated    = 2.3 * 3600; % Ah to Amp-seconds
 
 % initialize scatteredInterpolant functions for battery parameters and SOC-OCV curve
 % this function also allows for extrapolation
@@ -84,6 +84,7 @@ for k=1:1:ik
     A   = [1 0  0;
            0 a1 0;
            0 0  a2];
+    
     B   = [-(eta * DeltaT/Qn_rated); b1; b2];
     X   = (A * X) + (B * U);
     P_x = (A * P_x * A') + Q_x;
