@@ -1,9 +1,12 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from model import *
+from sklearn import preprocessing
 
 def load_data_split_normalise(battery):
 	data = pd.read_csv("data/" + battery + "_TTUD.csv")
+    data = preprocessing.fit_transform(data)
+    return data
 
 def train_test_validation_split(X, y, test_size, cv_size):
     """
