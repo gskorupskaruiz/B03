@@ -11,6 +11,8 @@ def load_data_normalise(battery):
     return normalized_data
     
 
+print(load_data_split_normalise("B0005"))
+
 def train_test_validation_split(X, y, test_size, cv_size):
     """
     TODO:
@@ -63,8 +65,8 @@ def train(model, battery):
 
     for epoch in range(1, n_epoch +1):
 
-        model.train()
-        epoch_loss = 0
+        #model.train()
+        #epoch_loss = 0
 
         for i in range(num_train):
             # stuff
