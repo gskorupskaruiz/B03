@@ -10,7 +10,7 @@ def find_TTD(battery): #read csv as pandas dataframe
 	data = pd.read_csv("data/" + battery + ".csv") #ask Twan for name of csv with TTD
 	data = data.drop(data[data.type != "discharge"].index) # only keep discharge data
 	data = data.drop(["start_time", "type", "Sense_current", 'Battery_current', 'Current_ratio', 
-		  'Battery_impedance', 'Rectified_impedance', 'Re', 'Rct','ambient_temp'], axis=1) # removes columns that are used for impedance, type and start time
+		  'Battery_impedance', 'Rectified_impedance', 'Re', 'Rct', 'ambient_temp'], axis=1) # removes columns that are used for impedance, type and start time
 	data = data.reset_index(drop = True) # resetting index so that previous row is always i-1 (so will not match up with rows of excel from now on)
 	data["TTD"] = 0
 	print(data)
@@ -80,8 +80,7 @@ def load_gpu_data(battery, test_size , cv_size):
 
 
 if __name__ == '__main__': 
-	battery = "B0005"
-	test_size = 0.2
-	cv_size = 0.2
-	load_gpu_data(battery, test_size, cv_size)
-	
+	find_TTD('B0005')
+	find_TTD('B0006')
+	find_TTD('B0007')
+	find_TTD('B0018')
