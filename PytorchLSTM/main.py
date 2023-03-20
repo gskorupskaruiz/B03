@@ -97,6 +97,7 @@ if __name__ == '__main__':
 
     # gpu?
 
+
     # LSTM Model initialization
     model = LSTM1(input_size, n_hidden, n_layer)
     criterion = torch.nn.MSELoss() 
