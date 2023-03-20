@@ -8,10 +8,9 @@ from sklearn.preprocessing import StandardScaler
 def load_data_split_normalise(battery):
 
     data = pd.read_csv("data/" + battery + "_TTD.csv")
-    scale = StandardScaler()
-    data = scale.fit_transform(data)
+    data = (data-data.mean())/data.std()
     return data
-print(load_data_split_normalise('B0005'))
+
 
 
 def train_test_validation_split(X, y, test_size, cv_size):
@@ -88,7 +87,7 @@ if __name__ == '__main__':
     battery = 'B0005'
     data = load_data_split_normalise(battery)
     
-    input_size = len(data[0]) - 1
+    input_size = len(data.columns) - 1
 
     input_size = 8 # shouldn't be hard coded
     n_hidden = input_size
