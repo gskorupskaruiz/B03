@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from model import *
 
 def load_data_split_normalise(battery):
 	data = pd.read_csv("data/" + battery + "_TTUD.csv")
@@ -22,8 +23,16 @@ def train_test_validation_split(X, y, test_size, cv_size):
     # return split data
     return [X_train, y_train, X_test, y_test, X_cv, y_cv]
 
- def main():
-	
 
+	
 if __name__ == '__main__': 
-	main()
+	# import data
+    
+    input_size = 8 # shouldn't be hard coded
+    n_hidden = input_size
+    n_layer = 2
+    # gpu?
+
+    # LSTM Model initialization
+    model = LSTM1(input_size, n_hidden, n_layer)
+
