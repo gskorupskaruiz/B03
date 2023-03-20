@@ -1,12 +1,16 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from model import *
-from sklearn import preprocessing
+from sklearn.preprocessing import StandardScaler
 
 def load_data_split_normalise(battery):
-	data = pd.read_csv("data/" + battery + "_TTUD.csv")
-    data = preprocessing.fit_transform(data)
+
+    data = pd.read_csv("data/" + battery + "_TTD.csv")
+    scale = StandardScaler()
+    data = scale.fit_transform(data)
     return data
+
+print(load_data_split_normalise("B0005"))
 
 def train_test_validation_split(X, y, test_size, cv_size):
     """
@@ -26,19 +30,19 @@ def train_test_validation_split(X, y, test_size, cv_size):
     # return split data
     return [X_train, y_train, X_test, y_test, X_cv, y_cv]
 
-def train(model, num_train, group):
+#def train(model, num_train, group):
      # number of samples
      # grouped data per sample
 
-     rmse_temp = 1000
+     #rmse_temp = 1000
 
-     for epoch in range(1, n_epoch +1):
+     #for epoch in range(1, n_epoch +1):
 
-        model.train()
-        epoch_loss = 0
+        #model.train()
+        #epoch_loss = 0
 
-        for i in range(1, num_train +1):
-             X = 
+        #for i in range(1, num_train +1):
+             #X = 
 
 
 
@@ -61,5 +65,5 @@ if __name__ == '__main__':
     optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 
     # training and evaltuation
-    result, rmse = train(model, num_train, group )
+    #result, rmse = train(model, num_train, group )
 
