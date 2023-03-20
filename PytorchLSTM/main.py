@@ -23,7 +23,23 @@ def train_test_validation_split(X, y, test_size, cv_size):
     # return split data
     return [X_train, y_train, X_test, y_test, X_cv, y_cv]
 
+def train(model, num_train, group):
+     # number of samples
+     # grouped data per sample
 
+     rmse_temp = 1000
+
+     for epoch in range(1, n_epoch +1):
+
+        model.train()
+        epoch_loss = 0
+
+        for i in range(1, num_train +1):
+             X = 
+
+
+
+     
 	
 if __name__ == '__main__': 
 	# import data
@@ -31,8 +47,16 @@ if __name__ == '__main__':
     input_size = 8 # shouldn't be hard coded
     n_hidden = input_size
     n_layer = 2
+    n_epoch = 150
+    lr = 0.01
+
     # gpu?
 
     # LSTM Model initialization
     model = LSTM1(input_size, n_hidden, n_layer)
+    criterion = torch.nn.MSELoss() 
+    optimizer = torch.optim.Adam(model.parameters(), lr = lr)
+
+    # training and evaltuation
+    result, rmse = train(model, num_train, group )
 
