@@ -3,7 +3,6 @@ import torch
 import torch.nn as nn
 
 
-
 class LSTM1(nn.Module):
     """LSTM architecture"""
 
@@ -28,11 +27,11 @@ class LSTM1(nn.Module):
         :param x: input features
         :return: prediction results
         """
-        h_0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size) # hidden state
-        c_0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)  # internal state
+        h_0 = torch.zeros((self.num_layers, x.size(0), self.hidden_size)) # hidden state
+        c_0 = torch.zeros((self.num_layers, x.size(0), self.hidden_size)) # internal state
         print(h_0.shape)
         print(c_0.shape)
-        output, (hn, cn) = self.lstm(x, (h_0.detach() , c_0.detach()))  # lstm with input, hidden, and internal state
+        output, (hn, cn) = self.lstm((x, (h_0 , c_0)))  # lstm with input, hidden, and internal state
 
         hn_o = torch.Tensor(hn.detach().numpy()[-1, :, :])
         hn_o = hn_o.view(-1, self.hidden_size)
@@ -43,4 +42,4 @@ class LSTM1(nn.Module):
         out = self.relu(self.fc_2(out))
         out = self.dropout(out)
         out = self.fc(out)
-        return 
+        return output
