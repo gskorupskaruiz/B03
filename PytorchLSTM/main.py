@@ -68,7 +68,7 @@ def train(model, battery):
         #model.train()
         #epoch_loss = 0
 
-        outputs = model(X_train) # forward pass
+        outputs, (hx, cx) = model(X_train) # forward pass
         optimizer.zero_grad() # calc and set grad = 0
         loss = criterion(outputs, y_train) # calc loss for current pass
         epoch_loss += loss.item()
@@ -84,10 +84,9 @@ def train(model, battery):
                 result, rmse = result_temp, rmse_temp
                 break
             
-            rmse_temp, result_temp = rmse, result #store last rmse
+            rmse_temp, result_temp = rmse, result #store lst rmse
             print("Epoch: %d, loss: %1.5f, rmse: %1.5f" % (epoch, epoch_loss / num_train, rmse))
    
-	
 if __name__ == '__main__': 
 	# import data
  
@@ -95,7 +94,7 @@ if __name__ == '__main__':
     data = load_data_normalise(battery)
     input_size = len(data.columns) - 1
 
-    input_size = 8 # shouldn't be hard coded
+    input_size = 7 # shouldn't be hard coded
     n_hidden = input_size
     n_layer = 2
     n_epoch = 150
