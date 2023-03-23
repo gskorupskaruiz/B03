@@ -11,7 +11,7 @@ def load_data_normalise(battery):
     return normalized_data
     
 
-print(load_data_split_normalise("B0005"))
+print(load_data_normalise("B0005"))
 
 def train_test_validation_split(X, y, test_size, cv_size):
     """
@@ -68,13 +68,6 @@ def train(model, battery):
         #model.train()
         #epoch_loss = 0
 
-        for i in range(1, num_train +1):
-            # stuff
-            X_current = X_train[i]
-            y_current = y_train[i]
-            load_gpu_data(X_current, y_current)
-
-
         outputs = model(X_train) # forward pass
         optimizer.zero_grad() # calc and set grad = 0
         loss = criterion(outputs, y_train) # calc loss for current pass
@@ -100,7 +93,6 @@ if __name__ == '__main__':
  
     battery = 'B0005'
     data = load_data_normalise(battery)
-    
     input_size = len(data.columns) - 1
 
     input_size = 8 # shouldn't be hard coded
@@ -120,4 +112,3 @@ if __name__ == '__main__':
 
     # training and evaltuation
     result, rmse = train(model, battery )
-

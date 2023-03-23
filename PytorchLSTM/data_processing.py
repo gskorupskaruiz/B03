@@ -64,6 +64,7 @@ def load_gpu_data(data, test_size, cv_size):
 	print(type(X), type(y))
 	# go to gpu, "google gpu pytorch python"
 	print("GPU is availible: ", torch.cuda.is_available())
+	
 	X_train = X_train.to('cuda')
 	y_train = y_train.to('cuda')
 	X_test = X_test.to('cuda')
