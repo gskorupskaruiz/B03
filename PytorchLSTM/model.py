@@ -42,4 +42,4 @@ class LSTM1(nn.Module):
         out = self.relu(self.fc_2(out))
         out = self.dropout(out)
         out = self.fc(out)
-        return 
+        return output

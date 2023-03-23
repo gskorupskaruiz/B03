@@ -68,19 +68,19 @@ def train(model, battery):
         #model.train()
         #epoch_loss = 0
 
-        for i in range(num_train):
+        for i in range(1, num_train +1):
             # stuff
             X_current = X_train[i]
             y_current = y_train[i]
-            
+            load_gpu_data(X_current, y_current)
 
 
-            outputs = model(X_train) # forward pass
-            optimizer.zero_grad() # calc and set grad = 0
-            loss = criterion(outputs, y_train) # calc loss for current pass
-            epoch_loss += loss.item()
-            loss.backward() # update model parameters
-            optimizer.step # update loss func
+        outputs = model(X_train) # forward pass
+        optimizer.zero_grad() # calc and set grad = 0
+        loss = criterion(outputs, y_train) # calc loss for current pass
+        epoch_loss += loss.item()
+        loss.backward() # update model parameters
+        optimizer.step # update loss func
         
         if epoch % 1 == 0:
              
