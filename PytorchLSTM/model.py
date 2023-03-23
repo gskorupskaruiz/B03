@@ -30,8 +30,8 @@ class LSTM1(nn.Module):
         """
         # h_0 = Variable(torch.zeros((self.num_layers, x.size(0), self.hidden_size))) # hidden state
         # c_0 = Variable(torch.zeros((self.num_layers, x.size(0), self.hidden_size))) # internal state
-        h_0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
-        c_0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        h_0 = torch.zeros(self.num_layers, self.hidden_size).to(x.device)
+        c_0 = torch.zeros(self.num_layers, self.hidden_size).to(x.device)
 
         print(h_0.shape)
         print(c_0.shape)
