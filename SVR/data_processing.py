@@ -51,10 +51,10 @@ def load_data(battery):
 #     return [X_train, y_train, X_test, y_test, X_cv, y_cv]
 
 
-def load_data(data, test_size):
+def split_data(data, test_size):
 	y = data["TTD"]
 	X = data.drop(["TTD"], axis=1)
-	X_train, y_train, X_test, y_test = train_test_split(X, y, test_size, shuffle = True, random_state = 0)
+	X_train, y_train, X_test, y_test = train_test_split(X, y, test_size=test_size, shuffle = True, random_state = 0)
  
 	return X_train, y_train, X_test, y_test
 
