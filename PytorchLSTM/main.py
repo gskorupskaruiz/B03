@@ -56,8 +56,10 @@ def train(model, battery):
     X = norm_data.drop("TTD", axis = 1)
     y = norm_data["TTD"]
     X_train, y_train, X_test, y_test, X_cv, y_cv  = train_test_validation_split(X, y, test_size, cv_size)
-    num_train = len(X_train.index)
 
+    print(type(X_train))
+    num_train = len(X_train.index)
+    
     rmse_temp = 1000
 
     for epoch in range(1, n_epoch +1):
@@ -65,19 +67,19 @@ def train(model, battery):
         model.train()
         epoch_loss = 0
 
-        for i in range(1, num_train +1):
-            # stuff
-            X_current = X_train[i]
-            y_current = y_train[i]
-            load_gpu_data(X_current, y_current)
+        # for i in range(1, num_train +1):
+        #     # stuff
+        #     X_current = X_train.iloc[i]
+        #     y_current = y_train.iloc[i]
+           # load_gpu_data(X_current, y_current)
 
 
-            outputs = model(X_train) # forward pass
-            optimizer.zero_grad() # calc and set grad = 0
-            loss = criterion(outputs, y_train) # calc loss for current pass
-            epoch_loss += loss.item()
-            loss.backward() # update model parameters
-            optimizer.step # update loss func
+        outputs = model(X_train) # forward pass
+        optimizer.zero_grad() # calc and set grad = 0
+        loss = criterion(outputs, y_train) # calc loss for current pass
+        epoch_loss += loss.item()
+        loss.backward() # update model parameters
+        optimizer.step # update loss func
         
         if epoch % 1 == 0:
              
@@ -96,7 +98,7 @@ if __name__ == '__main__':
 	# import data
  
     battery = 'B0005'
-    data = load_data_split_normalise(battery)
+    data = load_data_normalise(battery)
     
     input_size = len(data.columns) - 1
 
