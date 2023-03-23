@@ -18,8 +18,11 @@ F_C2    = scatteredInterpolant(param.T,param.SOC,param.C2);
 % F_OCV   = scatteredInterpolant(param.T,param.SOC,param.OCV);  
 % OCV can be extrapolated using the same method or through the polyfit function
 
-SOCOCV  = polyfit(SOC_OCV.SOC,SOC_OCV.OCV,11); % calculate 11th order polynomial for the SOC-OCV curve 
+SOCOCV  = polyfit(SOC_OCV.SOC,SOC_OCV.OCV,9); % calculate 11th order polynomial for the SOC-OCV curve 
 dSOCOCV = polyder(SOCOCV); % derivative of SOC-OCV curve for matrix C
+fit = createFit(SOC_OCV.SOC, SOC_OCV.OCV);
+%syms fit;
+%dSOCOCV = diff(fit, 1,SOC_OCV.SOC);
 
 n_x   = size(X,1);
 R_x   = 2.5e-5;
@@ -53,8 +56,8 @@ for k=1:1:ik
     % OCV    = F_OCV(T,SOC);
     % OCV    = pchip(param.SOC,param.OCV,SOC); % pchip sample for unknown or single temperature
     
-    OCV = polyval(SOCOCV,SOC); % calculate the values of OCV at the given SOC, using the polynomial SOCOCV
-
+    %OCV = polyval(SOCOCV,SOC); % calculate the values of OCV at the given SOC, using the polynomial SOCOCV
+    OCV = fit(SOC);
     Tau_1       = C1 * R1;
     Tau_2       = C2 * R2;
     
@@ -73,6 +76,7 @@ for k=1:1:ik
     end
 
     dOCV = polyval(dSOCOCV, SOC);
+    %dOCV = dSOCOCV(SOC);
     C_x    = [dOCV -1 -1];
 
     Error_x   = Vt_Actual(k) - TerminalVoltage;
@@ -92,6 +96,8 @@ for k=1:1:ik
     KalmanGain_x = (P_x) * (C_x') * (inv((C_x * P_x * C_x') + (R_x)));
     X            = X + (KalmanGain_x * Error_x);
     P_x          = (eye(n_x,n_x) - (KalmanGain_x * C_x)) * P_x;
+
+    % Q_x = KalmanGain_x * Error_x * KalmanGain_x';
 
 end 
 
