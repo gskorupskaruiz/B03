@@ -53,8 +53,8 @@ def train(model, battery):
      # grouped data per sample
 
     norm_data = load_data_normalise(battery)
+    
     X_train, y_train, X_test, y_test, X_cv, y_cv = load_gpu_data(norm_data, test_size=test_size, cv_size=cv_size)
-
 
     # X = norm_data.drop("TTD", axis = 1)
     # y = norm_data["TTD"]
@@ -89,11 +89,9 @@ def train(model, battery):
    
 if __name__ == '__main__': 
 	# import data
- 
     battery = 'B0005'
     data = load_data_normalise(battery)
     input_size = len(data.columns) - 1
-
     input_size = 7 # shouldn't be hard coded
     n_hidden = input_size
     n_layer = 2
@@ -102,12 +100,12 @@ if __name__ == '__main__':
     test_size = 0.2
     cv_size = 0.2
     # gpu?
-
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # LSTM Model initialization
-    model = LSTM1(input_size, n_hidden, n_layer)
+    model = LSTM1(input_size, n_hidden, n_layer).to(device)
     criterion = torch.nn.MSELoss() 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 
     # training and evaltuation
-    result, rmse = train(model, battery )
+    result, rmse = train(model, battery)
