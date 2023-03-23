@@ -64,16 +64,17 @@ def load_gpu_data(data, test_size, cv_size):
 	print(type(X), type(y))
 	# go to gpu, "google gpu pytorch python"
 	print("GPU is availible: ", torch.cuda.is_available())
-	X_train = X_train.to('cuda')
-	y_train = y_train.to('cuda')
-	X_test = X_test.to('cuda')
-	y_test = y_test.to('cuda')
-	X_cv = X_cv.to('cuda')
-	y_cv = y_cv.to('cuda')
-
-	print("X_train and y_train are on GPU: ", X_train.is_cuda, y_train.is_cuda)
-	print("X_test and y_test are on GPU: ", X_test.is_cuda, y_test.is_cuda)
-	print("X_cv and y_cv are on GPU: ", X_cv.is_cuda, y_cv.is_cuda)
+	if torch.cuda.is_available() == True:
+		print('Running on GPU')
+		X_train = X_train.to('cuda')
+		y_train = y_train.to('cuda')
+		X_test = X_test.to('cuda')
+		y_test = y_test.to('cuda')
+		X_cv = X_cv.to('cuda')
+		y_cv = y_cv.to('cuda')
+		print("X_train and y_train are on GPU: ", X_train.is_cuda, y_train.is_cuda)
+		print("X_test and y_test are on GPU: ", X_test.is_cuda, y_test.is_cuda)
+		print("X_cv and y_cv are on GPU: ", X_cv.is_cuda, y_cv.is_cuda)
 
 	return X_train, y_train, X_test, y_test, X_cv, y_cv
 

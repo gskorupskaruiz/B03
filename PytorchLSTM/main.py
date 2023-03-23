@@ -11,7 +11,7 @@ def load_data_normalise(battery):
     return normalized_data
     
 
-print(load_data_split_normalise("B0005"))
+print(load_data_normalise("B0005"))
 
 def train_test_validation_split(X, y, test_size, cv_size):
     """
@@ -72,6 +72,7 @@ def train(model, battery):
             # stuff
             X_current = X_train[i]
             y_current = y_train[i]
+            
             load_gpu_data(X_current, y_current)
 
 
