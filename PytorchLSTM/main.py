@@ -1,7 +1,6 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from model import *
-from sklearn import preprocessing
 import numpy as np
 from data_processing import load_gpu_data
 
@@ -11,6 +10,8 @@ def load_data_normalise(battery):
     normalized_data = (data-data.mean())/data.std()
     return normalized_data
     
+
+print(load_data_split_normalise("B0005"))
 
 def train_test_validation_split(X, y, test_size, cv_size):
     """
@@ -52,26 +53,26 @@ def train(model, battery):
      # grouped data per sample
 
     norm_data = load_data_normalise(battery)
-    
-    X = norm_data.drop("TTD", axis = 1)
-    y = norm_data["TTD"]
-    X_train, y_train, X_test, y_test, X_cv, y_cv  = train_test_validation_split(X, y, test_size, cv_size)
+    X_train, y_train, X_test, y_test, X_cv, y_cv = load_gpu_data(norm_data, test_size=test_size, cv_size=cv_size)
 
-    print(type(X_train))
-    num_train = len(X_train.index)
-    
+
+    # X = norm_data.drop("TTD", axis = 1)
+    # y = norm_data["TTD"]
+    # X_train, y_train, X_test, y_test, X_cv, y_cv  = train_test_validation_split(X, y, test_size, cv_size)
+    num_train = len(X_train)
+    print("num_train: ", num_train)
     rmse_temp = 1000
 
     for epoch in range(1, n_epoch +1):
 
-        model.train()
-        epoch_loss = 0
+        #model.train()
+        #epoch_loss = 0
 
-        # for i in range(1, num_train +1):
-        #     # stuff
-        #     X_current = X_train.iloc[i]
-        #     y_current = y_train.iloc[i]
-           # load_gpu_data(X_current, y_current)
+        for i in range(1, num_train +1):
+            # stuff
+            X_current = X_train[i]
+            y_current = y_train[i]
+            load_gpu_data(X_current, y_current)
 
 
         outputs = model(X_train) # forward pass
