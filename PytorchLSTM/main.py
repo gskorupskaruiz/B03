@@ -66,9 +66,9 @@ def train(model, battery):
     for epoch in range(1, n_epoch +1):
 
         #model.train()
-        #epoch_loss = 0
+        epoch_loss = 0
 
-        outputs, (hx, cx) = model(X_train) # forward pass
+        outputs = model(X_train) # forward pass
         optimizer.zero_grad() # calc and set grad = 0
         loss = criterion(outputs, y_train) # calc loss for current pass
         epoch_loss += loss.item()
@@ -103,7 +103,7 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # LSTM Model initialization
-    model = LSTM1(input_size, n_hidden, n_layer).to(device)
+    model = LSTM1(input_size, n_hidden, n_layer).to(device).double()
     criterion = torch.nn.MSELoss() 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 

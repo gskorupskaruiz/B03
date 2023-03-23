@@ -45,10 +45,16 @@ class LSTM1(nn.Module):
         print((cn).dtype)
         print((out).dtype)
 
-        hn_o = torch.Tensor(hn.detach().numpy()[-1, :, :], dtype=torch.float64)
+        # hn_o = torch.Tensor(hn.detach().numpy()[-1, :, :], dtype=torch.float64)
+        # hn_o = hn_o.view(-1, self.hidden_size)
+        # hn_1 = torch.Tensor(hn.detach().numpy()[1, :, :], dtype=torch.float64)
+        # hn_1 = hn_1.view(-1, self.hidden_size)
+
+        hn_o = hn[-1,:].detach().clone().to(torch.float64)
         hn_o = hn_o.view(-1, self.hidden_size)
-        hn_1 = torch.Tensor(hn.detach().numpy()[1, :, :], dtype=torch.float64)
+        hn_1 = hn[1,:].detach().clone().to(torch.float64)
         hn_1 = hn_1.view(-1, self.hidden_size)
+
 
         out = self.relu(self.fc_1(self.relu(hn_o + hn_1)))
         out = self.relu(self.fc_2(out))
