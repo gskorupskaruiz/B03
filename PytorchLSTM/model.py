@@ -29,11 +29,11 @@ class LSTM1(nn.Module):
         :return: prediction results
         """
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        print(device)
+
         # h_0 = Variable(torch.zeros((self.num_layers, x.size(0), self.hidden_size))) # hidden state
         # c_0 = Variable(torch.zeros((self.num_layers, x.size(0), self.hidden_size))) # internal state
-        h_0 = torch.zeros(self.num_layers, self.hidden_size, dtype=torch.float64).to(x.device)
-        c_0 = torch.zeros(self.num_layers, self.hidden_size, dtype=torch.float64).to(x.device)
+        h_0 = torch.zeros(self.num_layers, self.hidden_size, dtype=torch.float64).to(device)
+        c_0 = torch.zeros(self.num_layers, self.hidden_size, dtype=torch.float64).to(device)
         print((h_0).dtype)
         print((c_0).dtype)
         print((x).dtype)
