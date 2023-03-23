@@ -61,6 +61,12 @@ def load_gpu_data(data, test_size, cv_size):
 	y_test = torch.tensor(y_test.values)
 	X_cv = torch.tensor(X_cv.values)
 	y_cv = torch.tensor(y_cv.values)
+	print(X_train.dtype)
+	print(y_train.dtype)
+	print(X_test.dtype)
+	print(y_test.dtype)
+	print(X_cv.dtype)
+	print(y_cv.dtype)
 	print(type(X), type(y))
 	# go to gpu, "google gpu pytorch python"
 	print("GPU is availible: ", torch.cuda.is_available())
