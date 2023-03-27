@@ -1,6 +1,7 @@
  # inspired by https://github.com/jiaxiang-cheng/PyTorch-LSTM-for-RUL-Prediction
 import torch
 import torch.nn as nn
+from torch.autograd import Variable
 
 
 class LSTM1(nn.Module):
@@ -27,19 +28,28 @@ class LSTM1(nn.Module):
         :param x: input features
         :return: prediction results
         """
-        h_0 = torch.zeros((self.num_layers, x.size(0), self.hidden_size)) # hidden state
-        c_0 = torch.zeros((self.num_layers, x.size(0), self.hidden_size)) # internal state
-        print(h_0.shape)
-        print(c_0.shape)
-        output, (hn, cn) = self.lstm((x, (h_0 , c_0)))  # lstm with input, hidden, and internal state
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        hn_o = torch.Tensor(hn.detach().numpy()[-1, :, :])
+        # h_0 = Variable(torch.zeros((self.num_layers, x.size(0), self.hidden_size))) # hidden state
+        # c_0 = Variable(torch.zeros((self.num_layers, x.size(0), self.hidden_size))) # internal state
+        h_0 = torch.zeros(self.num_layers, self.hidden_size, dtype=torch.float64).to(device)
+        c_0 = torch.zeros(self.num_layers, self.hidden_size, dtype=torch.float64).to(device)
+        out, (hn, cn) = self.lstm(x, (h_0 , c_0))  # lstm with input, hidden, and internal state
+
+
+        # hn_o = torch.Tensor(hn.detach().numpy()[-1, :, :], dtype=torch.float64)
+        # hn_o = hn_o.view(-1, self.hidden_size)
+        # hn_1 = torch.Tensor(hn.detach().numpy()[1, :, :], dtype=torch.float64)
+        # hn_1 = hn_1.view(-1, self.hidden_size)
+
+        hn_o = hn[-1,:].detach().clone().to(torch.float64)
         hn_o = hn_o.view(-1, self.hidden_size)
-        hn_1 = torch.Tensor(hn.detach().numpy()[1, :, :])
+        hn_1 = hn[1,:].detach().clone().to(torch.float64)
         hn_1 = hn_1.view(-1, self.hidden_size)
+
 
         out = self.relu(self.fc_1(self.relu(hn_o + hn_1)))
         out = self.relu(self.fc_2(out))
         out = self.dropout(out)
         out = self.fc(out)
-        return output
+        return out
