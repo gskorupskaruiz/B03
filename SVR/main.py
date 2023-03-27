@@ -7,7 +7,7 @@ from torch.nn import MSELoss
 import torch
 
 data = load_data("B0005")
-data = data.iloc[:5000]
+#data = data.iloc[:5000]
 X_train, X_test, y_train, y_test, X, y = split_data(data, 0.2)
 
 
@@ -24,7 +24,7 @@ y_test = y_test.to_numpy()
 y_tens = torch.tensor((y_test-y_test.mean())/y_test.std())
 y_pred_tens = torch.tensor((y_pred-y_pred.mean())/y_pred.std())
 
-mse = loss(y_pred_tens, y_tens)
+mse = loss(y_pred_tens, y_tens).to_numpy()
 
 print("MSE: ", mse)
 
