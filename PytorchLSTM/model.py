@@ -34,21 +34,19 @@ class LSTM1(nn.Module):
         # c_0 = Variable(torch.zeros((self.num_layers, x.size(0), self.hidden_size))) # internal state
         h_0 = torch.zeros(self.num_layers, self.hidden_size, dtype=torch.float64).to(device)
         c_0 = torch.zeros(self.num_layers, self.hidden_size, dtype=torch.float64).to(device)
-        print((h_0).dtype)
-        print((c_0).dtype)
-        print((x).dtype)
-        print(h_0.shape)
-        print(c_0.shape)
-        print(x.shape)
         out, (hn, cn) = self.lstm(x, (h_0 , c_0))  # lstm with input, hidden, and internal state
-        print((hn).dtype)
-        print((cn).dtype)
-        print((out).dtype)
 
-        hn_o = torch.Tensor(hn.detach().numpy()[-1, :, :], dtype=torch.float64)
+
+        # hn_o = torch.Tensor(hn.detach().numpy()[-1, :, :], dtype=torch.float64)
+        # hn_o = hn_o.view(-1, self.hidden_size)
+        # hn_1 = torch.Tensor(hn.detach().numpy()[1, :, :], dtype=torch.float64)
+        # hn_1 = hn_1.view(-1, self.hidden_size)
+
+        hn_o = hn[-1,:].detach().clone().to(torch.float64)
         hn_o = hn_o.view(-1, self.hidden_size)
-        hn_1 = torch.Tensor(hn.detach().numpy()[1, :, :], dtype=torch.float64)
+        hn_1 = hn[1,:].detach().clone().to(torch.float64)
         hn_1 = hn_1.view(-1, self.hidden_size)
+
 
         out = self.relu(self.fc_1(self.relu(hn_o + hn_1)))
         out = self.relu(self.fc_2(out))
