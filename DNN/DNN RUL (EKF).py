@@ -21,6 +21,10 @@ def splitting_data(X, y, test_size, cv_size):
     X_train, X_cv, y_train, y_cv = train_test_split(
     x_remaining, y_remaining, test_size=ratio_val_adjusted, shuffle=False, random_state=0)
     
+    # to gpu
+
+
+
     # return split data
     return [X_train, y_train, X_test, y_test, X_cv, y_cv]
 
@@ -197,7 +201,7 @@ def lr_random_search(model, X_train, y_train, X_val, y_val, reps:int=15):
     return lr_best
 
 
-df = pd.read_csv("C:/Users/gowri/Documents/B03/data/B0005_TTD.csv")
+df = pd.read_csv("data/B0005_TTD.csv")
 X = df["Voltage_measured"].values
 X = np.array(X)
 X = X.reshape(len(X), 1)
@@ -209,6 +213,10 @@ y = np.array(y)
 y = y.reshape(len(y), 1)
 y = (y-y.mean())/y.std()
 #print(y)
+
+#device for gpu
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print("Device:", device)
 
 print(f"Test split:")
 X_train, X_test, y_train, y_test = split_scale(X, y, test_size=.1, scale=False, verbose=True)
@@ -230,10 +238,15 @@ model = nn_model(1, 100, 1, act, 50)
 
 
 loss_fn = torch.nn.MSELoss()
-
 #lr_best = lr_random_search(model, X_train, y_train, X_val, y_val)
 opt = torch.optim.Adam(params=model.parameters(), lr=1e-2)
-
+model = model.to(device)
+X_train = torch.tensor(X_train).to(device)
+y_train = torch.tensor(y_train).to(device)
+X_test = torch.tensor(X_test).to(device)
+y_test = torch.tensor(y_test).to(device)
+X_val = torch.tensor(X_val).to(device)
+y_val = torch.tensor(y_val).to(device)
 
 [train_loss_history, val_loss_history] = train_model(X_train, y_train, X_val, y_val, 300, model, loss_fn, opt, 1e-6, 1e-4)
 
