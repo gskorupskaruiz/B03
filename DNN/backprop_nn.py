@@ -195,7 +195,7 @@ class NeuralNetwork(object):
             losses[e] = eval_func(x, y)
             if val:
                 val_losses[e] = eval_func(*val)
-                if val_losses[e] <= min(val_losses.values()):
+                if val_losses[e] <= np.min(list(val_losses.values())): #min(val_losses.values()):
                     best_weights = deepcopy(self.weights)
                     best_biases = deepcopy(self.biases)
             else:

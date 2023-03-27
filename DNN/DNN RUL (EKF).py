@@ -4,7 +4,14 @@ import scipy as s
 import sklearn as sk
 import pandas as pd
 import tensorflow as tf
-import backprop_nn
+import backprop_nn 
+from losses import *
+from activations import *
+from backprop_nn import NeuralNetwork
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+
 import matplotlib.pyplot as plt
 
 from scipy import stats
@@ -23,10 +30,6 @@ def splitting_data(X, y, test_size, cv_size):
     X_train, X_cv, y_train, y_cv = train_test_split(
     x_remaining, y_remaining, test_size=ratio_val_adjusted, shuffle=False, random_state=0)
     
-    # to gpu
-
-
-
     # return split data
     return [X_train, y_train, X_test, y_test, X_cv, y_cv]
 """
@@ -134,12 +137,11 @@ class EarlyStopper:
             else:
                 return False
             
-
 #training model with backpropagation
 def train_model(X_train, y_train, X_val, y_val, n_epochs, model, loss_function, optimizer, es_patience, es_delta):
     train_loss_history = []
     val_loss_history = []
-
+    epoch = []
     # instantiate early stopper
     es = EarlyStopper(patience=es_patience, min_delta=es_delta)
 
@@ -158,6 +160,7 @@ def train_model(X_train, y_train, X_val, y_val, n_epochs, model, loss_function, 
 
         val_loss_history.append(loss_val)
         
+        epoch.append(i)
         optimizer.zero_grad()
         loss_train.backward()
         optimizer.step()
@@ -169,7 +172,7 @@ def train_model(X_train, y_train, X_val, y_val, n_epochs, model, loss_function, 
         print("Epoch: %d, loss train: %1.5f, loss val: %1.5f" % (i, loss_train , loss_val))
 
     
-    return train_loss_history, val_loss_history
+    return train_loss_history, val_loss_history, epoch
 
 def lr_random_search(model, X_train, y_train, X_val, y_val, reps:int=15):
     es_patience = 4
@@ -216,16 +219,12 @@ y = y.reshape(len(y), 1)
 y = (y-y.mean())/y.std()
 #print(y)
 
-#device for gpu
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print("Device:", device)
-
 print(f"Test split:")
-X_train, X_test, y_train, y_test = split_scale(X, y, test_size=.1, scale=False, verbose=True)
+X_trainEKF, X_testEKF, y_trainEKF, y_testEKF = split_scale(X, y, test_size=.1, scale=False, verbose=True)
     
 print(f"\nValidation split:")
-X_train, X_val, y_train, y_val = split_scale(X_train, y_train, test_size=.1, scale=False, verbose=True)
-X_train, X_val, y_train, y_val = torch.from_numpy(X_train), torch.from_numpy(X_val), torch.from_numpy(y_train), torch.from_numpy(y_val)
+X_trainEKF, X_valEKF, y_trainEKF, y_valEKF = split_scale(X_trainEKF, y_trainEKF, test_size=.1, scale=False, verbose=True)
+X_train, X_val, y_train, y_val = torch.from_numpy(X_trainEKF), torch.from_numpy(X_valEKF), torch.from_numpy(y_trainEKF), torch.from_numpy(y_valEKF)
 
 print(X_train.shape, y_train.shape, X_val.shape, y_val.shape)
 act = torch.nn.Sigmoid()
@@ -234,18 +233,55 @@ act = torch.nn.Sigmoid()
 model = nn_model(3, 100, 1, act, 50)
 
 loss_fn = torch.nn.MSELoss()
+
 #lr_best = lr_random_search(model, X_train, y_train, X_val, y_val)
 opt = torch.optim.Adam(params=model.parameters(), lr=1e-2)
-model = model.to(device)
-X_train = torch.tensor(X_train).to(device)
-y_train = torch.tensor(y_train).to(device)
-X_test = torch.tensor(X_test).to(device)
-y_test = torch.tensor(y_test).to(device)
-X_val = torch.tensor(X_val).to(device)
-y_val = torch.tensor(y_val).to(device)
-#[train_loss_history, val_loss_history] = train_model(X_train, y_train, X_val, y_val, 300, model, loss_fn, opt, 1e-6, 1e-4)
 
-[train_loss_history_ekf, val_loss_history_ekf] = backprop_nn.NeuralNetwork.train_ekf(self=model, x=X_train, y=y_train)
+#[train_loss_history, val_loss_history, epoch] = train_model(X_train, y_train, X_val, y_val, 10, model, loss_fn, opt, 1e-6, 1e-4)
 
-print(train_loss_history_ekf)
+if __name__ == "__main__":
+    np.random.seed(1234)
+    X, Y = np.mgrid[-1:1.1:0.1, -1:1.1:0.1]
+    xy = np.vstack((X.flatten(), Y.flatten())).T
+    yy = np.sign(np.product(xy, axis=1))
+    yy = np.where(yy < 0, 0, 1)
+    #x_traine, x_teste, y_traine, y_teste = train_test_split(xy, yy)
+    
+    # make sure runs have same initialized weights
+    rng = np.random.RandomState(123)
+    state = rng.__getstate__()
+
+    #X_trainEKF, X_testEKF, y_trainEKF, y_testEKF = X_trainEKF.numpy(), X_testEKF.numpy(), y_trainEKF.numpy(), y_testEKF.numpy()
+    #print(type(X_trainEKF), X_testEKF, y_trainEKF, y_testEKF)
+    # Create two identical KNN's that will be trained differently
+    nn = NeuralNetwork(layers=[3, 20, 10, 1], activations=[ReLU(), ReLU(), Sigmoid()], loss=QuadraticLoss(), rng=rng)
+
+    # reset state
+    rng.__setstate__(state)
+
+    # train with ekf
+    nn = NeuralNetwork(layers=[3, 20, 20, 1], activations=[ReLU(), ReLU(), Linear()], loss=Unity(), rng=rng)
+    train_loss, val_loss = nn.train_ekf(X_trainEKF.T, y_trainEKF.reshape(1, -1), P=100, R=10, Q=10, epochs=3, val=(X_valEKF.T, y_valEKF.reshape(1, -1)), eta=.3)
+
+    plt.plot(train_loss.keys(), train_loss.values(), label="train")
+    plt.plot(val_loss.keys(), val_loss.values(), label="validation")
+    plt.xlabel("epochs")
+    plt.ylabel("loss")
+    plt.title("Loss for EKF-Algorithm")
+    plt.legend()
+    plt.show()
+
+#print(train_loss_history.numpy())
+"""
+#plt.plot(train_loss.keys(), train_loss.values(), label="train ekf")
+plt.plot(epoch, train_loss_history, label="train back")
+#plt.plot(val_loss.keys(), val_loss.values(), label="validation ekf")
+plt.plot(epoch, val_loss_history, label="val back")
+plt.xlabel("epochs")
+plt.ylabel("loss")
+plt.title("Loss")
+plt.legend()
+plt.show()"""
+
+#print(train_loss_history_ekf)
 #print(train_loss_history_ekf)
