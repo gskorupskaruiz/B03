@@ -28,7 +28,6 @@ def find_TTD(battery): #read csv as pandas dataframe
 def load_data(battery):
 	data = pd.read_csv("data/" + battery + "_TTD.csv")
 	print("Battery: ", battery)
-	print(data)
 	return data
 
 
@@ -52,7 +51,7 @@ def load_data(battery):
 
 
 def split_data(data, test_size):
-    data = (data-data.mean())/data.std()
+    #data = (data-data.mean())/data.std()
     y = data["TTD"]
     X = data.drop(["TTD"], axis=1)
     X_train,  X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, shuffle = True, random_state = 0)
