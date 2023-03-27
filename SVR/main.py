@@ -2,7 +2,7 @@ from data_processing import *
 import matplotlib.pyplot as plt
 from sklearn.svm import SVR
 import numpy as np
-from pandas import *
+import pandas as pd
 from torch.nn import MSELoss
 import torch
 import tensorflow as tf
@@ -25,7 +25,6 @@ best_svr.fit(X_train, y_train)
 
 #Predicting the results
 y_pred = best_svr.predict(X_test.values)
-
 #Computing the MSE from normalized data
 loss = MSELoss()
 
@@ -36,6 +35,8 @@ y_pred_tens = torch.tensor((y_pred-y_pred.mean())/y_pred.std())
 mse = loss(y_pred_tens, y_tens)
 mse = mse.detach().numpy() * 100
 print("MSE: ", round(mse, 3), "%")
+
+time = X["Time"][:len(y_pred)]
 
 #Plotting the results
 #time = X["Time"][:len(y_pred)]
