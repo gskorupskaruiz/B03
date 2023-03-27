@@ -4,12 +4,14 @@ import scipy as s
 import sklearn as sk
 import pandas as pd
 import tensorflow as tf
+import backprop_nn
+import matplotlib.pyplot as plt
 
 from scipy import stats
 #splitting test, train, validation 
 
 #from exe_2_utils import split_scale, count_parameters, predict, weights_init
-
+"""
 def splitting_data(X, y, test_size, cv_size):
     from sklearn.model_selection import train_test_split
 
@@ -23,13 +25,11 @@ def splitting_data(X, y, test_size, cv_size):
     
     # return split data
     return [X_train, y_train, X_test, y_test, X_cv, y_cv]
+"""
 
-
-from matplotlib import pyplot as plt
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
-import torch
 import torch.nn as nn
 
 
@@ -162,7 +162,7 @@ def train_model(X_train, y_train, X_val, y_val, n_epochs, model, loss_function, 
             #break
         #else:
             #continue
-        print(loss_train)
+        print("Epoch: %d, loss train: %1.5f, loss val: %1.5f" % (i, loss_train , loss_val))
 
     
     return train_loss_history, val_loss_history
@@ -196,11 +196,13 @@ def lr_random_search(model, X_train, y_train, X_val, y_val, reps:int=15):
     
     return lr_best
 
-
-df = pd.read_csv("C:/Users/gowri/Documents/B03/data/B0005_TTD.csv")
-X = df["Voltage_measured"].values
-X = np.array(X)
-X = X.reshape(len(X), 1)
+df = pd.read_csv("data/B0005_TTD.csv")
+v = df["Voltage_measured"].values
+c = df["Current_measured"].values
+t = df["Temperature_measured"].values
+X = np.hstack((v, c))
+X = np.hstack((X, t))
+X = X.reshape(len(v), 3)
 X = (X-X.mean())/X.std()
 #print(X.shape)
 y = df["TTD"].values
@@ -215,26 +217,22 @@ X_train, X_test, y_train, y_test = split_scale(X, y, test_size=.1, scale=False, 
     
 print(f"\nValidation split:")
 X_train, X_val, y_train, y_val = split_scale(X_train, y_train, test_size=.1, scale=False, verbose=True)
-
 X_train, X_val, y_train, y_val = torch.from_numpy(X_train), torch.from_numpy(X_val), torch.from_numpy(y_train), torch.from_numpy(y_val)
-"""X_train = torch.transpose(X_train, 0, -1)
-y_train = torch.transpose(y_train, 0, -1)
-X_val = torch.transpose(X_val, 0, -1)
-y_val = torch.transpose(y_val, 0, -1)"""
 
 print(X_train.shape, y_train.shape, X_val.shape, y_val.shape)
 act = torch.nn.Sigmoid()
 #[X_train, y_train, X_test, y_test, X_cv, y_cv] = splitting_data(X, y, 0.1, 0.1)
 
-model = nn_model(1, 100, 1, act, 50)
-
+model = nn_model(3, 100, 1, act, 50)
 
 loss_fn = torch.nn.MSELoss()
 
 #lr_best = lr_random_search(model, X_train, y_train, X_val, y_val)
 opt = torch.optim.Adam(params=model.parameters(), lr=1e-2)
 
+#[train_loss_history, val_loss_history] = train_model(X_train, y_train, X_val, y_val, 300, model, loss_fn, opt, 1e-6, 1e-4)
 
-[train_loss_history, val_loss_history] = train_model(X_train, y_train, X_val, y_val, 300, model, loss_fn, opt, 1e-6, 1e-4)
+[train_loss_history_ekf, val_loss_history_ekf] = backprop_nn.NeuralNetwork.train_ekf(self=model, x=X_train, y=y_train)
 
-print(val_loss_history)
+print(train_loss_history_ekf)
+#print(train_loss_history_ekf)
