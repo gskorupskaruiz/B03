@@ -3,6 +3,7 @@ from sklearn.model_selection import train_test_split
 from model import *
 import numpy as np
 from data_processing import load_gpu_data
+from torch.utils.data import DataLoader, TensorDataset
 
 def load_data_normalise(battery):
 
@@ -36,8 +37,9 @@ def testing_func(X_test, y_test):
 
     # one interation 
     test_predict = model.forward(X_test)
-    print(test_predict.dtype)
 
+    y_pred = model(X_test)
+    rmse_test = np.sqrt(criterion(y_pred, y_test).item())
     # for ite in range(1, num + 1):
     #     X_test = group_for_test.get_group(ite).iloc[:, 2:]
     #     X_test_tensors = torch.Tensor(X_test.to_numpy())
@@ -59,16 +61,20 @@ def train(model, battery):
     norm_data = load_data_normalise(battery)
     
     X_train, y_train, X_test, y_test, X_cv, y_cv = load_gpu_data(norm_data, test_size=test_size, cv_size=cv_size)
-
+    train_dataset = TensorDataset(X_train, y_train)
+    train_loader = DataLoader(train_dataset, batch_size=10, shuffle=True)
+    val_dataset = TensorDataset(X_cv, y_cv)
+    val_loader = DataLoader(val_dataset, batch_size=10)
+    test_dataset = TensorDataset(X_test, y_test)
+    test_loader = DataLoader(test_dataset, batch_size=10)
     # X = norm_data.drop("TTD", axis = 1)
     # y = norm_data["TTD"]
     # X_train, y_train, X_test, y_test, X_cv, y_cv  = train_test_validation_split(X, y, test_size, cv_size)
     num_train = len(X_train)
-    print("num_train: ", num_train)
     rmse_temp = 1000
-
+    epoch_loss = 0
     for epoch in range(n_epoch):
-        epoch_loss = 0
+       
         model.train() # set model to training mode
         optimizer.zero_grad() # calc and set grad = 0
         outputs = model(X_train) # forward pass
@@ -83,10 +89,11 @@ def train(model, battery):
 
         if rmse_temp < rmse and rmse_temp <5:
             result, rmse = result_temp, rmse_temp
+            print("Early stopping ")
             break
         
         rmse_temp, result_temp = rmse, result #store lst rmse
-        print("Epoch: %d, loss: %1.5f, rmse: %1.5f" % (epoch, epoch_loss / num_train, rmse))
+        print("Epoch: %d, loss: %1.5f, rmse: %1.5f" % (epoch, loss , rmse))
    
 if __name__ == '__main__': 
 	# import data
@@ -103,7 +110,7 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # LSTM Model initialization
-    model = LSTM1(input_size, n_hidden, n_layer).to(device).double()
+    model = LSTM1(input_size, n_hidden, n_layer).double()
     criterion = torch.nn.MSELoss() 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 
