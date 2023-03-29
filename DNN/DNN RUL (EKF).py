@@ -11,32 +11,23 @@ from backprop_nn import NeuralNetwork
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-
 import matplotlib.pyplot as plt
-
 from scipy import stats
-
-"""
-def splitting_data(X, y, test_size, cv_size):
-    from sklearn.model_selection import train_test_split
-
-    x_remaining, X_test, y_remaining, y_test = train_test_split(X, y, test_size=test_size, shuffle=False, random_state=0)
-
-    ratio_remaining = 1 - test_size
-    ratio_val_adjusted = cv_size / ratio_remaining
-
-    X_train, X_cv, y_train, y_cv = train_test_split(
-    x_remaining, y_remaining, test_size=ratio_val_adjusted, shuffle=False, random_state=0)
-    
-    # return split data
-    return [X_train, y_train, X_test, y_test, X_cv, y_cv]
-"""
-
-import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import torch.nn as nn
 
+def train_test_validation_split(X, y, test_size, val_size):
+    from sklearn.model_selection import train_test_split
+
+    x_remaining, X_test, y_remaining, y_test = train_test_split(X, y, test_size=test_size, shuffle=True, random_state=0) #the input here has to be a numpy array
+
+    ratio_remaining = 1 - test_size
+    ratio_val_adjusted = val_size / ratio_remaining
+
+    X_train, X_val, y_train, y_val = train_test_split(x_remaining, y_remaining, test_size=ratio_val_adjusted, shuffle=True, random_state=0) #the input here has to be a numpy array
+    
+    return [X_train, y_train, X_test, y_test, X_val, y_val]
 
 def split_scale(X, y, test_size=.1, scale=True, verbose=False):
     original_data_type = type(X)
@@ -218,11 +209,16 @@ y = np.array(y)
 y = y.reshape(len(y), 1)
 y = (y-y.mean())/y.std()
 
+"""
+X_train, X_test, y_train, y_test = split_scale(X, y, test_size=.1, scale=False, verbose=True)
+X_train, X_val, y_train, y_val = split_scale(X_train, y_train, test_size=.1, scale=False, verbose=True)
+X_train, X_val, y_train, y_val = torch.from_numpy(X_train), torch.from_numpy(X_val), torch.from_numpy(y_train), torch.from_numpy(y_val)
 
-X_trainEKF, X_testEKF, y_trainEKF, y_testEKF = split_scale(X, y, test_size=.1, scale=False, verbose=True)
-X_trainEKF, X_valEKF, y_trainEKF, y_valEKF = split_scale(X_trainEKF, y_trainEKF, test_size=.1, scale=False, verbose=True)
-X_train, X_val, y_train, y_val = torch.from_numpy(X_trainEKF), torch.from_numpy(X_valEKF), torch.from_numpy(y_trainEKF), torch.from_numpy(y_valEKF)
+"""
+X_train, y_train, X_test, y_test, X_val, y_val = train_test_validation_split(X, y, 0.1, 0.1)
+X_train, X_val, y_train, y_val = torch.from_numpy(X_train), torch.from_numpy(X_val), torch.from_numpy(y_train), torch.from_numpy(y_val)
 
+#print(X_train)
 print(X_train.shape, y_train.shape, X_val.shape, y_val.shape)
 act = torch.nn.Sigmoid()
 
@@ -273,8 +269,41 @@ if __name__ == "__main__":
 
     # train with ekf
     nn = NeuralNetwork(layers=[3, 40, 1], activations=[ReLU(), Linear()], loss=Unity(), rng=rng)
-    train_loss, val_loss = nn.train_ekf(X_train_ekf.T, y_train_ekf.reshape(1, -1), P=1, R=1e4, Q=1e8, epochs=3, val=(X_val_ekf.T, y_val_ekf.reshape(1, -1)), eta=1e1)
+    """p_val = stats.loguniform.rvs(1e-1, 1e8, size=5)
+    q_val = stats.loguniform.rvs(1e-1, 1e8, size=5)
+    r_val = stats.loguniform.rvs(1e-1, 1e8, size=5)
+    p_list = []
+    q_list = []
+    r_list = []
+    loss_p = []
+    for p in p_val:
+        for q in q_val:
+            for r in r_val:
+                rng.__setstate__(state)
+                nn_l = NeuralNetwork(layers=[3, 40, 1], activations=[ReLU(), Linear()], loss=Unity(), rng=rng)
+                train_loss_p, val_loss_p = nn_l.train_ekf(X_train_ekf.T, y_train_ekf.reshape(1, -1), P=p, R=r, Q=q, epochs=10, val=(X_val_ekf.T, y_val_ekf.reshape(1, -1)), eta=1e-2)
+                train_loss_vals = train_loss_p.values()
+                print(type(train_loss_vals))
+                loss_p.append(list(train_loss_vals)[-1])
+                p_list.append(p)
+                q_list.append(q)
+                r_list.append(r)
+    
+    loss_arr = np.array(loss_p)
+    idx = np.where(loss_arr == np.amin(loss_arr))
+    idxs = (idx[0])
+    p_best = p_list[int(idxs)]
+    q_best = q_list[int(idxs)]
+    r_best = r_list[int(idxs)]"""
+    
+    rng.__setstate__(state)
+    train_loss, val_loss = nn.train_ekf(X_train_ekf.T, y_train_ekf.reshape(1, -1), P=5.3, R=1e-2, Q=214.9, epochs=70, val=(X_val_ekf.T, y_val_ekf.reshape(1, -1)), eta=1e-2)
 
+    #print(p_best, q_best, r_best)
+    # 1046603, 3370, 0.47
+    # 5.2926 214.91008 12968.44
+    # 1046603.717654118 42000473.17406705 214.910083604359
+    # 5.292672888299462 30.773599420974 214.910083604359
     plt.plot(train_loss.keys(), train_loss.values(), label="train")
     plt.plot(val_loss.keys(), val_loss.values(), label="validation")
     plt.xlabel("epochs")
