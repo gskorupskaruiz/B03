@@ -103,7 +103,7 @@ if __name__ == '__main__':
     n_hidden = input_size
     n_layer = 2
     n_epoch = 150
-    lr = 0.01
+    lr = 10
     test_size = 0.2
     cv_size = 0.2
     # gpu?

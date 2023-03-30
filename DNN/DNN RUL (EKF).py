@@ -163,16 +163,16 @@ def train_model(X_train, y_train, X_val, y_val, n_epochs, model, loss_function, 
         if verbose:
             print("Epoch: %d, loss train: %1.5f, loss val: %1.5f" % (i, loss_train , loss_val))
 
-        #if es.early_stop(loss_val):
-            #break
-        #else:
-            #continue
+        if es.early_stop(loss_val):
+            break
+        else:
+            continue
 
     return train_loss_history, val_loss_history, epoch
 
 def lr_random_search(model, X_train, y_train, X_val, y_val, reps:int=15):
     es_patience = 4
-    es_delta = 1e-4
+    es_delta = 1e-6
     
     learning_rate = stats.loguniform.rvs(1e-6, 1e1, size=reps)
     
@@ -205,8 +205,8 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Device: ", device)
 # device = torch.device("cpu")
 ### constan model params
-act = torch.nn.Sigmoid()
-model = nn_model(3, 100, 1, act, 100) #20 #50
+act = torch.nn.ReLU()
+model = nn_model(6, 100, 1, act, 100) #20 #50
 loss_fn = torch.nn.MSELoss()
 n_epoch = 150
 
@@ -218,9 +218,15 @@ df = pd.read_csv("data/B0005_TTD.csv")
 v = df["Voltage_measured"].values
 c = df["Current_measured"].values
 t = df["Temperature_measured"].values
+v_charge = df["Voltage_charge"].values
+c_charge = df["Current_charge"].values
+capacity = df["Capacity"].values
 X = np.hstack((v, c))
 X = np.hstack((X, t))
-X = X.reshape(len(v), 3)
+X = np.hstack((X, v_charge))
+X = np.hstack((X, c_charge))
+X = np.hstack((X, capacity))
+X = X.reshape(len(v), 6)
 X = (X-X.mean())/X.std()
 
 y = df["TTD"].values
@@ -251,30 +257,31 @@ opt = torch.optim.Adam(params=model.parameters(), lr=0.00012)
 [train_loss_history, val_loss_history, epoch] = train_model(X_train, y_train, X_val, y_val, n_epoch, model, loss_fn, opt, 1e-6, 1e-4, verbose=True)
 
 
-print("DONE TRAINING NOW KFOLD")
-### DNN with k fold cross validation 
-k = 10 
-kf = KFold(n_splits=k, random_state=None)
-loss_train_k_fold = []
-for train_index, val_index in kf.split(X):
-    print("TRAIN:", train_index, "VAL:", val_index)
-    X_train_k, y_train_k = torch.from_numpy(X[train_index]), torch.from_numpy(y[train_index])
-    X_val_k, y_val_k = torch.Tensor(X[val_index]), torch.Tensor(y[val_index])
+# print("DONE TRAINING NOW KFOLD")
+# ### DNN with k fold cross validation 
+# k = 10 
+# kf = KFold(n_splits=k, random_state=None)
+# loss_train_k_fold = []
+# for train_index, val_index in kf.split(X):
+#     X_train_k, y_train_k = torch.from_numpy(X[train_index]), torch.from_numpy(y[train_index])
+#     X_val_k, y_val_k = torch.Tensor(X[val_index]), torch.Tensor(y[val_index])
 
-    # data to device
-    X_train_k = X_train_k.to(device)
-    y_train_k = y_train_k.to(device)
-    X_val_k = X_val_k.to(device)
-    y_val_k = y_val_k.to(device)
+#     # data to device
+#     X_train_k = X_train_k.to(device)
+#     y_train_k = y_train_k.to(device)
+#     X_val_k = X_val_k.to(device)
+#     y_val_k = y_val_k.to(device)
+#     for module in model.modules():
+#         if isinstance(module, nn.Linear):
+#             nn.init.xavier_uniform_(module.weight)
+#     [train_loss_k, val_loss_k, epoch_k] = train_model(X_train_k, y_train_k, X_val_k, y_val_k, n_epoch, model, loss_fn, opt, 1e-6, 1e-4, verbose=True)
+#     final_train_loss_k = train_loss_k[-1]
+#     final_val_loss_k = val_loss_k[-1]
+#     loss_train_k_fold.append(final_train_loss_k)
 
-    [train_loss_k, val_loss_k, epoch_k] = train_model(X_train_k, y_train_k, X_val_k, y_val_k, n_epoch, model, loss_fn, opt, 1e-6, 1e-4, verbose=True)
-    final_train_loss_k = train_loss_k[-1]
-    final_val_loss_k = val_loss_k[-1]
-    loss_train_k_fold.append(final_train_loss_k)
-
-avg_error = np.mean(np.array(loss_train_k_fold))
-print("DONE KFOLD") 
-print("Average error: ", avg_error)
+# avg_error = np.mean(np.array(loss_train_k_fold))
+# print("DONE KFOLD") 
+# print("Average error: ", avg_error)
 print("EKF TIME YAAAy")
 
 ### ekf stuff
@@ -320,37 +327,37 @@ if __name__ == "__main__":
 
 
 
-    """p_val = stats.loguniform.rvs(1e-1, 1e8, size=5)
-    q_val = stats.loguniform.rvs(1e-1, 1e8, size=5)
-    r_val = stats.loguniform.rvs(1e-1, 1e8, size=5)
-    p_list = []
-    q_list = []
-    r_list = []
-    loss_p = []
-    for p in p_val:
-        for q in q_val:
-            for r in r_val:
-                rng.__setstate__(state)
-                nn_l = NeuralNetwork(layers=[3, 40, 1], activations=[ReLU(), Linear()], loss=Unity(), rng=rng)
-                train_loss_p, val_loss_p = nn_l.train_ekf(X_train_ekf.T, y_train_ekf.reshape(1, -1), P=p, R=r, Q=q, epochs=10, val=(X_val_ekf.T, y_val_ekf.reshape(1, -1)), eta=1e-2)
-                train_loss_vals = train_loss_p.values()
-                print(type(train_loss_vals))
-                loss_p.append(list(train_loss_vals)[-1])
-                p_list.append(p)
-                q_list.append(q)
-                r_list.append(r)
+    # p_val = stats.loguniform.rvs(1e-1, 1e8, size=5)
+    # q_val = stats.loguniform.rvs(1e-1, 1e8, size=5)
+    # r_val = stats.loguniform.rvs(1e-1, 1e8, size=5)
+    # p_list = []
+    # q_list = []
+    # r_list = []
+    # loss_p = []
+    # for p in p_val:
+    #     for q in q_val:
+    #         for r in r_val:
+    #             rng.__setstate__(state)
+    #             nn_l = NeuralNetwork(layers=[3, 40, 1], activations=[ReLU(), Linear()], loss=Unity(), rng=rng)
+    #             train_loss_p, val_loss_p = nn_l.train_ekf(X_train_ekf.T, y_train_ekf.reshape(1, -1), P=p, R=r, Q=q, epochs=10, val=(X_val_ekf.T, y_val_ekf.reshape(1, -1)), eta=1e-2)
+    #             train_loss_vals = train_loss_p.values()
+    #             loss_p.append(list(train_loss_vals)[-1])
+    #             p_list.append(p)
+    #             q_list.append(q)
+    #             r_list.append(r)
     
-    loss_arr = np.array(loss_p)
-    idx = np.where(loss_arr == np.amin(loss_arr))
-    idxs = (idx[0])
-    p_best = p_list[int(idxs)]
-    q_best = q_list[int(idxs)]
-    r_best = r_list[int(idxs)]"""
-    
+    # loss_arr = np.array(loss_p)
+    # idx = np.where(loss_arr == np.amin(loss_arr))
+    # idxs = (idx[0])
+    # p_best = p_list[int(idxs)]
+    # q_best = q_list[int(idxs)]
+    # r_best = r_list[int(idxs)]
+  
+
     rng.__setstate__(state)
     train_loss, val_loss = nn.train_ekf(X_train_ekf.T, y_train_ekf.reshape(1, -1), P=5.3, R=1e-2, Q=214.9, epochs=70, val=(X_val_ekf.T, y_val_ekf.reshape(1, -1)), eta=1e-2)
-
-    #print(p_best, q_best, r_best)
+    # print("p_best, q_best, r_best")
+    # print(p_best, q_best, r_best)
     # 1046603, 3370, 0.47
     # 5.2926 214.91008 12968.44
     # 1046603.717654118 42000473.17406705 214.910083604359
