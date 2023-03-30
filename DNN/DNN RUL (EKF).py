@@ -10,7 +10,7 @@ from activations import *
 from backprop_nn import NeuralNetwork
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, KFold
 import matplotlib.pyplot as plt
 from scipy import stats
 from sklearn.model_selection import train_test_split
@@ -127,11 +127,18 @@ class EarlyStopper:
                 return False            
 
 def train_model(X_train, y_train, X_val, y_val, n_epochs, model, loss_function, optimizer, es_patience, es_delta, verbose=True):
-    train_loss_history = []
-    val_loss_history = []
-    epoch = []
+    epoch = [0]
     # instantiate early stopper
     es = EarlyStopper(patience=es_patience, min_delta=es_delta)
+
+    X_train = X_train.float()
+    y_train = y_train.float()
+    X_val = X_val.float()
+    y_val = y_val.float()
+
+    with torch.no_grad():
+        train_loss_history = [loss_function(model(X_train), y_train).item()]
+        val_loss_history = [loss_function(model(X_val), y_val).item()]
 
     for i in range(n_epochs):
         X_train = X_train.float()
@@ -140,15 +147,15 @@ def train_model(X_train, y_train, X_val, y_val, n_epochs, model, loss_function, 
         y_val = y_val.float()
         target_train = model(X_train)
         target_val = model(X_val)
+
         loss_train = loss_function(target_train, y_train)
-
         loss_val = loss_function(target_val, y_val)
-
-        train_loss_history.append(loss_train)
-
-        val_loss_history.append(loss_val)
         
-        epoch.append(i)
+        train_loss_history.append(loss_train.item())
+
+        val_loss_history.append(loss_val.item())
+        
+        epoch.append(i+1)
         optimizer.zero_grad()
         loss_train.backward()
         optimizer.step()
@@ -194,6 +201,14 @@ def lr_random_search(model, X_train, y_train, X_val, y_val, reps:int=15):
     
     return lr_best
 
+### constan model params
+act = torch.nn.Sigmoid()
+model = nn_model(3, 20, 1, act, 10) #20 #50
+loss_fn = torch.nn.MSELoss()
+n_epoch = 70
+
+
+### DNN with backpropagration 
 df = pd.read_csv("data/B0005_TTD.csv")
 v = df["Voltage_measured"].values
 c = df["Current_measured"].values
@@ -202,38 +217,43 @@ X = np.hstack((v, c))
 X = np.hstack((X, t))
 X = X.reshape(len(v), 3)
 X = (X-X.mean())/X.std()
-#print(X.shape)
+
 y = df["TTD"].values
 y = np.array(y)
 
 y = y.reshape(len(y), 1)
 y = (y-y.mean())/y.std()
 
-"""
 X_train, X_test, y_train, y_test = split_scale(X, y, test_size=.1, scale=False, verbose=True)
 X_train, X_val, y_train, y_val = split_scale(X_train, y_train, test_size=.1, scale=False, verbose=True)
 X_train, X_val, y_train, y_val = torch.from_numpy(X_train), torch.from_numpy(X_val), torch.from_numpy(y_train), torch.from_numpy(y_val)
 
-"""
-X_train, y_train, X_test, y_test, X_val, y_val = train_test_validation_split(X, y, 0.1, 0.1)
-X_train, X_val, y_train, y_val = torch.from_numpy(X_train), torch.from_numpy(X_val), torch.from_numpy(y_train), torch.from_numpy(y_val)
+#lr_best = lr_random_search(model, X_train, y_train, X_val, y_val) #0.00012
+opt = torch.optim.Adam(params=model.parameters(), lr=0.00012)
 
-#print(X_train)
-print(X_train.shape, y_train.shape, X_val.shape, y_val.shape)
-act = torch.nn.Sigmoid()
+[train_loss_history, val_loss_history, epoch] = train_model(X_train, y_train, X_val, y_val, n_epoch, model, loss_fn, opt, 1e-6, 1e-4, verbose=False)
 
-model = nn_model(3, 20, 1, act, 10) #20 #50
 
-loss_fn = torch.nn.MSELoss()
 
-lr_best = lr_random_search(model, X_train, y_train, X_val, y_val)
+### DNN with k fold cross validation 
+k = 10 
+kf = KFold(n_splits=k, random_state=None)
+loss_train_k_fold = []
 
-opt = torch.optim.Adam(params=model.parameters(), lr=lr_best)
+for train_index, val_index in kf.split(X):
 
-#[train_loss_history, val_loss_history, epoch] = train_model(X_train, y_train, X_val, y_val, 100, model, loss_fn, opt, 1e-6, 1e-4, verbose=True)
+    X_train_k, y_train_k = torch.from_numpy(X[train_index]), torch.from_numpy(y[train_index])
+    X_val_k, y_val_k = torch.Tensor(X[val_index]), torch.Tensor(y[val_index])
+
+    [train_loss_k, val_loss_k, epoch_k] = train_model(X_train_k, y_train_k, X_val_k, y_val_k, n_epoch, model, loss_fn, opt, 1e-6, 1e-4, verbose=False)
+    final_train_loss_k = train_loss_k[-1]
+    final_val_loss_k = val_loss_k[-1]
+    loss_train_k_fold.append(final_train_loss_k)
+
+avg_error = np.mean(np.array(loss_train_k_fold))
+
 
 ### ekf stuff
-
 if __name__ == "__main__":
 
     df_ekf = pd.read_csv("data/B0005_TTD.csv")
@@ -254,8 +274,7 @@ if __name__ == "__main__":
 
     X_train_ekf, X_test_ekf, y_train_ekf, y_test_ekf = split_scale(X_ekf, y_ekf, test_size=.1, scale=False, verbose=True)
     X_train_ekf, X_val_ekf, y_train_ekf, y_val_ekf = split_scale(X_train_ekf, y_train_ekf, test_size=.1, scale=False, verbose=True)
-    #X_train_ekf, X_val_ekf, y_train_ekf, y_val_ekf = torch.from_numpy(X_train_ekf), torch.from_numpy(X_val_ekf), torch.from_numpy(y_train_ekf), torch.from_numpy(y_val_ekf)
-
+    
     np.random.seed(1234)
     
     # make sure runs have same initialized weights
@@ -304,10 +323,17 @@ if __name__ == "__main__":
     # 5.2926 214.91008 12968.44
     # 1046603.717654118 42000473.17406705 214.910083604359
     # 5.292672888299462 30.773599420974 214.910083604359
-    plt.plot(train_loss.keys(), train_loss.values(), label="train")
-    plt.plot(val_loss.keys(), val_loss.values(), label="validation")
+    fig, axs = plt.subplots(2, 1, figsize=(10, 6))
+
+    axs[0].plot(train_loss.keys(), train_loss.values(), label="train ekf")
+    axs[0].plot(val_loss.keys(), val_loss.values(), label="validation ekf")
+    axs[1].plot(epoch, train_loss_history, label='train DNN')
+    axs[1].plot(epoch, val_loss_history, label='val DNN')
     plt.xlabel("epochs")
     plt.ylabel("loss")
-    plt.title("Loss for EKF-Algorithm")
-    plt.legend()
+    #plt.title("Loss on training and validation sets comparison")
+    axs[0].legend()
+    axs[1].legend()
     plt.show()
+
+    
