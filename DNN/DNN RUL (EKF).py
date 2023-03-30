@@ -201,12 +201,17 @@ def lr_random_search(model, X_train, y_train, X_val, y_val, reps:int=15):
     
     return lr_best
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print("Device: ", device)
+# device = torch.device("cpu")
 ### constan model params
 act = torch.nn.Sigmoid()
-model = nn_model(3, 20, 1, act, 10) #20 #50
+model = nn_model(3, 100, 1, act, 100) #20 #50
 loss_fn = torch.nn.MSELoss()
-n_epoch = 70
+n_epoch = 150
 
+#model to device
+model.to(device)
 
 ### DNN with backpropagration 
 df = pd.read_csv("data/B0005_TTD.csv")
@@ -228,34 +233,54 @@ X_train, X_test, y_train, y_test = split_scale(X, y, test_size=.1, scale=False, 
 X_train, X_val, y_train, y_val = split_scale(X_train, y_train, test_size=.1, scale=False, verbose=True)
 X_train, X_val, y_train, y_val = torch.from_numpy(X_train), torch.from_numpy(X_val), torch.from_numpy(y_train), torch.from_numpy(y_val)
 
+# data to device
+X_train = X_train.to(device)
+y_train = y_train.to(device)
+X_val = X_val.to(device)
+y_val = y_val.to(device)
+# X_test = torch.from_numpy(X_test).to(device)
+# y_test = torch.from_numpy(y_test).to(device)
+
+
+
+
+
 #lr_best = lr_random_search(model, X_train, y_train, X_val, y_val) #0.00012
 opt = torch.optim.Adam(params=model.parameters(), lr=0.00012)
 
-[train_loss_history, val_loss_history, epoch] = train_model(X_train, y_train, X_val, y_val, n_epoch, model, loss_fn, opt, 1e-6, 1e-4, verbose=False)
+[train_loss_history, val_loss_history, epoch] = train_model(X_train, y_train, X_val, y_val, n_epoch, model, loss_fn, opt, 1e-6, 1e-4, verbose=True)
 
 
-
+print("DONE TRAINING NOW KFOLD")
 ### DNN with k fold cross validation 
 k = 10 
 kf = KFold(n_splits=k, random_state=None)
 loss_train_k_fold = []
-
 for train_index, val_index in kf.split(X):
-
+    print("TRAIN:", train_index, "VAL:", val_index)
     X_train_k, y_train_k = torch.from_numpy(X[train_index]), torch.from_numpy(y[train_index])
     X_val_k, y_val_k = torch.Tensor(X[val_index]), torch.Tensor(y[val_index])
 
-    [train_loss_k, val_loss_k, epoch_k] = train_model(X_train_k, y_train_k, X_val_k, y_val_k, n_epoch, model, loss_fn, opt, 1e-6, 1e-4, verbose=False)
+    # data to device
+    X_train_k = X_train_k.to(device)
+    y_train_k = y_train_k.to(device)
+    X_val_k = X_val_k.to(device)
+    y_val_k = y_val_k.to(device)
+
+    [train_loss_k, val_loss_k, epoch_k] = train_model(X_train_k, y_train_k, X_val_k, y_val_k, n_epoch, model, loss_fn, opt, 1e-6, 1e-4, verbose=True)
     final_train_loss_k = train_loss_k[-1]
     final_val_loss_k = val_loss_k[-1]
     loss_train_k_fold.append(final_train_loss_k)
 
 avg_error = np.mean(np.array(loss_train_k_fold))
-
+print("DONE KFOLD") 
+print("Average error: ", avg_error)
+print("EKF TIME YAAAy")
 
 ### ekf stuff
 if __name__ == "__main__":
-
+    # check if gpu
+    
     df_ekf = pd.read_csv("data/B0005_TTD.csv")
     v_ekf = df_ekf["Voltage_measured"][:100].values
     c_ekf = df_ekf["Current_measured"][:100].values
@@ -275,19 +300,26 @@ if __name__ == "__main__":
     X_train_ekf, X_test_ekf, y_train_ekf, y_test_ekf = split_scale(X_ekf, y_ekf, test_size=.1, scale=False, verbose=True)
     X_train_ekf, X_val_ekf, y_train_ekf, y_val_ekf = split_scale(X_train_ekf, y_train_ekf, test_size=.1, scale=False, verbose=True)
     
+    #data to device
+    # X_train_ekf, X_val_ekf, y_train_ekf, y_val_ekf = torch.from_numpy(X_train_ekf), torch.from_numpy(X_val_ekf), torch.from_numpy(y_train_ekf), torch.from_numpy(y_val_ekf)
+    # X_train_ekf, X_val_ekf, y_train_ekf, y_val_ekf = X_train_ekf.to(device), X_val_ekf.to(device), y_train_ekf.to(device), y_val_ekf.to(device)
+    
     np.random.seed(1234)
     
     # make sure runs have same initialized weights
     rng = np.random.RandomState(123)
     state = rng.__getstate__()
 
-    nn = NeuralNetwork(layers=[3, 10, 10, 1], activations=[ReLU(), ReLU(), Sigmoid()], loss=QuadraticLoss(), rng=rng)
+    # nn = NeuralNetwork(layers=[3, 10, 10, 1], activations=[ReLU(), ReLU(), Sigmoid()], loss=QuadraticLoss(), rng=rng)
 
     # reset state
     rng.__setstate__(state)
 
     # train with ekf
     nn = NeuralNetwork(layers=[3, 40, 1], activations=[ReLU(), Linear()], loss=Unity(), rng=rng)
+
+
+
     """p_val = stats.loguniform.rvs(1e-1, 1e8, size=5)
     q_val = stats.loguniform.rvs(1e-1, 1e8, size=5)
     r_val = stats.loguniform.rvs(1e-1, 1e8, size=5)
