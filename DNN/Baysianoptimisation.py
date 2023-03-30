@@ -33,10 +33,9 @@ def objective(params):
     kfold = KFold(n_splits=3, shuffle=True, random_state=0)
     rng.__setstate__(state)
     nn_l = NeuralNetwork(layers=[3, 40, 1], activations=[ReLU(), Linear()], loss=Unity(), rng=rng)
-    print(X_train_ekf.shape())
     train = nn_l.train_ekf(X_train_ekf.T, y_train_ekf.reshape(1, -1), **params, epochs=10, val=(X_val_ekf.T, y_val_ekf.reshape(1, -1)), eta=1e-2)
-    print(nn_l.feedforward(X_train_ekf))
-    scores = cross_val_score(nn_l.feedforward, X_val_ekf, y_val_ekf, cv=kfold, scoring='accuracy', n_jobs=-1)
+    f = lambda x: nn_l.feedforward(x)
+    scores = cross_val_score(train, X_val_ekf, y_val_ekf, cv=kfold, scoring='accuracy', n_jobs=-1)
 
     # Extract the best score
     best_score = np.mean(scores)
