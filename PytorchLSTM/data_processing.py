@@ -55,22 +55,47 @@ def load_gpu_data(data, test_size, cv_size):
 	y = data["TTD"]
 	X = data.drop(["TTD"], axis=1)
 	X_train, y_train, X_test, y_test, X_cv, y_cv = train_test_validation_split(X, y, test_size, cv_size)
-	X_train = torch.tensor(X.values).reshape(1, len(X), len(data_fields))
-	y_train = torch.tensor(y.values).view(len(y), 1)
-	X_test = torch.tensor(X_test.values).reshape(1, len(X_test), len(data_fields))
-	y_test = torch.tensor(y_test.values).view(len(y_test), 1)
-	X_cv = torch.tensor(X_cv.values).reshape(1, len(X_cv), len(data_fields))
-	y_cv = torch.tensor(y_cv.values).view(len(y_cv), 1)
+
+
+	# X_train = torch.tensor(X.values).reshape(1, len(X), len(data_fields))
+	# y_train = torch.tensor(y.values).view(len(y), 1)
+	# X_test = torch.tensor(X_test.values)
+	# y_test = torch.tensor(y_test.values)
+	# X_cv = torch.tensor(X_cv.values)
+	# y_cv = torch.tensor(y_cv.values)
+
+
+
+	lex = len(X_train)
+	#lex = lex/3
+	X_train = torch.tensor(X_train.values).reshape(int(lex), 1, len(data_fields)) # changed the reshaping of this 
+	y_train = torch.tensor(y_train.values).view(int(lex), 1, 1)
+
+	X_test = torch.tensor(X_test.values).reshape(len(X_test), 1, len(data_fields))
+	y_test = torch.tensor(y_test.values).reshape(len(X_test), 1, 1)
+	lexx = len(X_cv)
+	#lexx = lexx/3
+	X_cv = torch.tensor(X_cv.values).reshape(int(lexx), 1, len(data_fields))
+	y_cv = torch.tensor(y_cv.values).view(int(lexx), 1, 1)
 	# go to gpu, "google gpu pytorch python"
 	print("GPU is availible: ", torch.cuda.is_available())
 	if torch.cuda.is_available() == True:
 		print('Running on GPU')
-		X_train = X_train.to('cuda')
-		y_train = y_train.to('cuda')
-		X_test = X_test.to('cuda')
-		y_test = y_test.to('cuda')
-		X_cv = X_cv.to('cuda')
-		y_cv = y_cv.to('cuda')
+
+		# X_train = X_train.to('cuda')
+		# y_train = y_train.to('cuda')
+		# X_test = X_test.to('cuda')
+		# y_test = y_test.to('cuda')
+		# X_cv = X_cv.to('cuda')
+		# y_cv = y_cv.to('cuda')
+
+
+		X_train = X_train.to('cuda').double()
+		y_train = y_train.to('cuda').double()
+		X_test = X_test.to('cuda').double()
+		y_test = y_test.to('cuda').double()
+		X_cv = X_cv.to('cuda').double()
+		y_cv = y_cv.to('cuda').double()
 		print("X_train and y_train are on GPU: ", X_train.is_cuda, y_train.is_cuda)
 		print("X_test and y_test are on GPU: ", X_test.is_cuda, y_test.is_cuda)
 		print("X_cv and y_cv are on GPU: ", X_cv.is_cuda, y_cv.is_cuda)

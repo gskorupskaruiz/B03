@@ -21,9 +21,15 @@ def preprocessing_dnn(num, test_size, val_size, k, cutoff=False,):
         v = df["Voltage_measured"][:k].values
         c = df["Current_measured"][:k].values
         t = df["Temperature_measured"][:k].values
+        t2 = df["Current_charge"][:k].values
+        t3 = df["Voltage_charge"][:k].values
+        t4 = df["Capacity"][:k].values
         X = np.hstack((v, c))
         X = np.hstack((X, t))
-        X = X.reshape(len(v), 3)
+        X = np.hstack((X, t2))
+        X = np.hstack((X, t3))
+        X = np.hstack((X, t4))
+        X = X.reshape(len(v), 6)
         X = (X-np.mean(X, axis=0))/np.std(X, axis=0)
 
         y = df["TTD"][:k].values
@@ -39,9 +45,15 @@ def preprocessing_dnn(num, test_size, val_size, k, cutoff=False,):
         v = df["Voltage_measured"].values
         c = df["Current_measured"].values
         t = df["Temperature_measured"].values
+        t2 = df["Current_charge"].values
+        t3 = df["Voltage_charge"].values
+        t4 = df["Capacity"].values
         X = np.hstack((v, c))
         X = np.hstack((X, t))
-        X = X.reshape(len(v), 3)
+        X = np.hstack((X, t2))
+        X = np.hstack((X, t3))
+        X = np.hstack((X, t4))
+        X = X.reshape(len(v), 6)
         X = (X-np.mean(X, axis=0))/np.std(X, axis=0)
 
         y = df["TTD"].values
