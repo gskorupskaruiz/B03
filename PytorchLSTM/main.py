@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader, TensorDataset
 def load_data_normalise(battery):
 
     data = pd.read_csv("data/" + battery + "_TTD.csv")
-    print(data.shape)
+    print(f"data shape {data.shape}")
     normalized_data = (data-data.mean(axis=0))/data.std(axis=0)
     return normalized_data
     
@@ -94,6 +94,8 @@ def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, es_pati
     for i in range(n_epoch):
         target_train = model(X_train)
         target_val = model(X_val)
+        print(f'size of target_train {target_train.shape} and size of y_train {y_train.shape}')
+        print(f"x_train {X_train.shape} and y_train {y_train.shape}")
         loss_train = lf(target_train, y_train)
         loss_val = lf(target_val, y_val)
         train_loss_history.append(loss_train.item())
@@ -161,9 +163,7 @@ if __name__ == '__main__':
 	# import data
     battery = 'B0005'
     data = load_data_normalise(battery)
-    print(data.shape[1])
     input_size = data.shape[1] -1 #len(data.columns) - 1
-    print(input_size)
     n_hidden = input_size
     n_layer = 2
     n_epoch = 10
@@ -173,15 +173,17 @@ if __name__ == '__main__':
     # gpu?
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    # LsTM Model initialization
-    model = LSTM1(input_size, n_hidden, n_layer).double()
-    criterion = torch.nn.MSELoss() 
-    optimizer = torch.optim.Adam(model.parameters(), lr = lr)
-
     #data initialization
     X_train, y_train, X_val, y_val, X_test, y_test = load_gpu_data(data, test_size=test_size, cv_size=cv_size)  
     #where is X_train
     print(f"x_train is on {X_train.device}, y_train is on {y_train.device}")
+
+    # LsTM Model initialization
+    model = LSTM1(input_size, n_hidden, n_layer, seq_length=len(y_train)).double()
+    criterion = torch.nn.MSELoss() 
+    optimizer = torch.optim.Adam(model.parameters(), lr = lr)
+
+    
     # training and evaltuation
     train(model, X_train, y_train, X_val, y_val, n_epoch, criterion, optimizer, es_patience = 1e6, es_delta = 1e-4, verbose = False)
 
