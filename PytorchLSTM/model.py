@@ -7,13 +7,13 @@ from torch.autograd import Variable
 class LSTM1(nn.Module):
     """LSTM architecture"""
 
-    def __init__(self, input_size, hidden_size, num_layers, seq_length=1):
+    def __init__(self, input_size, hidden_size, num_layers, seq_length):
         super(LSTM1, self).__init__()
         self.input_size = input_size  # input size
         self.hidden_size = hidden_size  # hidden state
         self.num_layers = num_layers  # number of layers
         self.seq_length = seq_length  # sequence length
-
+        
         self.lstm = nn.LSTM(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=True,
                             dropout=0.1)
         self.fc_1 = nn.Linear(hidden_size, 16)  # fully connected 1
@@ -29,11 +29,10 @@ class LSTM1(nn.Module):
         :return: prediction results
         """
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
         # h_0 = Variable(torch.zeros((self.num_layers, x.size(0), self.hidden_size))) # hidden state
         # c_0 = Variable(torch.zeros((self.num_layers, x.size(0), self.hidden_size))) # internal state
-        h_0 = torch.zeros(self.num_layers, self.hidden_size, dtype=torch.float64).to(device)
-        c_0 = torch.zeros(self.num_layers, self.hidden_size, dtype=torch.float64).to(device)
+        h_0 = torch.zeros(self.num_layers, self.seq_length, self.hidden_size, dtype=torch.float64).to(device)
+        c_0 = torch.zeros(self.num_layers, self.seq_length, self.hidden_size, dtype=torch.float64).to(device)
         out, (hn, cn) = self.lstm(x, (h_0 , c_0))  # lstm with input, hidden, and internal state
 
 

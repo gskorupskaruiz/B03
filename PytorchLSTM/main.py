@@ -81,7 +81,7 @@ class EarlyStopper:
             else:
                 return False          
 
-def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, es_patience, es_delta, verbose = False):
+def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, es_patience, es_delta, verbose = True):
     epoch = [0]
     model.to(device) # set model to GPU
     #intiate early stopper
@@ -92,12 +92,12 @@ def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, es_pati
         val_loss_history = [lf(model(X_val), y_val).item()]
 
     for i in range(n_epoch):
-        target_train = model(X_train)
-        target_val = model(X_val)
-        print(f'size of target_train {target_train.shape} and size of y_train {y_train.shape}')
-        print(f"x_train {X_train.shape} and y_train {y_train.shape}")
-        loss_train = lf(target_train, y_train)
-        loss_val = lf(target_val, y_val)
+        predict_train = model(X_train)
+        predict_val = model(X_val)
+        # print(f'size of target_train {target_train.shape} and size of y_train {y_train.shape}')
+        # print(f"x_train {X_train.shape} and y_train {y_train.shape}")
+        loss_train = lf(predict_train, y_train)
+        loss_val = lf(predict_val, y_val)
         train_loss_history.append(loss_train.item())
         val_loss_history.append(loss_val.item())
 
@@ -106,10 +106,10 @@ def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, es_pati
         loss_train.backward()
         optimizer.step()
 
-        if verbose:
-            print(f"Epoch {i+1}: train loss = {loss_train.item():.4f}, val loss = {loss_val.item():.4f}")
+        # if verbose:
+        print(f"Epoch {i+1}: train loss = {loss_train.item():.4f}, val loss = {loss_val.item():.4f}")
 
-        if early_stopper(val_loss_history[-1]):
+        if early_stopper.early_stop(val_loss_history[-1]):
             print(f"Early stopping at epoch {i+1}")
             break
     return train_loss_history, val_loss_history, epoch
@@ -166,7 +166,7 @@ if __name__ == '__main__':
     input_size = data.shape[1] -1 #len(data.columns) - 1
     n_hidden = input_size
     n_layer = 2
-    n_epoch = 10
+    n_epoch = 100
     lr = 0.01
     test_size = 0.2
     cv_size = 0.2
@@ -175,16 +175,11 @@ if __name__ == '__main__':
 
     #data initialization
     X_train, y_train, X_val, y_val, X_test, y_test = load_gpu_data(data, test_size=test_size, cv_size=cv_size)  
-    #where is X_train
-    print(f"x_train is on {X_train.device}, y_train is on {y_train.device}")
-
     # LsTM Model initialization
-    model = LSTM1(input_size, n_hidden, n_layer, seq_length=len(y_train)).double()
+    model = LSTM1(input_size, n_hidden, n_layer, seq_length = 1 ).double()
     criterion = torch.nn.MSELoss() 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 
     
     # training and evaltuation
-    train(model, X_train, y_train, X_val, y_val, n_epoch, criterion, optimizer, es_patience = 1e6, es_delta = 1e-4, verbose = False)
-
-    print(model)
+    train(model, X_train, y_train, X_val, y_val, n_epoch, criterion, optimizer, es_patience = 1e-6, es_delta = 1e-4, verbose = False)
