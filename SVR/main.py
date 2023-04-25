@@ -8,8 +8,8 @@ import torch
 import tensorflow as tf
 
 #Loading the data
-data = load_data("B0006")
-data = data.iloc[:10000]
+data = load_data("B0005")
+data = data.iloc[:5000]
 
 #Splitting the data into training and testing data (not normalized)
 #best split is 0.2; MSE = 5.79% for B0005
