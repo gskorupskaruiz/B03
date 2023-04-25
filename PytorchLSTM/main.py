@@ -53,6 +53,33 @@ def testing_func(X_test, y_test):
     # rmse_test = (np.sqrt(rmse_test / num)).item()
     return result_test, rmse_test
 
+class EarlyStopper:
+    def __init__(self, patience=1, min_delta=0.):
+        self.patience = patience
+        self.min_delta = min_delta
+        self.counter = 0
+        self.min_validation_loss = np.inf
+
+    def early_stop(self, validation_loss):
+        """Implement the early stopping criterion.
+        The function has to return 'True' if the current validation loss (in the arguments) has increased
+        with respect to the minimum value of more than 'min_delta' and for more than 'patience' steps.
+        Otherwise the function returns 'False'."""
+        
+        if validation_loss < self.min_validation_loss:
+            self.min_validation_loss = validation_loss
+            return False
+        else:
+            if validation_loss - self.min_validation_loss > self.min_delta: #add code here
+                self. counter += 1
+                if self.counter > self.patience:
+                    return True 
+                else:
+                    return False
+
+            else:
+                return False          
+
 def train(model, battery):
     model.to(device) # set model to GPU
      # number of samples
@@ -74,7 +101,7 @@ def train(model, battery):
     rmse_temp = 1000
     epoch_loss = 0
     for epoch in range(n_epoch):
-       
+        print(X_train[0])
         model.train() # set model to training mode
         optimizer.zero_grad() # calc and set grad = 0
         outputs = model(X_train) # forward pass
@@ -82,7 +109,7 @@ def train(model, battery):
         loss = torch.unsqueeze(loss, 0) # add dimension to loss
         epoch_loss += loss.item() # add loss to epoch loss
         loss.backward() # update model parameters
-        optimizer.step # update loss func   
+        optimizer.step() # update loss func   
         
         model.eval() # evaluate mode model (ie no drop out)
         result, rmse = testing_func(X_test, y_test)  #run test through model
@@ -101,9 +128,9 @@ if __name__ == '__main__':
     data = load_data_normalise(battery)
     input_size = len(data.columns) - 1
     n_hidden = input_size
-    n_layer = 2
+    n_layer = 5
     n_epoch = 150
-    lr = 10
+    lr = 0.05
     test_size = 0.2
     cv_size = 0.2
     # gpu?
@@ -115,4 +142,4 @@ if __name__ == '__main__':
     optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 
     # training and evaltuation
-    result, rmse = train(model, battery)
+    train(model, battery)
