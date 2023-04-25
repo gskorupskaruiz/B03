@@ -8,7 +8,8 @@ from torch.utils.data import DataLoader, TensorDataset
 def load_data_normalise(battery):
 
     data = pd.read_csv("data/" + battery + "_TTD.csv")
-    normalized_data = (data-data.mean())/data.std()
+    print(data.shape)
+    normalized_data = (data-data.mean(axis=0))/data.std(axis=0)
     return normalized_data
     
 
@@ -89,6 +90,7 @@ def train(model, battery):
     
     X_train, y_train, X_test, y_test, X_cv, y_cv = load_gpu_data(norm_data, test_size=test_size, cv_size=cv_size)
     train_dataset = TensorDataset(X_train, y_train)
+    print(y_train.shape)
     train_loader = DataLoader(train_dataset, batch_size=10, shuffle=True)
     val_dataset = TensorDataset(X_cv, y_cv)
     val_loader = DataLoader(val_dataset, batch_size=10)
@@ -114,32 +116,38 @@ def train(model, battery):
         model.eval() # evaluate mode model (ie no drop out)
         result, rmse = testing_func(X_test, y_test)  #run test through model
 
-        if rmse_temp < rmse and rmse_temp <5:
+        if rmse_temp < rmse and rmse_temp <0.5:
             result, rmse = result_temp, rmse_temp
             print("Early stopping ")
             break
         
         rmse_temp, result_temp = rmse, result #store lst rmse
         print("Epoch: %d, loss: %1.5f, rmse: %1.5f" % (epoch, loss , rmse))
+
+    return rmse, result
    
 if __name__ == '__main__': 
 	# import data
     battery = 'B0005'
     data = load_data_normalise(battery)
-    input_size = len(data.columns) - 1
+    print(data.shape[1])
+    input_size = data.shape[1] -1 #len(data.columns) - 1
+    print(input_size)
     n_hidden = input_size
-    n_layer = 5
-    n_epoch = 150
-    lr = 0.05
+    n_layer = 2
+    n_epoch = 10
+    lr = 0.01
     test_size = 0.2
     cv_size = 0.2
     # gpu?
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    # LSTM Model initialization
+    # LsTM Model initialization
     model = LSTM1(input_size, n_hidden, n_layer).double()
     criterion = torch.nn.MSELoss() 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 
     # training and evaltuation
     train(model, battery)
+
+    print(model)

@@ -102,9 +102,9 @@ def EKF_algorithm():
 
         Error_x   = Vt_Actual[k] - TerminalVoltage
 
-        Vt_Estimated    = [Vt_Estimated, TerminalVoltage]
-        SOC_Estimated   = [SOC_Estimated, X[1]]
-        Vt_Error        = [Vt_Error, Error_x]
+        Vt_Estimated    = Vt_Estimated.append(TerminalVoltage)
+        SOC_Estimated   = SOC_Estimated.append(X[1])
+        Vt_Error        = Vt_Error.append(Error_x)
 
         A   = np.matrix([[1, 0,  0],
                          [0, a1[0], 0],
