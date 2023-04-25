@@ -13,8 +13,8 @@ from scipy.linalg import svd
 
 def EKF_algorithm():
 
-    bm = pd.read_excel("C:/Users/gowri/Documents/B03/EKF/battery_model.xlsx") #Load the battery parameters 
-    sococv = pd.read_excel("C:/Users/gowri/Documents/B03/EKF/SOC_OCV_data.xlsx") #Load the SOC-OCV curve
+    bm = pd.read_excel("EKF\battery_model.xlsx") #Load the battery parameters 
+    sococv = pd.read_excel("EKF\SOC_OCV_data.xlsx") #Load the SOC-OCV curve
 
     SOC_Init    = 1 #intial SOC
     X           = np.array([1, 0, 0]) #state space x parameter intializations
@@ -50,7 +50,7 @@ def EKF_algorithm():
     #ik              = len(Current)
     #Current         = Current-0.1;
 
-    df = pd.read_csv('C:/Users/gowri/Documents/B03/data/B0007_TTD.csv')
+    df = pd.read_csv('EKF\B0005_TTD.csv')
     Vt_Actual         = df['Voltage_measured']
     Measured_Current         = df['Current_measured']
     Temperature     = df['Temperature_measured'] 
@@ -102,9 +102,9 @@ def EKF_algorithm():
 
         Error_x   = Vt_Actual[k] - TerminalVoltage
 
-        Vt_Estimated    = [Vt_Estimated, TerminalVoltage]
-        SOC_Estimated   = [SOC_Estimated, X[1]]
-        Vt_Error        = [Vt_Error, Error_x]
+        Vt_Estimated    = Vt_Estimated.append(TerminalVoltage)
+        SOC_Estimated   = SOC_Estimated.append(X[1])
+        Vt_Error        = Vt_Error.append(Error_x)
 
         A   = np.matrix([[1, 0,  0],
                          [0, a1[0], 0],
