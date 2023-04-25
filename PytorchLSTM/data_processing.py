@@ -55,8 +55,8 @@ def load_gpu_data(data, test_size, cv_size):
 	y = data["TTD"]
 	X = data.drop(["TTD"], axis=1)
 	X_train, y_train, X_test, y_test, X_cv, y_cv = train_test_validation_split(X, y, test_size, cv_size)
-	X_train = torch.tensor(X.values)
-	y_train = torch.tensor(y.values)
+	X_train = torch.tensor(X.values).reshape(1, len(X), len(data_fields))
+	y_train = torch.tensor(y.values).view(len(y), 1)
 	X_test = torch.tensor(X_test.values)
 	y_test = torch.tensor(y_test.values)
 	X_cv = torch.tensor(X_cv.values)
@@ -74,7 +74,8 @@ def load_gpu_data(data, test_size, cv_size):
 		print("X_train and y_train are on GPU: ", X_train.is_cuda, y_train.is_cuda)
 		print("X_test and y_test are on GPU: ", X_test.is_cuda, y_test.is_cuda)
 		print("X_cv and y_cv are on GPU: ", X_cv.is_cuda, y_cv.is_cuda)
-
+		print(f"size of X_train: {X_train.size()} and y_train: {y_train.size()}")
+	
 	return X_train, y_train, X_test, y_test, X_cv, y_cv
 
 
