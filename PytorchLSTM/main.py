@@ -81,50 +81,81 @@ class EarlyStopper:
             else:
                 return False          
 
-def train(model, battery):
+def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, es_patience, es_delta, verbose = False):
+    epoch = [0]
     model.to(device) # set model to GPU
-     # number of samples
-     # grouped data per sample
-
-    norm_data = load_data_normalise(battery)
+    #intiate early stopper
+    early_stopper = EarlyStopper(patience=es_patience, min_delta=es_delta)
     
-    X_train, y_train, X_test, y_test, X_cv, y_cv = load_gpu_data(norm_data, test_size=test_size, cv_size=cv_size)
-    train_dataset = TensorDataset(X_train, y_train)
-    print(y_train.shape)
-    train_loader = DataLoader(train_dataset, batch_size=10, shuffle=True)
-    val_dataset = TensorDataset(X_cv, y_cv)
-    val_loader = DataLoader(val_dataset, batch_size=10)
-    test_dataset = TensorDataset(X_test, y_test)
-    test_loader = DataLoader(test_dataset, batch_size=10)
-    # X = norm_data.drop("TTD", axis = 1)
-    # y = norm_data["TTD"]
-    # X_train, y_train, X_test, y_test, X_cv, y_cv  = train_test_validation_split(X, y, test_size, cv_size)
-    num_train = len(X_train)
-    rmse_temp = 1000
-    epoch_loss = 0
-    for epoch in range(n_epoch):
-        print(X_train[0])
-        model.train() # set model to training mode
-        optimizer.zero_grad() # calc and set grad = 0
-        outputs = model(X_train) # forward pass
-        loss = criterion(outputs, y_train) # calc loss for current pass
-        loss = torch.unsqueeze(loss, 0) # add dimension to loss
-        epoch_loss += loss.item() # add loss to epoch loss
-        loss.backward() # update model parameters
-        optimizer.step() # update loss func   
-        
-        model.eval() # evaluate mode model (ie no drop out)
-        result, rmse = testing_func(X_test, y_test)  #run test through model
+    with torch.no_grad():
+        train_loss_history = [lf(model(X_train), y_train).item()]
+        val_loss_history = [lf(model(X_val), y_val).item()]
 
-        if rmse_temp < rmse and rmse_temp <0.5:
-            result, rmse = result_temp, rmse_temp
-            print("Early stopping ")
+    for i in range(n_epoch):
+        target_train = model(X_train)
+        target_val = model(X_val)
+        loss_train = lf(target_train, y_train)
+        loss_val = lf(target_val, y_val)
+        train_loss_history.append(loss_train.item())
+        val_loss_history.append(loss_val.item())
+
+        epoch.append(i+1)
+        optimizer.zero_grad()
+        loss_train.backward()
+        optimizer.step()
+
+        if verbose:
+            print(f"Epoch {i+1}: train loss = {loss_train.item():.4f}, val loss = {loss_val.item():.4f}")
+
+        if early_stopper(val_loss_history[-1]):
+            print(f"Early stopping at epoch {i+1}")
             break
-        
-        rmse_temp, result_temp = rmse, result #store lst rmse
-        print("Epoch: %d, loss: %1.5f, rmse: %1.5f" % (epoch, loss , rmse))
+    return train_loss_history, val_loss_history, epoch
+# def train(model, battery):
+#     model.to(device) # set model to GPU
+#      # number of samples
+#      # grouped data per sample
 
-    return rmse, result
+#     norm_data = load_data_normalise(battery)
+    
+#     X_train, y_train, X_test, y_test, X_cv, y_cv = load_gpu_data(norm_data, test_size=test_size, cv_size=cv_size)
+#     train_dataset = TensorDataset(X_train, y_train)
+#     print(y_train.shape)
+#     train_loader = DataLoader(train_dataset, batch_size=10, shuffle=True)
+#     val_dataset = TensorDataset(X_cv, y_cv)
+#     val_loader = DataLoader(val_dataset, batch_size=10)
+#     test_dataset = TensorDataset(X_test, y_test)
+#     test_loader = DataLoader(test_dataset, batch_size=10)
+#     # X = norm_data.drop("TTD", axis = 1)
+#     # y = norm_data["TTD"]
+#     # X_train, y_train, X_test, y_test, X_cv, y_cv  = train_test_validation_split(X, y, test_size, cv_size)
+#     num_train = len(X_train)
+#     rmse_temp = 1000
+#     epoch_loss = 0
+#     for epoch in range(n_epoch):
+#         # print(X_train[0]) this highlighets the issue that the data doesn't change so need to fix data loaders
+#         model.train() # set model to training mode
+#         optimizer.zero_grad() # calc and set grad = 0
+#         outputs = model(X_train) # forward pass
+#         print(f"size of output {outputs.shape}, size of y_train {y_train.shape}")
+#         loss = criterion(outputs, y_train) # calc loss for current pass
+#         loss = torch.unsqueeze(loss, 0) # add dimension to loss
+#         epoch_loss += loss.item() # add loss to epoch loss
+#         loss.backward() # update model parameters
+#         optimizer.step() # update loss func   
+        
+#         model.eval() # evaluate mode model (ie no drop out)
+#         result, rmse = testing_func(X_test, y_test)  #run test through model
+
+#         if rmse_temp < rmse and rmse_temp <0.5:
+#             result, rmse = result_temp, rmse_temp
+#             print("Early stopping ")
+#             break
+        
+#         rmse_temp, result_temp = rmse, result #store lst rmse
+#         print("Epoch: %d, loss: %1.5f, rmse: %1.5f" % (epoch, loss , rmse))
+
+#     return rmse, result
    
 if __name__ == '__main__': 
 	# import data
@@ -147,7 +178,11 @@ if __name__ == '__main__':
     criterion = torch.nn.MSELoss() 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 
+    #data initialization
+    X_train, y_train, X_val, y_val, X_test, y_test = load_gpu_data(data, test_size=test_size, cv_size=cv_size)  
+    #where is X_train
+    print(f"x_train is on {X_train.device}, y_train is on {y_train.device}")
     # training and evaltuation
-    train(model, battery)
+    train(model, X_train, y_train, X_val, y_val, n_epoch, criterion, optimizer, es_patience = 1e6, es_delta = 1e-4, verbose = False)
 
     print(model)

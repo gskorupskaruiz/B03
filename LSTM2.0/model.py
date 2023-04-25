@@ -28,8 +28,10 @@ class LSTM1(nn.Module):
         """
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        h_0 = Variable(torch.zeros((self.num_layers, x.size(0), self.hidden_size))) # hidden state
-        c_0 = Variable(torch.zeros((self.num_layers, x.size(0), self.hidden_size))) # internal state
+        # h_0 = Variable(torch.zeros((self.num_layers, x.size(0), self.hidden_size))) # hidden state
+        # c_0 = Variable(torch.zeros((self.num_layers, x.size(0), self.hidden_size))) # internal state
+        h_0 = torch.zeros(self.num_layers, self.hidden_size, dtype=torch.float64).to(device)
+        c_0 = torch.zeros(self.num_layers, self.hidden_size, dtype=torch.float64).to(device)
         out, (hn, cn) = self.lstm(x, (h_0 , c_0))  # lstm with input, hidden, and internal state
 
 
