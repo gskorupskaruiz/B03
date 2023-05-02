@@ -91,9 +91,11 @@ for k=1:1:ik
     
     B   = [-(eta * DeltaT/Qn_rated); b1; b2];
     X   = (A * X) + (B * U);
+    
     P_x = (A * P_x * A') + Q_x;
-
+    
     KalmanGain_x = (P_x) * (C_x') * (inv((C_x * P_x * C_x') + (R_x)));
+    
     X            = X + (KalmanGain_x * Error_x);
     P_x          = (eye(n_x,n_x) - (KalmanGain_x * C_x)) * P_x;
 
