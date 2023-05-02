@@ -81,8 +81,8 @@ class EarlyStopper:
             else:
                 return False          
 
-def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, es_patience, es_delta, verbose = False):
-    epoch = []
+def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, es_patience, es_delta, verbose = True):
+    epoch = [0]
     model.to(device) # set model to GPU
     #intiate early stopper
     early_stopper = EarlyStopper(patience=es_patience, min_delta=es_delta)
@@ -111,8 +111,8 @@ def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, es_pati
         loss_train.backward()
         optimizer.step()
 
-        if verbose:
-            print(f"Epoch {i+1}: train loss = {loss_train.item():.4f}, val loss = {loss_val.item():.4f}")
+        # if verbose:
+        print(f"Epoch {i+1}: train loss = {loss_train.item():.4f}, val loss = {loss_val.item():.4f}")
 
         # if early_stopper.early_stop(loss_val.item()):
         #     #print(f"Early stopping at epoch {i+1}")
