@@ -40,12 +40,12 @@ def train_test_validation_split(X, y, test_size, cv_size):
             train, test and cross-validation sets
     """
     X_train, X_test_cv, y_train, y_test_cv = train_test_split(
-        X, y, test_size=test_size+cv_size, shuffle=True, random_state=0)
+        X, y, test_size=test_size+cv_size, shuffle=False, random_state=0)
 
     test_size = test_size/(test_size+cv_size)
 
     X_cv, X_test, y_cv, y_test = train_test_split(
-        X_test_cv, y_test_cv, test_size=test_size, shuffle=True, random_state=0)
+        X_test_cv, y_test_cv, test_size=test_size, shuffle=False, random_state=0)
 
     # return split data
     return [X_train, y_train, X_test, y_test, X_cv, y_cv]

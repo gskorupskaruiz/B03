@@ -82,7 +82,7 @@ class EarlyStopper:
                 return False          
 
 def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, es_patience, es_delta, verbose = True):
-    epoch = [0]
+    epoch = []
     model.to(device) # set model to GPU
     #intiate early stopper
     early_stopper = EarlyStopper(patience=es_patience, min_delta=es_delta)
