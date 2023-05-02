@@ -4,34 +4,28 @@ from model import *
 import numpy as np
 from data_processing import load_gpu_data
 from torch.utils.data import DataLoader, TensorDataset
-
+# import plot
+import matplotlib.pyplot as plt
 def load_data_normalise(battery):
-
-    data = pd.read_csv("data/" + battery + "_TTD.csv")
-    print(f"data shape {data.shape}")
+    data = []
+    # for all battery files combine them into one dataframe
+    for i in battery:
+        data.append(pd.read_csv("data/" + i + "_TTD.csv"))
+    data = pd.concat(data)
+    # print(data)
+    # normalize the data
     normalized_data = (data-data.mean(axis=0))/data.std(axis=0)
+
+
+    # for i in battery:
+    #     data += pd.read_csv("data/" + i + "_TTD.csv").to_numpy().tolist()
+    # print(f"data size {len(data)}")
+    # data = pd.DataFrame(data)
+    # normalized_data = (data-data.mean(axis=0))/data.std(axis=0)
     return normalized_data
-    
 
-print(load_data_normalise("B0005"))
 
-def train_test_validation_split(X, y, test_size, cv_size):
-    """
-    TODO:
-    Part 0, Step 3: 
-        - Use the sklearn {train_test_split} function to split the dataset (and the labels) into
-            train, test and cross-validation sets
-    """
-    X_train, X_test_cv, y_train, y_test_cv = train_test_split(
-        X, y, test_size=test_size+cv_size, shuffle=True, random_state=0)
 
-    test_size = test_size/(test_size+cv_size)
-
-    X_cv, X_test, y_cv, y_test = train_test_split(
-        X_test_cv, y_test_cv, test_size=test_size, shuffle=True, random_state=0)
-
-    # return split data
-    return [X_train, y_train, X_test, y_test, X_cv, y_cv]
 
 def testing_func(X_test, y_test):
     rmse_test, result_test = 0, list()
@@ -99,7 +93,7 @@ def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, es_pati
         target_train = model(X_train).unsqueeze(2) # i changed this 
         #target_train.reshape(4000, 10, 1)
         target_val = model(X_val).unsqueeze(2) # i changed this - added the unsqueeze thing 
-        print(f'size of target_train {target_train.shape} and size of y_train {y_train.shape}')
+        # print(f'size of target_train {target_train.shape} and size of y_train {y_train.shape}')
         # print(f"x_train {X_train.shape} and y_train {y_train.shape}")
         loss_train = lf(target_train, y_train)
         loss_val = lf(target_val, y_val)
@@ -118,6 +112,7 @@ def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, es_pati
         #     #print(f"Early stopping at epoch {i+1}")
         #     break
     return train_loss_history, val_loss_history, epoch
+
 # def train(model, battery):
 #     model.to(device) # set model to GPU
 #      # number of samples
@@ -163,10 +158,17 @@ def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, es_pati
 #         print("Epoch: %d, loss: %1.5f, rmse: %1.5f" % (epoch, loss , rmse))
 
 #     return rmse, result
-   
+def plot_loss(train_loss, val_loss, epoch):
+    plt.plot(epoch, train_loss, label='train loss')
+    plt.plot(epoch, val_loss, label='val loss')
+    plt.xlabel('epoch')
+    plt.ylabel('loss')
+    plt.legend()
+    plt.show()
+
 if __name__ == '__main__': 
 	# import data
-    battery = 'B0005'
+    battery = ['B0005', 'B0006', 'B0007', 'B0018']
     data = load_data_normalise(battery)
     input_size = data.shape[1] -1 #len(data.columns) - 1
     n_hidden = 50 #input_size
