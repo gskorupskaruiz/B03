@@ -2,6 +2,7 @@
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
+import torch.nn.functional as F
 
 # Alexis stuff
 # class LSTM1(nn.Module):
@@ -60,7 +61,7 @@ from torch.autograd import Variable
 class LSTM1(nn.Module):
     """LSTM architecture"""
 
-    def __init__(self, input_size, hidden_size, num_layers, seq_length):
+    def __init__(self, input_size, hidden_size, num_layers, seq_length, k, p):
         super(LSTM1, self).__init__()
         # self.input_size = input_size  # input size
         # self.hidden_size = hidden_size  # hidden state
@@ -85,11 +86,10 @@ class LSTM1(nn.Module):
         self.num_layers = num_layers  # number of layers
         self.seq_length = seq_length  # sequence length
 
-        self.conv1 = nn.Conv1d(self.seq_length, hidden_size, kernel_size=10, padding='same', bias=False)
+        self.conv1 = nn.Conv1d(self.seq_length, hidden_size, kernel_size=k, padding=p, stride=2, bias=False)
         self.act1 = nn.ReLU(inplace=True)
-        self.maxpool1 = nn.MaxPool1d(kernel_size=20, stride=2)
-        
-        self.lstm = nn.LSTM(input_size=7, hidden_size=hidden_size, num_layers=num_layers, batch_first=True,
+
+        self.lstm = nn.LSTM(input_size=4, hidden_size=hidden_size, num_layers=num_layers, batch_first=True,
                             dropout=0.1)
         self.fc_1 = nn.Linear(hidden_size, 20)  # fully connected 1
         self.fc_2 = nn.Linear(20, 10)  # fully connected 2
@@ -107,9 +107,8 @@ class LSTM1(nn.Module):
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         out = self.conv1(x)
-        out = self.act1(out)
-        #out = self.maxpool1(out)
-
+        out = self.relu(out)
+   
         h_0 = torch.randn(self.num_layers, out.size(0), self.hidden_size).to(device).double()
         c_0 = torch.randn(self.num_layers, out.size(0), self.hidden_size).to(device).double()
 

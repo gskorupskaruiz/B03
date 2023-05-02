@@ -171,13 +171,15 @@ if __name__ == '__main__':
     battery = ['B0005', 'B0006', 'B0007', 'B0018']
     data = load_data_normalise(battery)
     input_size = data.shape[1] -1 #len(data.columns) - 1
-    n_hidden = 20 #input_size
+    n_hidden = 40 #input_size
     n_layer = 2
     n_epoch = 200
     lr = 0.02
     test_size = 0.1
     cv_size = 0.1
-    seq = 20
+    seq = 10
+    kernel_size = 5
+    padding = 2
     # gpu?
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -188,8 +190,7 @@ if __name__ == '__main__':
     print(f"x_train is on {X_train.device}, y_train is on {y_train.device}")
 
     # LsTM Model initialization
-    model = LSTM1(input_size, n_hidden, n_layer, seq).double() # ahh i changed the seq len thing too 
-    # model = CNNLSTM(input_size, n_hidden, seq).double()
+    model = LSTM1(input_size, n_hidden, n_layer, seq, kernel_size, padding).double() # ahh i changed the seq len thing too 
     criterion = torch.nn.MSELoss() 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 
@@ -197,6 +198,10 @@ if __name__ == '__main__':
     # training and evaltuation
     train_hist, val_hist, epoch = train(model, X_train, y_train, X_val, y_val, n_epoch, criterion, optimizer, es_patience = 1e-16, es_delta = 1e-12, verbose = True)
     predictions = model(X_test).to('cpu').detach().numpy()
+    plt.plot(predictions)
+    plt.plot(y_test.squeeze(2).to('cpu').detach().numpy())
+    plt.show()
+
     loss = ((predictions - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
     print(loss)
     
