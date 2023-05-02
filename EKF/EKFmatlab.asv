@@ -27,10 +27,8 @@ LiPoly.RecordingTime_Hours      = LiPoly.RecordingTime/3600;
 % LiPoly.RecordingTime_Hours_alt     = LiPoly.RecordingTime_alt/3600;
 
 [SOC_Estimated, Vt_Estimated, Vt_Error] = EKFalgorithm(LiPoly.Measured_Current_R, LiPoly.Measured_Voltage, LiPoly.Measured_Temperature);
-[SOC_Estimated_1, Vt_Estimated_1, Vt_Error_1] = EKFalgorithm(-2, 1.89, 24+274);
-disp(SOC_Estimated_1)
-disp(Vt_Estimated_1)
-disp('a')
+[SOC_Estimated_1, Vt_Estimated_1, Vt_Error_1] = EKFalgorithm(, LiPoly.Measured_Voltage, LiPoly.Measured_Temperature);
+
 % [SOC_Estimated_alt, Vt_Estimated_alt, Vt_Error_alt] = EKFalgorithm(LiPoly.Measured_Current_R_alt, LiPoly.Measured_Voltage_alt, LiPoly.Measured_Temperature_alt);
 
 % Terminal Voltage Measured vs. Estimated
