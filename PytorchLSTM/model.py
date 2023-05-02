@@ -85,14 +85,14 @@ class LSTM1(nn.Module):
         self.num_layers = num_layers  # number of layers
         self.seq_length = seq_length  # sequence length
 
-        self.conv1 = nn.Conv1d(self.seq_length, hidden_size, kernel_size=7, padding='same', bias=False)
+        self.conv1 = nn.Conv1d(self.seq_length, hidden_size, kernel_size=2, padding='same', bias=False)
         self.act1 = nn.ReLU(inplace=True)
-        self.maxpool1 = nn.MaxPool1d(kernel_size=2, stride=2)
+        #self.maxpool1 = nn.MaxPool1d(kernel_size=2, stride=2)
         
-        self.lstm = nn.LSTM(input_size=hidden_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=True,
+        self.lstm = nn.LSTM(input_size=7, hidden_size=hidden_size, num_layers=num_layers, batch_first=True,
                             dropout=0.1)
-        self.fc_1 = nn.Linear(hidden_size, 2000)  # fully connected 1
-        self.fc_2 = nn.Linear(2000, 10)  # fully connected 2
+        self.fc_1 = nn.Linear(hidden_size, 20)  # fully connected 1
+        self.fc_2 = nn.Linear(20, 10)  # fully connected 2
         self.fc = nn.Linear(10, self.seq_length)  # fully connected last layer
         
         self.dropout = nn.Dropout(0.1)
@@ -108,12 +108,12 @@ class LSTM1(nn.Module):
 
         out = self.conv1(x)
         out = self.act1(out)
-        out = self.maxpool1(out)
+        #out = self.maxpool1(out)
 
         h_0 = torch.randn(self.num_layers, out.size(0), self.hidden_size).to(device).double()
         c_0 = torch.randn(self.num_layers, out.size(0), self.hidden_size).to(device).double()
 
-        output, (hn, cn) = self.lstm(2000, (h_0, c_0))  # lstm with input, hidden, and internal state
+        output, (hn, cn) = self.lstm(out, (h_0, c_0))  # lstm with input, hidden, and internal state
 
         numpy_array = hn.to('cpu').detach().numpy()
 
@@ -129,45 +129,45 @@ class LSTM1(nn.Module):
         return out
 
 
-# import torch
-# import torch.nn as nn
+import torch
+import torch.nn as nn
 
-# class CNNLSTM(nn.Module):
-#     def __init__(self, input_shape, hidden_size, num_classes):
-#         super(CNNLSTM, self).__init__()
+class CNNLSTM(nn.Module):
+    def __init__(self, input_shape, hidden_size, num_classes):
+        super(CNNLSTM, self).__init__()
         
-#         # Define CNN layers
-#         self.conv1 = nn.Conv2d(in_channels=input_shape[0], out_channels=32, kernel_size=(3, 3))
-#         self.relu1 = nn.ReLU()
-#         self.maxpool1 = nn.MaxPool2d(kernel_size=(2, 2))
-#         self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3))
-#         self.relu2 = nn.ReLU()
-#         self.maxpool2 = nn.MaxPool2d(kernel_size=(2, 2))
-#         self.flatten = nn.Flatten()
+        # Define CNN layers
+        self.conv1 = nn.Conv2d(in_channels=input_shape[0], out_channels=32, kernel_size=(3, 3))
+        self.relu1 = nn.ReLU()
+        self.maxpool1 = nn.MaxPool2d(kernel_size=(2, 2))
+        self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3))
+        self.relu2 = nn.ReLU()
+        self.maxpool2 = nn.MaxPool2d(kernel_size=(2, 2))
+        self.flatten = nn.Flatten()
         
-#         # Define LSTM layer
-#         self.lstm = nn.LSTM(input_size=64*int(input_shape[1]/4)*int(input_shape[2]/4), hidden_size=hidden_size, num_layers=1, batch_first=True)
+        # Define LSTM layer
+        self.lstm = nn.LSTM(input_size=64*int(input_shape[1]/4)*int(input_shape[2]/4), hidden_size=hidden_size, num_layers=1, batch_first=True)
         
-#         # Define output layer
-#         self.fc = nn.Linear(hidden_size, num_classes)
+        # Define output layer
+        self.fc = nn.Linear(hidden_size, num_classes)
     
-#     def forward(self, x):
-#         # Apply CNN layers
-#         x = self.conv1(x)
-#         x = self.relu1(x)
-#         x = self.maxpool1(x)
-#         x = self.conv2(x)
-#         x = self.relu2(x)
-#         x = self.maxpool2(x)
-#         x = self.flatten(x)
+    def forward(self, x):
+        # Apply CNN layers
+        x = self.conv1(x)
+        x = self.relu1(x)
+        x = self.maxpool1(x)
+        x = self.conv2(x)
+        x = self.relu2(x)
+        x = self.maxpool2(x)
+        x = self.flatten(x)
         
-#         # Reshape data for LSTM input
-#         x = x.reshape(x.size(0), 1, -1)
+        # Reshape data for LSTM input
+        x = x.reshape(x.size(0), 1, -1)
         
-#         # Apply LSTM layer
-#         lstm_out, _ = self.lstm(x)
+        # Apply LSTM layer
+        lstm_out, _ = self.lstm(x)
         
-#         # Apply output layer
-#         out = self.fc(lstm_out[:, -1, :])
+        # Apply output layer
+        out = self.fc(lstm_out[:, -1, :])
         
-#         return out
+        return out

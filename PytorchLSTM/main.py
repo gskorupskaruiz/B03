@@ -171,7 +171,7 @@ if __name__ == '__main__':
     battery = ['B0005', 'B0006', 'B0007', 'B0018']
     data = load_data_normalise(battery)
     input_size = data.shape[1] -1 #len(data.columns) - 1
-    n_hidden = 2000 #input_size
+    n_hidden = 20 #input_size
     n_layer = 2
     n_epoch = 200
     lr = 0.02
@@ -189,6 +189,7 @@ if __name__ == '__main__':
 
     # LsTM Model initialization
     model = LSTM1(input_size, n_hidden, n_layer, seq).double() # ahh i changed the seq len thing too 
+    # model = CNNLSTM(input_size, n_hidden, seq).double()
     criterion = torch.nn.MSELoss() 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 
