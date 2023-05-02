@@ -127,3 +127,47 @@ class LSTM1(nn.Module):
         out = self.dropout(out)
         out = self.fc(out)
         return out
+
+
+# import torch
+# import torch.nn as nn
+
+# class CNNLSTM(nn.Module):
+#     def __init__(self, input_shape, hidden_size, num_classes):
+#         super(CNNLSTM, self).__init__()
+        
+#         # Define CNN layers
+#         self.conv1 = nn.Conv2d(in_channels=input_shape[0], out_channels=32, kernel_size=(3, 3))
+#         self.relu1 = nn.ReLU()
+#         self.maxpool1 = nn.MaxPool2d(kernel_size=(2, 2))
+#         self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3))
+#         self.relu2 = nn.ReLU()
+#         self.maxpool2 = nn.MaxPool2d(kernel_size=(2, 2))
+#         self.flatten = nn.Flatten()
+        
+#         # Define LSTM layer
+#         self.lstm = nn.LSTM(input_size=64*int(input_shape[1]/4)*int(input_shape[2]/4), hidden_size=hidden_size, num_layers=1, batch_first=True)
+        
+#         # Define output layer
+#         self.fc = nn.Linear(hidden_size, num_classes)
+    
+#     def forward(self, x):
+#         # Apply CNN layers
+#         x = self.conv1(x)
+#         x = self.relu1(x)
+#         x = self.maxpool1(x)
+#         x = self.conv2(x)
+#         x = self.relu2(x)
+#         x = self.maxpool2(x)
+#         x = self.flatten(x)
+        
+#         # Reshape data for LSTM input
+#         x = x.reshape(x.size(0), 1, -1)
+        
+#         # Apply LSTM layer
+#         lstm_out, _ = self.lstm(x)
+        
+#         # Apply output layer
+#         out = self.fc(lstm_out[:, -1, :])
+        
+#         return out
