@@ -91,6 +91,7 @@ def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, es_pati
 
     for i in range(n_epoch):
         target_train = model(X_train).unsqueeze(2) # i changed this 
+        #target_train.reshape(4000, 10, 1)
         target_val = model(X_val).unsqueeze(2) # i changed this - added the unsqueeze thing 
         # print(f'size of target_train {target_train.shape} and size of y_train {y_train.shape}')
         # print(f"x_train {X_train.shape} and y_train {y_train.shape}")
@@ -108,7 +109,7 @@ def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, es_pati
         print(f"Epoch {i+1}: train loss = {loss_train.item():.4f}, val loss = {loss_val.item():.4f}")
 
         # if early_stopper.early_stop(loss_val.item()):
-        #     print(f"Early stopping at epoch {i+1}")
+        #     #print(f"Early stopping at epoch {i+1}")
         #     break
     return train_loss_history, val_loss_history, epoch
 
@@ -170,31 +171,38 @@ if __name__ == '__main__':
     battery = ['B0005', 'B0006', 'B0007', 'B0018']
     data = load_data_normalise(battery)
     input_size = data.shape[1] -1 #len(data.columns) - 1
-    n_hidden = input_size
-    n_layer = 25
-    n_epoch = 100
-    lr = 0.001
-    test_size = 0.2
-    cv_size = 0.2
+    n_hidden = 50 #input_size
+    n_layer = 2
+    n_epoch = 200
+    lr = 0.02
+    test_size = 0.1
+    cv_size = 0.1
+    seq = 20
     # gpu?
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     #data initialization
-    X_train, y_train, X_val, y_val, X_test, y_test = load_gpu_data(data, test_size=test_size, cv_size=cv_size)  
+    X_train, y_train, X_val, y_val, X_test, y_test = load_gpu_data(data, test_size=test_size, cv_size=cv_size, seq_length=seq)  
     print(X_train.dtype)
     #where is X_train
     print(f"x_train is on {X_train.device}, y_train is on {y_train.device}")
 
     # LsTM Model initialization
-    model = LSTM1(input_size, n_hidden, n_layer, seq_length=250).double() # ahh i changed the seq len thing too 
+    model = LSTM1(input_size, n_hidden, n_layer, seq).double() # ahh i changed the seq len thing too 
     criterion = torch.nn.MSELoss() 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 
     
     # training and evaltuation
-    train_loss_history, val_loss_history, epoch= train(model, X_train, y_train, X_val, y_val, n_epoch, criterion, optimizer, es_patience = 1e-2, es_delta = 1e-3, verbose = True)
-    del epoch[-1]
-    loss_test = criterion(model(X_test).unsqueeze(2), y_test)
-    print(f"loss on test set is {loss_test}")
-    plot_loss(train_loss_history, val_loss_history, epoch)
-    # print(model)
+    train_hist, val_hist, epoch = train(model, X_train, y_train, X_val, y_val, n_epoch, criterion, optimizer, es_patience = 1e-16, es_delta = 1e-12, verbose = True)
+    predictions = model(X_test).to('cpu').detach().numpy()
+    loss = ((predictions - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
+    print(loss)
+    
+    import matplotlib.pyplot as plt
+
+    plt.plot(epoch, train_hist)
+    plt.plot(epoch, val_hist)
+    plt.show()
+    
+    print(model)
