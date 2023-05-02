@@ -62,21 +62,39 @@ class LSTM1(nn.Module):
 
     def __init__(self, input_size, hidden_size, num_layers, seq_length):
         super(LSTM1, self).__init__()
+        # self.input_size = input_size  # input size
+        # self.hidden_size = hidden_size  # hidden state
+        # self.num_layers = num_layers  # number of layers
+        # self.seq_length = seq_length  # sequence length
+
+        # self.conv1 = nn.Conv1d(input_size, hidden_size, kernel_size=20, padding ='same') # bias = False
+        # self.act1 = nn.ReLU(inplace= True)
+        # self.maxpool1 = nn.MaxPool2d(kernel_size=2, stride=2)
+        
+        # self.lstm = nn.LSTM(input_size=20, hidden_size=hidden_size, num_layers=num_layers, batch_first=True,
+        #                     dropout=0.1)
+        # self.fc_1 = nn.Linear(hidden_size, 2000)  # fully connected 1
+        # self.fc_2 = nn.Linear(2000, 10)  # fully connected 2
+        # self.fc = nn.Linear(10, self.seq_length)  # fully connected last layer
+
+        # self.dropout = nn.Dropout(0.1)
+        # self.relu = nn.ReLU()
+
         self.input_size = input_size  # input size
         self.hidden_size = hidden_size  # hidden state
         self.num_layers = num_layers  # number of layers
         self.seq_length = seq_length  # sequence length
 
-        self.conv1 = nn.Conv1d(input_size, hidden_size, kernel_size=20, padding ='same') # bias = False
-        self.act1 = nn.ReLU(inplace= True)
-        self.maxpool1 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.conv1 = nn.Conv1d(self.seq_length, hidden_size, kernel_size=7, padding='same', bias=False)
+        self.act1 = nn.ReLU(inplace=True)
+        self.maxpool1 = nn.MaxPool1d(kernel_size=2, stride=2)
         
-        self.lstm = nn.LSTM(input_size=20, hidden_size=hidden_size, num_layers=num_layers, batch_first=True,
+        self.lstm = nn.LSTM(input_size=hidden_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=True,
                             dropout=0.1)
         self.fc_1 = nn.Linear(hidden_size, 2000)  # fully connected 1
         self.fc_2 = nn.Linear(2000, 10)  # fully connected 2
         self.fc = nn.Linear(10, self.seq_length)  # fully connected last layer
-
+        
         self.dropout = nn.Dropout(0.1)
         self.relu = nn.ReLU()
     
@@ -95,7 +113,7 @@ class LSTM1(nn.Module):
         h_0 = torch.randn(self.num_layers, out.size(0), self.hidden_size).to(device).double()
         c_0 = torch.randn(self.num_layers, out.size(0), self.hidden_size).to(device).double()
 
-        output, (hn, cn) = self.lstm(x, (h_0, c_0))  # lstm with input, hidden, and internal state
+        output, (hn, cn) = self.lstm(2000, (h_0, c_0))  # lstm with input, hidden, and internal state
 
         numpy_array = hn.to('cpu').detach().numpy()
 
