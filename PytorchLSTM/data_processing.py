@@ -51,9 +51,9 @@ def train_test_validation_split(X, y, test_size, cv_size):
     return [X_train, y_train, X_test, y_test, X_cv, y_cv]
 
 
-def load_gpu_data(data, test_size, cv_size):
-	y = data["TTD"]
-	X = data.drop(["TTD"], axis=1)
+def load_gpu_data(data, test_size, cv_size, seq_length):
+	y = data["TTD"][:50000]
+	X = data[:50000].drop(["TTD"], axis=1)
 	X_train, y_train, X_test, y_test, X_cv, y_cv = train_test_validation_split(X, y, test_size, cv_size)
 
 
@@ -64,19 +64,20 @@ def load_gpu_data(data, test_size, cv_size):
 	# X_cv = torch.tensor(X_cv.values)
 	# y_cv = torch.tensor(y_cv.values)
 
-
+	print(X_train.shape, X_test.shape, X_cv.shape)
 
 	lex = len(X_train)
-	#lex = lex/3
-	X_train = torch.tensor(X_train.values).reshape(int(lex), 1, len(data_fields)) # changed the reshaping of this 
-	y_train = torch.tensor(y_train.values).view(int(lex), 1, 1)
-
-	X_test = torch.tensor(X_test.values).reshape(len(X_test), 1, len(data_fields))
-	y_test = torch.tensor(y_test.values).reshape(len(X_test), 1, 1)
+	lex = lex/seq_length
+	X_train = torch.tensor(X_train.values).reshape(int(lex), seq_length, len(data_fields)) # changed the reshaping of this 
+	y_train = torch.tensor(y_train.values).view(int(lex), seq_length, 1)
+	lexxx = len(X_test)
+	lexxx = lexxx/seq_length
+	X_test = torch.tensor(X_test.values).reshape(int(lexxx), seq_length, len(data_fields))
+	y_test = torch.tensor(y_test.values).reshape(int(lexxx), seq_length, 1)
 	lexx = len(X_cv)
-	#lexx = lexx/3
-	X_cv = torch.tensor(X_cv.values).reshape(int(lexx), 1, len(data_fields))
-	y_cv = torch.tensor(y_cv.values).view(int(lexx), 1, 1)
+	lexx = lexx/seq_length
+	X_cv = torch.tensor(X_cv.values).reshape(int(lexx), seq_length, len(data_fields))
+	y_cv = torch.tensor(y_cv.values).view(int(lexx), seq_length, 1)
 	# go to gpu, "google gpu pytorch python"
 	print("GPU is availible: ", torch.cuda.is_available())
 	if torch.cuda.is_available() == True:

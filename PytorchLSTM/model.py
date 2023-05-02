@@ -60,7 +60,7 @@ from torch.autograd import Variable
 class LSTM1(nn.Module):
     """LSTM architecture"""
 
-    def __init__(self, input_size, hidden_size, num_layers, seq_length=1):
+    def __init__(self, input_size, hidden_size, num_layers, seq_length):
         super(LSTM1, self).__init__()
         self.input_size = input_size  # input size
         self.hidden_size = hidden_size  # hidden state
@@ -69,9 +69,9 @@ class LSTM1(nn.Module):
 
         self.lstm = nn.LSTM(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=True,
                             dropout=0.1)
-        self.fc_1 = nn.Linear(hidden_size, 16)  # fully connected 1
-        self.fc_2 = nn.Linear(16, 8)  # fully connected 2
-        self.fc = nn.Linear(8, 1)  # fully connected last layer
+        self.fc_1 = nn.Linear(hidden_size, 50)  # fully connected 1
+        self.fc_2 = nn.Linear(50, 10)  # fully connected 2
+        self.fc = nn.Linear(10, self.seq_length)  # fully connected last layer
 
         self.dropout = nn.Dropout(0.1)
         self.relu = nn.ReLU()

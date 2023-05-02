@@ -47,23 +47,15 @@ def nn_model(dim_input, dim_hidden, dim_output, act, n_hidden):
 def train(model, X_train, y_train, X_val, y_val, n_epochs, lf, optimizer, es_patience, es_delta, verbose=True,):
 
         epoch = [0]
+        
         # instantiate early stopper
         es = EarlyStopper(patience=es_patience, min_delta=es_delta)
-
-        X_train = X_train.float()
-        y_train = y_train.float()
-        X_val = X_val.float()
-        y_val = y_val.float()
 
         with torch.no_grad():
             train_loss_history = [lf(model(X_train), y_train).item()]
             val_loss_history = [lf(model(X_val), y_val).item()]
 
         for i in range(n_epochs):
-            X_train = X_train.float()
-            y_train = y_train.float()
-            X_val = X_val.float()
-            y_val = y_val.float()
             target_train = model(X_train)
             target_val = model(X_val)
 
@@ -82,10 +74,10 @@ def train(model, X_train, y_train, X_val, y_val, n_epochs, lf, optimizer, es_pat
             if verbose:
                 print("Epoch: %d, loss train: %1.5f, loss val: %1.5f" % (i, loss_train , loss_val))
 
-            if es.early_stop(loss_val):
-                break
-            else:
-                continue
+            # if es.early_stop(loss_val):
+            #     break
+            # else:
+            #     continue
 
         return train_loss_history, val_loss_history, epoch
 
@@ -124,6 +116,8 @@ def lr_opt(model, X_train, y_train, X_val, y_val, n_epochs, minv, maxv, time=Fal
 
 def kfold_validation(model, X, y, k, n_epochs, lf, optimizer, es_patience, es_delta, time=False,):
         
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    
         k = 10 
         kf = KFold(n_splits=k, random_state=None)
         loss_train_k_fold = []
@@ -136,6 +130,9 @@ def kfold_validation(model, X, y, k, n_epochs, lf, optimizer, es_patience, es_de
             X_train_k, y_train_k = torch.from_numpy(X[train_index]), torch.from_numpy(y[train_index])
             X_val_k, y_val_k = torch.Tensor(X[val_index]), torch.Tensor(y[val_index])
 
+            model.to(device)
+            X_train_k, y_train_k = X_train_k.to(device), y_train_k.to(device)
+            X_val_k, y_val_k = X_val_k.to(device), y_val_k.to(device)
             
             [train_loss_k, val_loss_k, epoch_k] = train(model, X_train_k, y_train_k, X_val_k, y_val_k, n_epochs, lf, optimizer, es_patience, es_delta, verbose=False)
             
@@ -177,20 +174,12 @@ class NN(torch.nn.Module):
         # instantiate early stopper
         es = EarlyStopper(patience=es_patience, min_delta=es_delta)
 
-        X_train = X_train.float()
-        y_train = y_train.float()
-        X_val = X_val.float()
-        y_val = y_val.float()
-
         with torch.no_grad():
             train_loss_history = [lf(self.model.forward(X_train), y_train).item()]
             val_loss_history = [lf(self.model.forward(X_val), y_val).item()]
 
         for i in range(n_epochs):
-            X_train = X_train.float()
-            y_train = y_train.float()
-            X_val = X_val.float()
-            y_val = y_val.float()
+
             target_train = self.model.forward(X_train)
             #print(target_train)
             target_val = self.model.forward(X_val)
@@ -210,9 +199,9 @@ class NN(torch.nn.Module):
             if verbose:
                 print("Epoch: %d, loss train: %1.5f, loss val: %1.5f" % (i, loss_train , loss_val))
 
-            if es.early_stop(loss_val):
-                break
-            else:
-                continue
+            # if es.early_stop(loss_val):
+            #     break
+            # else:
+            #     continue
 
         return train_loss_history, val_loss_history, epoch
