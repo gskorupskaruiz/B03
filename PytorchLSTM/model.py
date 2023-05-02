@@ -85,9 +85,9 @@ class LSTM1(nn.Module):
         self.num_layers = num_layers  # number of layers
         self.seq_length = seq_length  # sequence length
 
-        self.conv1 = nn.Conv1d(self.seq_length, hidden_size, kernel_size=2, padding='same', bias=False)
+        self.conv1 = nn.Conv1d(self.seq_length, hidden_size, kernel_size=10, padding='same', bias=False)
         self.act1 = nn.ReLU(inplace=True)
-        #self.maxpool1 = nn.MaxPool1d(kernel_size=2, stride=2)
+        self.maxpool1 = nn.MaxPool1d(kernel_size=20, stride=2)
         
         self.lstm = nn.LSTM(input_size=7, hidden_size=hidden_size, num_layers=num_layers, batch_first=True,
                             dropout=0.1)
