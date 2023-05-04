@@ -9,8 +9,8 @@ from scipy.linalg import svd
 
 K = 100
 def EKF_algorithm():
-    bm = pd.read_excel("battery_model.xlsx")  # Load the battery parameters
-    sococv = pd.read_excel("SOC_OCV_data.xlsx")  # Load the SOC-OCV curve
+    bm = pd.read_excel("Mark/battery_model.xlsx")  # Load the battery parameters
+    sococv = pd.read_excel("Mark/SOC_OCV_data.xlsx")  # Load the SOC-OCV curve
 
     SOC_Init = 1  # intial SOC
     X = np.array([1, 0, 0])  # state space x parameter intializations
@@ -34,7 +34,8 @@ def EKF_algorithm():
     F_C1 = interpolate.interp2d(bm['T'].to_numpy(), bm['SOC'].to_numpy(), bm['C1'].to_numpy(), kind='cubic')
     F_C2 = interpolate.interp2d(bm['T'].to_numpy(), bm['SOC'].to_numpy(), bm['C2'].to_numpy(), kind='cubic')
 
-    SOCOCV = np.polyfit(sococv['SOC'].to_numpy(), sococv['OCV'].to_numpy(), 6)  # calculate 11th order polynomial for the SOC-OCV curve
+    SOCOCV = np.polyfit(sococv['SOC'].to_numpy(), sococv['OCV'].to_numpy(), 6)  # calculate 11th order polynomial for the SOC-OCV curve4'
+    
     dSOCOCV = np.polyder(SOCOCV)  # derivative of SOC-OCV curve for matrix C
 
     n_x = np.shape(X)[0]
@@ -52,7 +53,7 @@ def EKF_algorithm():
     # ik              = len(Current)
     # Current         = Current-0.1;
 
-    df = pd.read_csv(r'C:\Users\markn\OneDrive\Documenten\project\B03\data\B0005_TTD.csv')
+    df = pd.read_csv(r'data/B0005_TTD.csv')
     Vt_Actual = df['Voltage_measured'].to_numpy()[:K]
     Measured_Current = df['Current_measured'].to_numpy()[:K]
     Temperature = df['Temperature_measured'].to_numpy()[:K]
@@ -130,7 +131,7 @@ def EKF_algorithm():
 
     return SOC_Estimated, Vt_Estimated, Vt_Error
 
-df = pd.read_csv(r'C:\Users\markn\OneDrive\Documenten\project\B03\data\B0005_TTD.csv')
+df = pd.read_csv(r'data/B0005_TTD.csv')
 RecordingTime = df['Time'].to_numpy()[:K]
 Measured_Voltage = df['Voltage_measured'].to_numpy()[:K]
 Measured_Current = df['Current_measured'].to_numpy()[:K]
