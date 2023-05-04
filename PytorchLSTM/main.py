@@ -75,11 +75,11 @@ class EarlyStopper:
             else:
                 return False          
 
-def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, es_patience, es_delta, verbose = True):
+def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, verbose = True):
     epoch = []
     model.to(device) # set model to GPU
     #intiate early stopper
-    early_stopper = EarlyStopper(patience=es_patience, min_delta=es_delta)
+    #early_stopper = EarlyStopper(patience=es_patience, min_delta=es_delta)
     # X_train = X_train.double()
     # y_train = y_train.double()
     # X_val = X_val.double()
@@ -166,6 +166,38 @@ def plot_loss(train_loss, val_loss, epoch):
     plt.legend()
     plt.show()
 
+def lr_opt(model, X_train, y_train, X_val, y_val, n_epochs,time=False):
+        from scipy import stats
+        
+        learning_rate = stats.loguniform.rvs(10e-8, 1e0, size=15)
+        
+        loss = []
+        value = []
+        for i in learning_rate:
+
+            for module in model():
+                if isinstance(module, torch.nn.Linear):
+                    torch.nn.init.xavier_uniform_(module.weight)
+
+            torch.nn.init.xavier_uniform(model.weight)
+            print(f"current lr is {i}")
+            lf = torch.nn.MSELoss()
+            optimizer = torch.optim.Adam(params = model.parameters(), lr=i)
+
+            train_loss_history, val_loss_history, epoch = train(model, X_train, y_train, X_val, y_val, n_epochs, lf, optimizer, verbose=True,)
+            
+            final_loss = train_loss_history[-1]
+            loss.append(final_loss)
+            value.append(i)
+        
+        #print(loss, type(loss))
+        loss_arr = np.array(loss)
+        idx = np.where(loss_arr == np.amin(loss_arr))
+        idxs = (idx[0])
+        lr_best = value[int(idxs)]
+        
+        return lr_best
+
 if __name__ == '__main__': 
 	# import data
     battery = ['B0005', 'B0006', 'B0007', 'B0018']
@@ -174,10 +206,10 @@ if __name__ == '__main__':
     n_hidden = 20 #input_size
     n_layer = 2
     n_epoch = 200
-    lr = 0.001
+    lr = 0.004
     test_size = 0.1
     cv_size = 0.1
-    seq = 50
+    seq = 20
     # gpu?
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -187,17 +219,18 @@ if __name__ == '__main__':
     #where is X_train
     print(f"x_train is on {X_train.device}, y_train is on {y_train.device}")
 
+
     # LsTM Model initialization
-    # modellstm= LSTM1(input_size, n_hidden, n_layer, seq).double() # ahh i changed the seq len thing too 
+    # modellstm = LSTM1(input_size, n_hidden, n_layer, seq).double() # ahh i changed the seq len thing too 
     model = CNNLSTM(input_size, seq, n_hidden, n_layer).double() 
-    
+
     criterion = torch.nn.MSELoss() 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 
-    
     # training and evaltuation
-    train_hist, val_hist, epoch = train(model, X_train, y_train, X_val, y_val, n_epoch, criterion, optimizer, es_patience = 1e-16, es_delta = 1e-12, verbose = True)
+    train_hist, val_hist, epoch = train(model, X_train, y_train, X_val, y_val, n_epoch, criterion, optimizer, verbose = True)
     predictions = model(X_test).to('cpu').detach().numpy()
+    
     plt.plot(predictions)
     plt.plot(y_test.squeeze(2).to('cpu').detach().numpy())
     plt.show()
@@ -206,7 +239,6 @@ if __name__ == '__main__':
     print(loss)
     
     import matplotlib.pyplot as plt
-
     plt.plot(epoch, train_hist)
     plt.plot(epoch, val_hist)
     plt.show()
