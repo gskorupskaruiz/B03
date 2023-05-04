@@ -171,15 +171,13 @@ if __name__ == '__main__':
     battery = ['B0005', 'B0006', 'B0007', 'B0018']
     data = load_data_normalise(battery)
     input_size = data.shape[1] -1 #len(data.columns) - 1
-    n_hidden = 40 #input_size
+    n_hidden = 20 #input_size
     n_layer = 2
     n_epoch = 200
-    lr = 0.02
+    lr = 0.001
     test_size = 0.1
     cv_size = 0.1
-    seq = 10
-    kernel_size = 5
-    padding = 2
+    seq = 50
     # gpu?
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -190,7 +188,9 @@ if __name__ == '__main__':
     print(f"x_train is on {X_train.device}, y_train is on {y_train.device}")
 
     # LsTM Model initialization
-    model = LSTM1(input_size, n_hidden, n_layer, seq, kernel_size, padding).double() # ahh i changed the seq len thing too 
+    # modellstm= LSTM1(input_size, n_hidden, n_layer, seq).double() # ahh i changed the seq len thing too 
+    model = CNNLSTM(input_size, seq, n_hidden, n_layer).double() 
+    
     criterion = torch.nn.MSELoss() 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 

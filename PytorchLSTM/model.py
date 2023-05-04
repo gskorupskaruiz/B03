@@ -61,7 +61,7 @@ import torch.nn.functional as F
 class LSTM1(nn.Module):
     """LSTM architecture"""
 
-    def __init__(self, input_size, hidden_size, num_layers, seq_length, k, p):
+    def __init__(self, input_size, hidden_size, num_layers, seq_length):
         super(LSTM1, self).__init__()
         # self.input_size = input_size  # input size
         # self.hidden_size = hidden_size  # hidden state
@@ -86,10 +86,10 @@ class LSTM1(nn.Module):
         self.num_layers = num_layers  # number of layers
         self.seq_length = seq_length  # sequence length
 
-        self.conv1 = nn.Conv1d(self.seq_length, hidden_size, kernel_size=k, padding=p, stride=2, bias=False)
-        self.act1 = nn.ReLU(inplace=True)
+        # self.conv1 = nn.Conv1d(self.seq_length, hidden_size, kernel_size=k, padding=p, stride=2, bias=False)
+        # self.act1 = nn.ReLU(inplace=True)
 
-        self.lstm = nn.LSTM(input_size=4, hidden_size=hidden_size, num_layers=num_layers, batch_first=True,
+        self.lstm = nn.LSTM(input_size=3, hidden_size=hidden_size, num_layers=num_layers, batch_first=True,
                             dropout=0.1)
         self.fc_1 = nn.Linear(hidden_size, 20)  # fully connected 1
         self.fc_2 = nn.Linear(20, 10)  # fully connected 2
@@ -106,13 +106,13 @@ class LSTM1(nn.Module):
         """
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        out = self.conv1(x)
-        out = self.relu(out)
+        # out = self.conv1(x)
+        # out = self.relu(out)
    
-        h_0 = torch.randn(self.num_layers, out.size(0), self.hidden_size).to(device).double()
-        c_0 = torch.randn(self.num_layers, out.size(0), self.hidden_size).to(device).double()
+        h_0 = torch.randn(self.num_layers, x.size(0), self.hidden_size).to(device).double()
+        c_0 = torch.randn(self.num_layers, x.size(0), self.hidden_size).to(device).double()
 
-        output, (hn, cn) = self.lstm(out, (h_0, c_0))  # lstm with input, hidden, and internal state
+        output, (hn, cn) = self.lstm(x, (h_0, c_0))  # lstm with input, hidden, and internal state
 
         numpy_array = hn.to('cpu').detach().numpy()
 
@@ -131,7 +131,7 @@ class LSTM1(nn.Module):
 import torch
 import torch.nn as nn
 
-class CNNLSTM(nn.Module):
+class CNNLSTM1(nn.Module):
     def __init__(self, input_shape, hidden_size, num_classes):
         super(CNNLSTM, self).__init__()
         
@@ -170,3 +170,36 @@ class CNNLSTM(nn.Module):
         out = self.fc(lstm_out[:, -1, :])
         
         return out
+    
+
+class CNNLSTM(nn.Module):
+    def __init__(self, input_size, output_size, hidden_size, num_layers):
+        super(CNNLSTM, self).__init__()
+
+        self.conv1 = nn.Conv1d(50, 64, kernel_size=2, stride=1)
+        self.conv2 = nn.Conv1d(64,32,kernel_size=1, stride = 1, padding=1)
+        self.batch1 =nn.BatchNorm1d(32)
+        self.conv3 = nn.Conv1d(32, 32, kernel_size=1, stride = 1, padding=1)
+        self.batch2 =nn.BatchNorm1d(32)
+        self.LSTM = nn.LSTM(input_size=10, hidden_size=hidden_size,
+                            num_layers=num_layers, batch_first=True)
+        self.fc1 = nn.Linear(32*hidden_size, output_size)
+        self.dropout = nn.Dropout(0.1)
+        self.relu = nn.ReLU
+        
+
+    def forward(self, x):
+
+        x = self.conv1(x)
+        #x = self.relu(x)
+        x = self.conv2(x)
+        #x = self.relu(x)
+        x = self.batch1(x)
+        x = self.conv3(x)
+        #x = self.relu(x)
+        x = self.batch2(x)
+        x, h = self.LSTM(x) 
+        x = torch.reshape(x,(x.shape[0],x.shape[1]*x.shape[2]))
+        x = self.dropout(x)
+        output = self.fc1(x)
+        return output
