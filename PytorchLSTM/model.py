@@ -176,13 +176,15 @@ class CNNLSTM(nn.Module):
     def __init__(self, input_size, output_size, hidden_size, num_layers):
         super(CNNLSTM, self).__init__()
 
-        self.conv1 = nn.Conv1d(50, 64, kernel_size=2, stride=1)
+        self.conv1 = nn.Conv1d(output_size, 64, kernel_size=2, stride=1)
         self.conv2 = nn.Conv1d(64,32,kernel_size=1, stride = 1, padding=1)
         self.batch1 =nn.BatchNorm1d(32)
         self.conv3 = nn.Conv1d(32, 32, kernel_size=1, stride = 1, padding=1)
         self.batch2 =nn.BatchNorm1d(32)
+        
         self.LSTM = nn.LSTM(input_size=10, hidden_size=hidden_size,
                             num_layers=num_layers, batch_first=True)
+        
         self.fc1 = nn.Linear(32*hidden_size, output_size)
         self.dropout = nn.Dropout(0.1)
         self.relu = nn.ReLU
@@ -198,8 +200,10 @@ class CNNLSTM(nn.Module):
         x = self.conv3(x)
         #x = self.relu(x)
         x = self.batch2(x)
+        
         x, h = self.LSTM(x) 
         x = torch.reshape(x,(x.shape[0],x.shape[1]*x.shape[2]))
+
         x = self.dropout(x)
         output = self.fc1(x)
         return output
