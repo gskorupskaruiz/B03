@@ -60,7 +60,7 @@ def particleIteration(particles):
         numberParticles = particles.shape[0]
         allLosses = [optimizeCNNLSTM(particleDimensions=particles[i])for i in range(numberParticles)]
 
-        return allLosses#NEED TO RETURN THIS PYSWARMS NEED THIS
+        return allLosses #NEED TO RETURN THIS PYSWARMS NEED THIS
 
     except:
         raise

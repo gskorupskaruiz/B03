@@ -207,3 +207,41 @@ class CNNLSTM(nn.Module):
         x = self.dropout(x)
         output = self.fc1(x)
         return output
+    
+class ParametricCNNLSTM():
+    def __init__(self, input_size output_size, hidden_size, num_layers, cnn_layers, cnn_kernel_size, cnn_stride, cnn_padding, cnn_output_size):
+        super(CNNLSTM, self).__init__()
+        for i in cnn_layers:
+            setattr(self, 'conv'+i, nn.Conv1d(in_channels = input_size , out_channels = cnn_output_size, kernel_size= cnn_kernel_size , stride = cnn_stride , padding= cnn_padding))
+
+
+        
+        self.batch1 =nn.BatchNorm1d(32)
+        self.conv3 = nn.Conv1d(32, 32, kernel_size=1, stride = 1, padding=1)
+        self.batch2 =nn.BatchNorm1d(32)
+        
+        self.LSTM = nn.LSTM(input_size=10, hidden_size=hidden_size,
+                            num_layers=num_layers, batch_first=True)
+        
+        self.fc1 = nn.Linear(32*hidden_size, output_size)
+        self.dropout = nn.Dropout(0.1)
+        self.relu = nn.ReLU
+        
+
+    def forward(self, x):
+
+        x = self.conv1(x)
+        #x = self.relu(x)
+        x = self.conv2(x)
+        #x = self.relu(x)
+        x = self.batch1(x)
+        x = self.conv3(x)
+        #x = self.relu(x)
+        x = self.batch2(x)
+        
+        x, h = self.LSTM(x) 
+        x = torch.reshape(x,(x.shape[0],x.shape[1]*x.shape[2]))
+
+        x = self.dropout(x)
+        output = self.fc1(x)
+        return output

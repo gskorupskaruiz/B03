@@ -1,9 +1,7 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
 from model import *
 import numpy as np
 from data_processing import load_gpu_data
-from torch.utils.data import DataLoader, TensorDataset
 # import plot
 import matplotlib.pyplot as plt
 def load_data_normalise(battery):
