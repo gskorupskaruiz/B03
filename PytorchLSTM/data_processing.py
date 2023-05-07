@@ -117,39 +117,51 @@ def load_gpu_data(data, test_size, cv_size, seq_length):
 	X = data[:50000].drop(["TTD"], axis=1)
 	X_train, y_train, X_test, y_test, X_cv, y_cv = train_test_validation_split(X, y, test_size, cv_size)
 
-	print(X_train.shape, X_test.shape, X_cv.shape)
-
-	lex = len(X_train)
-	lex = lex/seq_length
-	X_train = torch.tensor(X_train.values).reshape(int(lex), seq_length, len(data_fields)) # changed the reshaping of this 
-	y_train = torch.tensor(y_train.values).view(int(lex), seq_length, 1)
-
-	lexxx = len(X_test)
-	lexxx = lexxx/seq_length
-	X_test = torch.tensor(X_test.values).reshape(int(lexxx), seq_length, len(data_fields))
-	y_test = torch.tensor(y_test.values).reshape(int(lexxx), seq_length, 1)
-	
-	lexx = len(X_cv)
-	lexx = lexx/seq_length
-
-	X_cv = torch.tensor(X_cv.values).reshape(int(lexx), seq_length, len(data_fields))
-	y_cv = torch.tensor(y_cv.values).view(int(lexx), seq_length, 1)
-
-	# go to gpu, "google gpu pytorch python"
+# go to gpu, "google gpu pytorch python"
 	print("GPU is availible: ", torch.cuda.is_available())
 	if torch.cuda.is_available() == True:
 		print('Running on GPU')
 
-		X_train = X_train.to('cuda').double()
-		y_train = y_train.to('cuda').double()
-		X_test = X_test.to('cuda').double()
-		y_test = y_test.to('cuda').double()
-		X_cv = X_cv.to('cuda').double()
-		y_cv = y_cv.to('cuda').double()
+		# X_train = X_train.to('cuda')
+		# y_train = y_train.to('cuda')
+		# X_test = X_test.to('cuda')
+		# y_test = y_test.to('cuda')
+		# X_cv = X_cv.to('cuda')
+		# y_cv = y_cv.to('cuda')
+		
+		X_train = torch.tensor(X_train.values).to('cuda')
+		y_train = torch.tensor(y_train.values).to('cuda')
+		X_test = torch.tensor(X_test.values).to('cuda')
+		y_test = torch.tensor(y_test.values).to('cuda')
+		X_cv = torch.tensor(X_cv.values).to('cuda')
+		y_cv = torch.tensor(y_cv.values).to('cuda')
 		print("X_train and y_train are on GPU: ", X_train.is_cuda, y_train.is_cuda)
 		print("X_test and y_test are on GPU: ", X_test.is_cuda, y_test.is_cuda)
 		print("X_cv and y_cv are on GPU: ", X_cv.is_cuda, y_cv.is_cuda)
 		print(f"size of X_train: {X_train.size()} and y_train: {y_train.size()}")
+
+	# X_train = torch.tensor(X.values).reshape(1, len(X), len(data_fields))
+	# y_train = torch.tensor(y.values).view(len(y), 1)
+	# X_test = torch.tensor(X_test.values)
+	# y_test = torch.tensor(y_test.values)
+	# X_cv = torch.tensor(X_cv.values)
+	# y_cv = torch.tensor(y_cv.values)
+
+	print(X_train.shape, X_test.shape, X_cv.shape)
+
+	lex = len(X_train)
+	lex = lex/seq_length
+	X_train = X_train.reshape(int(lex), seq_length, len(data_fields)) # changed the reshaping of this 
+	y_train = y_train.view(int(lex), seq_length, 1) # gowri, any reason why this is .view and the rest ,reshape?
+	lexxx = len(X_test)
+	lexxx = lexxx/seq_length
+	X_test = X_test.reshape(int(lexxx), seq_length, len(data_fields))
+	y_test = y_test.reshape(int(lexxx), seq_length, 1)
+	lexx = len(X_cv)
+	lexx = lexx/seq_length
+	X_cv = X_cv.reshape(int(lexx), seq_length, len(data_fields))
+	y_cv = y_cv.view(int(lexx), seq_length, 1)
+	
 	
 	return X_train, y_train, X_test, y_test, X_cv, y_cv
 
