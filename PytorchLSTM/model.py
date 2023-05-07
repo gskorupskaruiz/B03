@@ -200,6 +200,8 @@ class CNNLSTMog(nn.Module):
         output = self.fc1(x)
         return output
     
+
+
 class ParametricCNNLSTM():
     def __init__(self, input_size output_size, hidden_size, num_layers, cnn_layers, cnn_kernel_size, cnn_stride, cnn_padding, cnn_output_size):
         super(CNNLSTM, self).__init__()
@@ -237,3 +239,4 @@ class ParametricCNNLSTM():
         x = self.dropout(x)
         output = self.fc1(x)
         return output
+    

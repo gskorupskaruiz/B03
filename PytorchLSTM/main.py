@@ -128,7 +128,7 @@ def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, 
         loss = 0
         for l, (x, y) in enumerate(train_dataloader):
             #print(y.shape, x.shape)
-            target_train = model(x)
+            target_train = model(x) #.unsqueeze(2) uncomment this for simple lstm
             #print(target_train.shape, y.shape, x.shape)
             loss_train = lf(target_train, y)
             loss += loss_train.item()
@@ -140,7 +140,7 @@ def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, 
 
         for k, (xv, yv) in enumerate(val_dataloader):
             
-            target_val = model(xv)
+            target_val = model(xv) #.unsqueeze(2) uncomment this for simple lstm 
             #print(target_val.shape, yv.shape, xv.shape)
             loss_val = lf(target_val, yv)
             loss_v += loss_val.item()
@@ -262,8 +262,7 @@ class SeqDataset(Dataset):
         if end_idx > len(self.x_data):
             x = self.x_data[start_idx:]
             y = self.y_data[start_idx:]
-
-            
+    
         if x.shape[0] == 0:
             raise StopIteration
         
@@ -274,7 +273,7 @@ if __name__ == '__main__':
     battery = ['B0005', 'B0006', 'B0007', 'B0018']
     data = load_data_normalise(battery)
     input_size = data.shape[1] - 1 #len(data.columns) - 1
-    n_hidden = 10 #input_size
+    n_hidden = 40 #input_size
     n_layer = 2
     n_epoch = 20
     lr = 0.005
@@ -313,7 +312,7 @@ if __name__ == '__main__':
     predictions = model(X_test).to('cpu').detach().numpy()
     print(predictions.shape)
     epoch = np.linspace(1, n_epoch+1, n_epoch)
-    plt.plot(predictions, label='pred', linewidth=2, color='red')
+    plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
     plt.plot(y_test.squeeze(2).to('cpu').detach().numpy()) 
     plt.legend()
     plt.show()
