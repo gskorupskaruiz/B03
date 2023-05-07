@@ -120,13 +120,12 @@ class CNNLSTM(nn.Module):
                             dropout=0.2)
         self.fc_1 = nn.Linear(hidden_size, 20)  # fully connected 1
 
-        self.conv1 = nn.Conv1d(20, 32, kernel_size=2, stride=1)
-        #self.conv2 = nn.Conv1d(64,32,kernel_size=1, stride = 1, padding=1)
+        self.conv1 = nn.Conv1d(20, 32, kernel_size=2, stride=1) # note: output_shape_conv1 = (input_channel_conv1 - kernel + 2*padding)/stride + 1   [so here (20-2)/1+1 = 19]
         self.batch1 =nn.BatchNorm1d(32)
-        self.conv3 = nn.Conv1d(32, 1, kernel_size=1, stride = 1, padding=1)
+        self.conv2 = nn.Conv1d(32, 1, kernel_size=1, stride = 1, padding=2) # note: output_shape_conv3 = output_shape_conv2 - kernel + 2*padding)/stride + 1  [so here (19-1+4)/1+1 = 23]
         self.batch2 =nn.BatchNorm1d(1)
 
-        self.fc_2 = nn.Linear(21, 10)  # fully connected 2
+        self.fc_2 = nn.Linear(23, 10)  # fully connected 2 - here the number of hidden_input_neurons = output_shape_conv3
         self.fc = nn.Linear(10, 1)  # fully connected last layer
         
         self.dropout = nn.Dropout(0.2)
@@ -151,7 +150,7 @@ class CNNLSTM(nn.Module):
 
         out = self.batch1(out)
         # print(f"after batchnorm1 {out.shape}")
-        out = self.conv3(out)
+        out = self.conv2(out)
         # print(f"after conv2 {out.shape}")
         out = self.batch2(out)
         # print(f"after batchnorm2 {out.shape}")
