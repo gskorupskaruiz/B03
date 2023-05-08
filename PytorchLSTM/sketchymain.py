@@ -77,7 +77,7 @@ class EarlyStopper:
 
 def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, es_patience, es_delta, verbose = True):
     epoch = []
-    model.to(device) # set model to GPU
+ #   model.to(device) # set model to GPU
     #intiate early stopper
     early_stopper = EarlyStopper(patience=es_patience, min_delta=es_delta)
     # X_train = X_train.double()
@@ -168,15 +168,19 @@ def plot_loss(train_loss, val_loss, epoch):
 
 
 
-def run_model(n_hidden, n_layer, n_epoch, lr, test_size, cv_size, seq):
+def run_model(hyperparams):
 	# import data
     battery = ['B0005', 'B0006', 'B0007', 'B0018']
     data = load_data_normalise(battery)
     input_size = data.shape[1] -1 #len(data.columns) - 1
-    n_hidden = 20 #input_size
-    n_layer = 2
-    n_epoch = 200
-    lr = 0.001
+    n_hidden, n_layer, n_epoch, lr = hyperparams
+    #test_size = test_size/100
+ #   cv_size = cv_size/100
+    lr = lr/100000
+    #n_hidden = 20 #input_size
+    # n_layer = 2
+    # n_epoch = 200
+    # # lr = 0.001
     test_size = 0.1
     cv_size = 0.1
     seq = 50
@@ -194,20 +198,21 @@ def run_model(n_hidden, n_layer, n_epoch, lr, test_size, cv_size, seq):
     model = CNNLSTM(input_size, seq, n_hidden, n_layer).double() 
     
     criterion = torch.nn.MSELoss() 
+    print(lr)
     optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 
     
     # training and evaltuation
     train_hist, val_hist, epoch = train(model, X_train, y_train, X_val, y_val, n_epoch, criterion, optimizer, es_patience = 1e-16, es_delta = 1e-12, verbose = True)
     predictions = model(X_test).to('cpu').detach().numpy()
-    plt.plot(predictions)
-    plt.plot(y_test.squeeze(2).to('cpu').detach().numpy())
-    plt.show()
+    # plt.plot(predictions)
+    # plt.plot(y_test.squeeze(2).to('cpu').detach().numpy())
+    # plt.show()
 
     loss = ((predictions - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
     print(loss)
     
-    import matplotlib.pyplot as plt
+    
 
     plt.plot(epoch, train_hist)
     plt.plot(epoch, val_hist)
