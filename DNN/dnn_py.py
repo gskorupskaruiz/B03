@@ -57,6 +57,7 @@ def train(model, X_train, y_train, X_val, y_val, n_epochs, lf, optimizer, es_pat
 
         for i in range(n_epochs):
             target_train = model(X_train)
+            print(target_train.shape, X_train.shape, y_train.shape)
             target_val = model(X_val)
 
             loss_train = lf(target_train, y_train)
@@ -181,7 +182,7 @@ class NN(torch.nn.Module):
         for i in range(n_epochs):
 
             target_train = self.model.forward(X_train)
-            #print(target_train)
+            print(target_train.shape, X_train.shape, y_train.shape)
             target_val = self.model.forward(X_val)
 
             loss_train = lf(target_train, y_train)

@@ -1,9 +1,11 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
 from model import *
 import numpy as np
-from data_processing import load_gpu_data
+from data_processing import load_gpu_data, load_gpu_data_with_batches
 from torch.utils.data import DataLoader, TensorDataset
+import torch
+from torch.utils.data import Dataset
+import math 
 # import plot
 import matplotlib.pyplot as plt
 def load_data_normalise(battery):
@@ -23,9 +25,6 @@ def load_data_normalise(battery):
     # data = pd.DataFrame(data)
     # normalized_data = (data-data.mean(axis=0))/data.std(axis=0)
     return normalized_data
-
-
-
 
 def testing_func(X_test, y_test):
     rmse_test, result_test = 0, list()
@@ -79,7 +78,7 @@ def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, verbose
     epoch = []
     model.to(device) # set model to GPU
     #intiate early stopper
-    #early_stopper = EarlyStopper(patience=es_patience, min_delta=es_delta)
+    early_stopper = EarlyStopper(patience=1e-16, min_delta=1e-6)
     # X_train = X_train.double()
     # y_train = y_train.double()
     # X_val = X_val.double()
@@ -91,7 +90,8 @@ def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, verbose
 
     for i in range(n_epoch):
         target_train = model(X_train).unsqueeze(2) # i changed this 
-        #target_train.reshape(4000, 10, 1)
+        print(target_train.shape, y_train.shape)
+
         target_val = model(X_val).unsqueeze(2) # i changed this - added the unsqueeze thing 
         # print(f'size of target_train {target_train.shape} and size of y_train {y_train.shape}')
         # print(f"x_train {X_train.shape} and y_train {y_train.shape}")
@@ -109,9 +109,53 @@ def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, verbose
         print(f"Epoch {i+1}: train loss = {loss_train.item():.4f}, val loss = {loss_val.item():.4f}")
 
         # if early_stopper.early_stop(loss_val.item()):
-        #     #print(f"Early stopping at epoch {i+1}")
-        #     break
+        #      print(f"Early stopping at epoch {i+1}")
+        #      break
     return train_loss_history, val_loss_history, epoch
+
+def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, verbose = True):
+    epoch = []
+    model.to(device) # set model to GPU
+    #intiate early stopper
+    early_stopper = EarlyStopper(patience=1e-16, min_delta=1e-6)
+
+    with torch.no_grad():
+        train_loss_history = []
+        val_loss_history = []
+
+    for i in range(n_epoch):
+        loss_v = 0
+        loss = 0
+        for l, (x, y) in enumerate(train_dataloader):
+            #print(y.shape, x.shape)
+            target_train = model(x) #.unsqueeze(2) uncomment this for simple lstm
+            #print(target_train.shape, y.shape, x.shape)
+            loss_train = lf(target_train, y)
+            loss += loss_train.item()
+            #train_loss_history.append(loss_train.item())
+            epoch.append(i+1)
+            optimizer.zero_grad()
+            loss_train.backward()
+            optimizer.step()
+
+        for k, (xv, yv) in enumerate(val_dataloader):
+            
+            target_val = model(xv) #.unsqueeze(2) uncomment this for simple lstm 
+            #print(target_val.shape, yv.shape, xv.shape)
+            loss_val = lf(target_val, yv)
+            loss_v += loss_val.item()
+
+        train_loss = loss/len(train_dataloader)
+        val_loss = loss_v/len(val_dataloader)
+        
+        train_loss_history.append(train_loss)
+        val_loss_history.append(val_loss)
+        
+        #epoch.append(i+1)
+        # if verbose:
+        print(f"Epoch {i+1}: train loss = {train_loss:.10f}, val loss = {val_loss:.10f}")
+    return train_loss_history, val_loss_history
+
 
 # def train(model, battery):
 #     model.to(device) # set model to GPU
@@ -198,41 +242,79 @@ def lr_opt(model, X_train, y_train, X_val, y_val, n_epochs,time=False):
         
         return lr_best
 
+class SeqDataset(Dataset):
+    def __init__(self, x_data, y_data, seq_len, batch):
+        self.x_data = x_data
+        self.y_data = y_data
+        self.seq_len = seq_len
+        self.batch = batch
+
+    def __len__(self):
+        return math.ceil((len(self.x_data) / self.batch))
+
+    def __getitem__(self, idx):
+        start_idx = idx * self.batch
+        end_idx = start_idx + self.batch
+
+        x = self.x_data[start_idx:end_idx]
+        y = self.y_data[start_idx:end_idx]
+
+        if end_idx > len(self.x_data):
+            x = self.x_data[start_idx:]
+            y = self.y_data[start_idx:]
+    
+        if x.shape[0] == 0:
+            raise StopIteration
+        
+        return x, y
+
 if __name__ == '__main__': 
 	# import data
     battery = ['B0005', 'B0006', 'B0007', 'B0018']
     data = load_data_normalise(battery)
-    input_size = data.shape[1] -1 #len(data.columns) - 1
-    n_hidden = 20 #input_size
+    input_size = data.shape[1] - 1 #len(data.columns) - 1
+    n_hidden = 40 #input_size
     n_layer = 2
-    n_epoch = 200
-    lr = 0.004
+    n_epoch = 20
+    lr = 0.005
     test_size = 0.1
     cv_size = 0.1
     seq = 20
+    batch_size = 10000
+    
     # gpu?
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     #data initialization
-    X_train, y_train, X_val, y_val, X_test, y_test = load_gpu_data(data, test_size=test_size, cv_size=cv_size, seq_length=seq)  
+    X_train, y_train, X_test, y_test, X_val, y_val = load_gpu_data_with_batches(data, test_size=test_size, cv_size=cv_size, seq_length=seq)  
+    #print(y_train)
+    X_train, y_train, X_test, y_test, X_val, y_val = X_train.to(device), y_train.to(device), X_test.to(device), y_test.to(device), X_val.to(device), y_val.to(device)
+    
+    dataset = SeqDataset(x_data=X_train, y_data=y_train, seq_len=seq, batch=batch_size)
+    datasetv = SeqDataset(x_data=X_val, y_data=y_val, seq_len=seq, batch=batch_size)
+
     print(X_train.dtype)
     #where is X_train
     print(f"x_train is on {X_train.device}, y_train is on {y_train.device}")
 
 
     # LsTM Model initialization
-    # modellstm = LSTM1(input_size, n_hidden, n_layer, seq).double() # ahh i changed the seq len thing too 
-    model = CNNLSTM(input_size, seq, n_hidden, n_layer).double() 
+    model = CNNLSTM(input_size, n_hidden, n_layer, seq, batch_size).double() 
+    #model = CNNLSTMog(input_size, seq, n_hidden, n_layer).double() 
 
     criterion = torch.nn.MSELoss() 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 
     # training and evaltuation
-    train_hist, val_hist, epoch = train(model, X_train, y_train, X_val, y_val, n_epoch, criterion, optimizer, verbose = True)
-    predictions = model(X_test).to('cpu').detach().numpy()
+    train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch, criterion, optimizer, verbose = True)
+    #train_hist, val_hist, epoch = train(model, X_train, y_train, X_val, y_val, n_epoch, criterion, optimizer, verbose = True)
     
-    plt.plot(predictions)
-    plt.plot(y_test.squeeze(2).to('cpu').detach().numpy())
+    predictions = model(X_test).to('cpu').detach().numpy()
+    print(predictions.shape)
+    epoch = np.linspace(1, n_epoch+1, n_epoch)
+    plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
+    plt.plot(y_test.squeeze(2).to('cpu').detach().numpy()) 
+    plt.legend()
     plt.show()
 
     loss = ((predictions - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
