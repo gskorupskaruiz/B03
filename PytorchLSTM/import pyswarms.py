@@ -5,108 +5,248 @@ from sketchymain import run_model
 import config
 import matplotlib.pyplot as plt
 
-#I USE PSO IN ORDER TO OPTIMIZE TWO PARAMETERS:
-    #NUMBER OF FILTERS USED ON CONVOLUTION LAYERS
-    #NUMBER OF EPOCHS USED IN TRAINING PROCESS
+import copy
+import numpy as np
 
-def optimizeCNNLSTM(particleDimensions):
+class Particle(object):
+    """Particle class for PSO
 
-    '''
-    This is loss function applied by all particles in iterations
-    :param x_train: samples used in train
-    :param x_test: samples used in test
-    :param y_train: targets used in train
-    :param y_test:  targets used in test
-    :param batch_size: integer that represents batch size
-    :param kernel_size: integer of tuple with only one integer (integer, ) --> length of convolution window
-    :param particleDimensions: numpy array with dimensions of a n particle --> 2 dimensions (filters, epochs)
-    :param stride: by default=1, integer represents stride length of convolution
-    :return: loss --> result of application of loss equation
-    '''
+    This class encapsulates the behavior of each particle in PSO and provides
+    an efficient way to do bookkeeping about the state of the swarm in any given
+    iteration.
 
-    try:
+    Args:
+        lower_bound (np.array): Vector of lower boundaries for particle dimensions.
+        upper_bound (np.array): Vector of upper boundaries for particle dimensions.
+        dimensions (int): Number of dimensions of the search space.
+        objective function (function): Black-box function to evaluate.
 
-        #RETRIEVE DIMENSIONS OF PARTICLE
-    
+    """
+    def __init__(self,
+                 lower_bound,
+                 upper_bound,
+                 dimensions,
+                 objective_function):
+        self.reset(dimensions, lower_bound, upper_bound, objective_function)
 
-        #CALL CNN FUNCTION cnn --> RETURN accuracy
-        
-        #APPLY LOST FUNCTION --> THE MAIN OBJECTIVE IS TO MINIMIZE LOSS --> MAXIMIZE ACCURACY AND AT SAME TIME MINIMIZE THE NUMBER OF EPOCHS
-                                #AND FILTERS, TO REDUCE TIME AND COMPUTACIONAL POWER
-        loss = run_model(n_hidden=particleDimensions[0], n_layer=particleDimensions[1], n_epoch=particleDimensions[2], lr=particleDimensions[3], test_size=particleDimensions[4], cv_size=particleDimensions[5], seq=particleDimensions[6])
-       
-        return loss
+    def reset(self,
+              dimensions,
+              lower_bound,
+              upper_bound,
+              objective_function):
+        """Particle reset
 
-    except:
-        raise
+        Allows for reset of a particle without reallocation.
 
-def particleIteration(particles):
+		Args:
+			lower_bound (np.array): Vector of lower boundaries for particle dimensions.
+			upper_bound (np.array): Vector of upper boundaries for particle dimensions.
+			dimensions (int): Number of dimensions of the search space.
 
-    '''
-    This is function that calls loss function, and returns all losses return by all particles on one iteration
-    :param x_train: samples used in train
-    :param x_test: samples used in test
-    :param y_train: targets used in train
-    :param y_test:  targets used in test
-    :param batch_size: integer that represents batch size
-    :param kernel_size: integer of tuple with only one integer (integer, ) --> length of convolution window
-    :param stride: by default=1, integer represents stride length of convolution
-    :param particles: numpy array --> (particles, dimensions)
-    :return: lossArray --> all losses returned by all particles
-    '''
+        """
+        position = []
+        for i in range(dimensions):
+            if lower_bound[i] < upper_bound[i]:
+                position.extend(np.random.randint(lower_bound[i], upper_bound[i] + 1, 1, dtype=int))
+            elif lower_bound[i] == upper_bound[i]:
+                position.extend(np.array([lower_bound[i]], dtype=int))
+            else:
+                assert False
 
-    try:
+        self.position = [position]
 
-        numberParticles = particles.shape[0]
-        allLosses = [optimizeCNNLSTM(particleDimensions=particles[i])for i in range(numberParticles)]
+        self.velocity = [np.multiply(np.random.rand(dimensions),
+                                     (upper_bound - lower_bound)).astype(int)]
 
-        return allLosses#NEED TO RETURN THIS PYSWARMS NEED THIS
+        self.best_position = self.position[:]
 
-    except:
-        raise
+        self.function_value = [objective_function(self.best_position[-1])]
+        self.best_function_value = self.function_value[:]
 
-def callCNNOptimization(numberParticles,bounds, **kwargs):
+    def update_velocity(self, omega, phip, phig, best_swarm_position):
+        """Particle velocity update
 
-    '''
-    This is the function that defines all PSO context and calls loss function for every particles (fill all iterations)
-    :param x_train: samples used in train
-    :param x_test: samples used in test
-    :param y_train: targets used in train
-    :param y_test:  targets used in test
-    :param batch_size: integer that represents batch size
-    :param kernel_size: integer of tuple with only one integer (integer, ) --> length of convolution window
-    :param stride: by default=1, integer represents stride length of convolution
-    :param numberParticles: integer --> number of particles of swarm
-    :param iterations: integer --> number of iterations
-    :param bounds: numpy array (minBound, maxBound) --> minBound: numpyArray - shape(dimensions), maxBound: numpyArray - shape(dimensions)
-    :return cost: integer --> minimum loss
-    :return pos: numpy array with n dimensions --> [filterValue, epochValue], with best cost (minimum cost)
-    :return optimizer: SWARM Optimization Optimizer USED IN DEFINITION AND OPTIMIZATION OF PSO
-    '''
+		Args:
+			omega (float): Velocity equation constant.
+			phip (float): Velocity equation constant.
+			phig (float): Velocity equation constant.
+			best_swarm_position (np.array): Best particle position.
 
-    try:
+        """
+        random_coefficient_p = np.random.uniform(size=np.asarray(self.position[-1]).shape)
+        random_coefficient_g = np.random.uniform(size=np.asarray(self.position[-1]).shape)
 
-        #GET PSO PARAMETERS
-        psoType = kwargs.get(config.TYPE)
-        options = kwargs.get(config.OPTIONS)
+        self.velocity.append(omega
+                             * np.asarray(self.velocity[-1])
+                             + phip
+                             * random_coefficient_p
+                             * (np.asarray(self.best_position[-1])
+                                - np.asarray(self.position[-1]))
+                             + phig
+                             * random_coefficient_g
+                             * (np.asarray(best_swarm_position)
+                                - np.asarray(self.position[-1])))
 
-        #DIMENSIONS OF PROBLEM
-        dimensions = 7
+        self.velocity[-1] = self.velocity[-1].astype(int)
 
-        #OPTIMIZER FUNCTION
-        if psoType == config.GLOBAL_BEST:
-            optimizer = pyswarms.single.GlobalBestPSO(n_particles=numberParticles, dimensions=dimensions,
-                                                     options=options, bounds=bounds)
-        elif psoType == config.LOCAL_BEST:
-            optimizer = pyswarms.single.LocalBestPSO(n_particles=numberParticles, dimensions=dimensions,
-                                                     options=options, bounds=bounds)
+    def update_position(self, lower_bound, upper_bound, objective_function):
+        """Particle position update
+
+		Args:
+			lower_bound (np.array): Vector of lower boundaries for particle dimensions.
+			upper_bound (np.array): Vector of upper boundaries for particle dimensions.
+			objective function (function): Black-box function to evaluate.
+
+        """
+        new_position = self.position[-1] + self.velocity[-1]
+
+        if np.array_equal(self.position[-1], new_position):
+            self.function_value.append(self.function_value[-1])
         else:
-            raise AttributeError
-        #GET BEST COST AND PARTICLE POSITION
-        cost, pos = optimizer.optimize(objective_func=particleIteration(numberParticles ))
+            mark1 = new_position < lower_bound
+            mark2 = new_position > upper_bound
 
-        return cost, pos, optimizer
+            new_position[mark1] = lower_bound[mark1]
+            new_position[mark2] = upper_bound[mark2]
 
-    except:
-        raise
-print(callCNNOptimization(50, 3))
+            self.function_value.append(objective_function(self.position[-1]))
+
+        self.position.append(new_position.tolist())
+
+        if self.function_value[-1] < self.best_function_value[-1]:
+            self.best_position.append(self.position[-1][:])
+            self.best_function_value.append(self.function_value[-1])
+
+class Pso(object):
+    """PSO wrapper
+
+    This class contains the particles and provides an abstraction to hold all the context
+    of the PSO algorithm
+
+    Args:
+        swarmsize (int): Number of particles in the swarm
+        maxiter (int): Maximum number of generations the swarm will run
+
+    """
+    def __init__(self, swarmsize=100, maxiter=100):
+        self.max_generations = maxiter
+        self.swarmsize = swarmsize
+
+        self.omega = 0.5
+        self.phip = 0.5
+        self.phig = 0.5
+
+        self.minstep = 1e-4
+        self.minfunc = 1e-4
+
+        self.best_position = [None]
+        self.best_function_value = [1]
+
+        self.particles = []
+
+        self.retired_particles = []
+
+    def run(self, function, lower_bound, upper_bound, kwargs=None):
+        """Perform a particle swarm optimization (PSO)
+
+		Args:
+			objective_function (function): The function to be minimized.
+			lower_bound (np.array): Vector of lower boundaries for particle dimensions.
+			upper_bound (np.array): Vector of upper boundaries for particle dimensions.
+
+		Returns:
+			best_position (np.array): Best known position
+			accuracy (float): Objective value at best_position
+			:param kwargs:
+
+        """
+        if kwargs is None:
+            kwargs = {}
+
+        objective_function = lambda x: function(x, **kwargs)
+        assert hasattr(function, '__call__'), 'Invalid function handle'
+
+        assert len(lower_bound) == len(upper_bound), 'Invalid bounds length'
+
+        lower_bound = np.array(lower_bound)
+        upper_bound = np.array(upper_bound)
+
+        assert np.all(upper_bound > lower_bound), 'Invalid boundary values'
+
+
+        dimensions = len(lower_bound)
+
+        self.particles = self.initialize_particles(lower_bound,
+                                                   upper_bound,
+                                                   dimensions,
+                                                   objective_function)
+
+        # Start evolution
+        generation = 1
+        while generation <= self.max_generations:
+            for particle in self.particles:
+                particle.update_velocity(self.omega, self.phip, self.phig, self.best_position[-1])
+                particle.update_position(lower_bound, upper_bound, objective_function)
+
+                if particle.best_function_value[-1] == 0:
+                    self.retired_particles.append(copy.deepcopy(particle))
+                    particle.reset(dimensions, lower_bound, upper_bound, objective_function)
+                elif particle.best_function_value[-1] < self.best_function_value[-1]:
+                    stepsize = np.sqrt(np.sum((np.asarray(self.best_position[-1])
+                                               - np.asarray(particle.position[-1])) ** 2))
+
+                    if np.abs(np.asarray(self.best_function_value[-1])
+                              - np.asarray(particle.best_function_value[-1])) \
+                            <= self.minfunc:
+                        return particle.best_position[-1], particle.best_function_value[-1]
+                    elif stepsize <= self.minstep:
+                        return particle.best_position[-1], particle.best_function_value[-1]
+                    else:
+                        self.best_function_value.append(particle.best_function_value[-1])
+                        self.best_position.append(particle.best_position[-1][:])
+
+
+
+            generation += 1
+
+        return self.best_position[-1], self.best_function_value[-1]
+
+    def initialize_particles(self,
+                             lower_bound,
+                             upper_bound,
+                             dimensions,
+                             objective_function):
+        """Initializes the particles for the swarm
+
+		Args:
+			objective_function (function): The function to be minimized.
+			lower_bound (np.array): Vector of lower boundaries for particle dimensions.
+			upper_bound (np.array): Vector of upper boundaries for particle dimensions.
+			dimensions (int): Number of dimensions of the search space.
+
+		Returns:
+			particles (list): Collection or particles in the swarm
+
+        """
+        particles = []
+        for _ in range(self.swarmsize):
+            particles.append(Particle(lower_bound,
+                                      upper_bound,
+                                      dimensions,
+                                      objective_function))
+            if particles[-1].best_function_value[-1] < self.best_function_value[-1]:
+                self.best_function_value.append(particles[-1].best_function_value[-1])
+                self.best_position.append(particles[-1].best_position[-1])
+
+
+        self.best_position = [self.best_position[-1]]
+        self.best_function_value = [self.best_function_value[-1]]
+
+        return particles
+    
+pso = Pso(swarmsize=20,maxiter=14)
+# 1, 1,   50, 50,
+bp,value = pso.run(run_model,[1, 1, 1, 1],[100, 5, 100, 200000])
+# n_hidden, n_layer, n_epoch, lr, test_size, cv_size, seq
+v = run_model(bp)
+print(bp, v)
