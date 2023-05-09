@@ -115,7 +115,11 @@ class Particle(object):
 
         if self.function_value[-1] < self.best_function_value[-1]:
             self.best_position.append(self.position[-1][:])
+            print('YOOOOOOOOOOOOO')
+            print(self.best_position)
+            
             self.best_function_value.append(self.function_value[-1])
+            print(self.best_function_value)
 
 class Pso(object):
     """PSO wrapper
@@ -208,7 +212,7 @@ class Pso(object):
 
 
             generation += 1
-
+        
         return self.best_position[-1], self.best_function_value[-1]
 
     def initialize_particles(self,
@@ -234,6 +238,7 @@ class Pso(object):
                                       upper_bound,
                                       dimensions,
                                       objective_function))
+            
             if particles[-1].best_function_value[-1] < self.best_function_value[-1]:
                 self.best_function_value.append(particles[-1].best_function_value[-1])
                 self.best_position.append(particles[-1].best_position[-1])
@@ -244,9 +249,10 @@ class Pso(object):
 
         return particles
     
-pso = Pso(swarmsize=20,maxiter=14)
-# 1, 1,   50, 50,
-bp,value = pso.run(run_model,[1, 1, 1, 1],[100, 5, 100, 100000])
+pso = Pso(swarmsize=1,maxiter=1)
+# 1, 1,   50, 50,  n_hidden, n_layer, test_size, cv_size, seq, batch_size
+bp,value = pso.run(run_model,[1, 1, 1],[80, 5, 999])
 # n_hidden, n_layer, n_epoch, lr, test_size, cv_size, seq
 v = run_model(bp)
+print('DONEEEEEEEEEEEEEEE')
 print(bp, v)

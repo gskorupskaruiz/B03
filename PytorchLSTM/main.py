@@ -288,6 +288,8 @@ if __name__ == '__main__':
     #data initialization
     X_train, y_train, X_test, y_test, X_val, y_val = load_gpu_data_with_batches(data, test_size=test_size, cv_size=cv_size, seq_length=seq)  
     #print(y_train)
+
+        
     X_train, y_train, X_test, y_test, X_val, y_val = X_train.to(device), y_train.to(device), X_test.to(device), y_test.to(device), X_val.to(device), y_val.to(device)
     
     dataset = SeqDataset(x_data=X_train, y_data=y_train, seq_len=seq, batch=batch_size)

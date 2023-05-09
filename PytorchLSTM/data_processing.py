@@ -79,7 +79,7 @@ def load_gpu_data_with_batches(data, test_size, cv_size, seq_length):
 		y_v.append(y_cv.values[i])
 
 	# Convert to numpy arrays
-	x_v = torch.tensor(x_v)
+	x_v = torch.tensor(np.array(x_v))
 	y_v = torch.tensor(y_v).unsqueeze(1).unsqueeze(2)
 
 	x_t = []
@@ -89,7 +89,7 @@ def load_gpu_data_with_batches(data, test_size, cv_size, seq_length):
 		y_t.append(y_test.values[i])
 
 	# Convert to numpy arrays
-	x_t = torch.tensor(x_t)
+	x_t = torch.tensor(np.array(x_t))
 	y_t = torch.tensor(y_t).unsqueeze(1).unsqueeze(2)
 
 
@@ -108,6 +108,13 @@ def load_gpu_data_with_batches(data, test_size, cv_size, seq_length):
 		print("X_test and y_test are on GPU: ", X_test.is_cuda, y_test.is_cuda)
 		print("X_cv and y_cv are on GPU: ", X_cv.is_cuda, y_cv.is_cuda)
 		print(f"size of X_train: {X_train.size()} and y_train: {y_train.size()}")
+	else:
+		X_train = torch.tensor(x_tr).double()
+		y_train = torch.tensor(y_tr).double()
+		X_test = torch.tensor(x_t).double()
+		y_test = torch.tensor(y_t).double()
+		X_cv = torch.tensor(x_v).double()
+		y_cv = torch.tensor(y_v).double()
 	
 	return X_train, y_train, X_test, y_test, X_cv, y_cv
 
