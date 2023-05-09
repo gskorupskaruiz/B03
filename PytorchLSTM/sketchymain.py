@@ -273,11 +273,12 @@ def run_model(hyperparams):
     battery = ['B0005', 'B0006', 'B0007', 'B0018']
     data = load_data_normalise(battery)
     input_size = data.shape[1] - 1 #len(data.columns) - 1
-    n_hidden, n_layer = hyperparams
+    n_hidden, n_layer, lr= hyperparams
     # n_hidden = 40 #input_size
     # n_layer = 2
-    n_epoch = 20
-    lr = 0.005
+    lr = lr/1000
+    n_epoch = 3
+    #lr = 0.005
     test_size = 0.1
     cv_size = 0.1
     seq = 20
@@ -289,14 +290,14 @@ def run_model(hyperparams):
     #data initialization
     X_train, y_train, X_test, y_test, X_val, y_val = load_gpu_data_with_batches(data, test_size=test_size, cv_size=cv_size, seq_length=seq)  
     #print(y_train)
-    X_train, y_train, X_test, y_test, X_val, y_val = X_train.to(device), y_train.to(device), X_test.to(device), y_test.to(device), X_val.to(device), y_val.to(device)
+    #X_train, y_train, X_test, y_test, X_val, y_val = X_train.to(device), y_train.to(device), X_test.to(device), y_test.to(device), X_val.to(device), y_val.to(device)
     
     dataset = SeqDataset(x_data=X_train, y_data=y_train, seq_len=seq, batch=batch_size)
     datasetv = SeqDataset(x_data=X_val, y_data=y_val, seq_len=seq, batch=batch_size)
 
-    print(X_train.dtype)
+    #print(X_train.dtype)
     #where is X_train
-    print(f"x_train is on {X_train.device}, y_train is on {y_train.device}")
+    #print(f"x_train is on {X_train.device}, y_train is on {y_train.device}")
 
 
     # LsTM Model initialization
