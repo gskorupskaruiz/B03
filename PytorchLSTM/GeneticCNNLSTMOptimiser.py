@@ -132,7 +132,7 @@ def train_evaluate(ga_individual_solution, gene_length):
 
     return mse_model
 
-if __name__ == '__main__': 
+if __name__ == '__main__':  
 
     # init variables and implementation of Ga using DEAP 
     battery = ["B0005"]
