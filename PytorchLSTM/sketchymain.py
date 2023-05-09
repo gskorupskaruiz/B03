@@ -273,10 +273,11 @@ def run_model(hyperparams):
     battery = ['B0005', 'B0006', 'B0007', 'B0018']
     data = load_data_normalise(battery)
     input_size = data.shape[1] - 1 #len(data.columns) - 1
-    n_hidden, n_layer, lr= hyperparams
+    n_hidden, n_layer, lr, seq = hyperparams
     # n_hidden = 40 #input_size
     # n_layer = 2
     lr = lr/1000
+    n_epoch = 20
     n_epoch = 20
     #lr = 0.005
     test_size = 0.1
@@ -301,6 +302,7 @@ def run_model(hyperparams):
 
 
     # LsTM Model initialization
+    
     num_layers_conv = 3
     output_channels = [32, 10, 1]
     kernel_sizes = [2, 1, 2]
@@ -308,7 +310,7 @@ def run_model(hyperparams):
     padding_sizes = [0, 2, 2]
     hidden_size_lstm = 40
     num_layers_lstm = 2
-    hidden_neurons_dense = [20, 10, 1]
+    hidden_neurons_dense = [seq, 10, 1]
 
     model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense).double()
     #model = CNNLSTMog(input_size, seq, n_hidden, n_layer).double() 
@@ -323,17 +325,17 @@ def run_model(hyperparams):
     predictions = model(X_test).to('cpu').detach().numpy()
     #print(predictions.shape)
     epoch = np.linspace(1, n_epoch+1, n_epoch)
-    plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
-    plt.plot(y_test.squeeze(2).to('cpu').detach().numpy()) 
-    plt.legend()
-    plt.show()
+    # plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
+    # plt.plot(y_test.squeeze(2).to('cpu').detach().numpy()) 
+    # plt.legend()
+    # plt.show()
 
     loss = ((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
     print(loss)
     
-    plt.plot(epoch, train_hist)
-    plt.plot(epoch, val_hist)
-    plt.show()
+    # plt.plot(epoch, train_hist)
+    # plt.plot(epoch, val_hist)
+    # plt.show()
     
     print(model)
 

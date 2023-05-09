@@ -212,6 +212,7 @@ class Pso(object):
 
 
             generation += 1
+        print(self.best_position[-1], self.best_function_value[-1])
         
         return self.best_position[-1], self.best_function_value[-1]
 
@@ -249,9 +250,11 @@ class Pso(object):
 
         return particles
     
-pso = Pso(swarmsize=1,maxiter=1)
-# 1, 1,   50, 50,  n_hidden, n_layer, test_size, cv_size, seq, batch_size
-bp,value = pso.run(run_model,[1, 1, 1],[80, 5, 999])
+pso = Pso(swarmsize=1,maxiter=8)
+# n_hidden, n_layer, lr, seq
+lower_limit = [30, 2, 40, 5]
+upper_limit = [100, 5, 100, 40]
+bp,value = pso.run(run_model,lower_limit,upper_limit)
 # n_hidden, n_layer, n_epoch, lr, test_size, cv_size, seq
 v = run_model(bp)
 print('DONEEEEEEEEEEEEEEE')
