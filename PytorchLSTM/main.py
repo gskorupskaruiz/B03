@@ -299,7 +299,16 @@ if __name__ == '__main__':
 
 
     # LsTM Model initialization
-    model = CNNLSTM(input_size, n_hidden, n_layer, seq, batch_size).double() 
+    num_layers_conv = 3
+    output_channels = [32, 10, 1]
+    kernel_sizes = [2, 1, 2]
+    stride_sizes = [1, 1, 1]
+    padding_sizes = [0, 2, 2]
+    hidden_size_lstm = 40
+    num_layers_lstm = 2
+    hidden_neurons_dense = [20, 10, 1]
+
+    model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense).double()
     #model = CNNLSTMog(input_size, seq, n_hidden, n_layer).double() 
 
     criterion = torch.nn.MSELoss() 
@@ -317,7 +326,7 @@ if __name__ == '__main__':
     plt.legend()
     plt.show()
 
-    loss = ((predictions - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
+    loss = ((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
     print(loss)
     
     import matplotlib.pyplot as plt

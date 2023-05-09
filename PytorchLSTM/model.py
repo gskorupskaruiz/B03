@@ -142,20 +142,20 @@ class CNNLSTM(nn.Module):
         out = self.relu(self.fc_1(self.relu(output)))
         #out = self.relu(self.fc_2(out))
 
-        # print(f"after lstm {output.shape}")
-        # print(f"after first dense lstm {out.shape}")
+        print(f"after lstm {output.shape}")
+        print(f"after first dense lstm {out.shape}")
 
         out = self.conv1(out)
-        # print(f"after first conv {out.shape}")
+        print(f"after first conv {out.shape}")
 
         out = self.batch1(out)
-        # print(f"after batchnorm1 {out.shape}")
+        print(f"after batchnorm1 {out.shape}")
         out = self.conv2(out)
-        # print(f"after conv2 {out.shape}")
+        print(f"after conv2 {out.shape}")
         out = self.batch2(out)
-        # print(f"after batchnorm2 {out.shape}")
+        print(f"after batchnorm2 {out.shape}")
         out = self.relu(self.fc_2(out))
-        # print(f"after dense {out.shape}")
+        print(f"after dense {out.shape}")
         out = self.dropout(out)
         
         outg = self.fc(out)
@@ -200,42 +200,136 @@ class CNNLSTMog(nn.Module):
         return output
     
 
+# class ParametricCNNLSTM():
+#     def __init__(self, input_size output_size, hidden_size, num_layers, cnn_layers, cnn_kernel_size, cnn_stride, cnn_padding, cnn_output_size):
+#         super(CNNLSTM, self).__init__()
+        
+#         for i in range(cnn_layers):
+#             setattr(self, 'conv'+i, nn.Conv1d(in_channels = input_size , out_channels = cnn_output_size, kernel_size= cnn_kernel_size , stride = cnn_stride , padding= cnn_padding))
 
-class ParametricCNNLSTM():
-    def __init__(self, input_size output_size, hidden_size, num_layers, cnn_layers, cnn_kernel_size, cnn_stride, cnn_padding, cnn_output_size):
-        super(CNNLSTM, self).__init__()
-        for i in cnn_layers:
-            setattr(self, 'conv'+i, nn.Conv1d(in_channels = input_size , out_channels = cnn_output_size, kernel_size= cnn_kernel_size , stride = cnn_stride , padding= cnn_padding))
-
 
         
-        self.batch1 =nn.BatchNorm1d(32)
-        self.conv3 = nn.Conv1d(32, 32, kernel_size=1, stride = 1, padding=1)
-        self.batch2 =nn.BatchNorm1d(32)
+#         self.batch1 =nn.BatchNorm1d(32)
+#         self.conv3 = nn.Conv1d(32, 32, kernel_size=1, stride = 1, padding=1)
+#         self.batch2 =nn.BatchNorm1d(32)
         
-        self.LSTM = nn.LSTM(input_size=10, hidden_size=hidden_size,
-                            num_layers=num_layers, batch_first=True)
+#         self.LSTM = nn.LSTM(input_size=10, hidden_size=hidden_size,
+#                             num_layers=num_layers, batch_first=True)
         
-        self.fc1 = nn.Linear(32*hidden_size, output_size)
-        self.dropout = nn.Dropout(0.1)
-        self.relu = nn.ReLU
+#         self.fc1 = nn.Linear(32*hidden_size, output_size)
+#         self.dropout = nn.Dropout(0.1)
+#         self.relu = nn.ReLU
         
+
+#     def forward(self, x):
+
+#         x = self.conv1(x)
+#         #x = self.relu(x)
+#         x = self.conv2(x)
+#         #x = self.relu(x)
+#         x = self.batch1(x)
+#         x = self.conv3(x)
+#         #x = self.relu(x)
+#         x = self.batch2(x)
+        
+#         x, h = self.LSTM(x) 
+#         x = torch.reshape(x,(x.shape[0],x.shape[1]*x.shape[2]))
+
+#         x = self.dropout(x)
+#         output = self.fc1(x)
+#         return output
+    
+
+class ParametricCNNLSTM(nn.Module):
+    def __init__(self, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense):
+        super(ParametricCNNLSTM, self).__init__()
+   
+        self.output_channels = output_channels
+        self.kernel_sizes = kernel_sizes
+        self.stride_sizes = stride_sizes
+        self.padding_sizes = padding_sizes
+        self.hidden_size_lstm = hidden_size_lstm
+        self.num_layers_conv = num_layers_conv
+        self.num_layer_lstm = num_layers_lstm
+        self.hidden_neurons_dense = hidden_neurons_dense 
+        
+        self.output_shape = []
+        for i in range(self.num_layers_conv):
+            if i == 0:
+                output_shape_1 = (self.hidden_neurons_dense[0] - self.kernel_sizes[0] + 2* self.padding_sizes[0])/self.stride_sizes[0] + 1
+                self.output_shape.append(output_shape_1)
+            else:
+                output_shape = (self.output_shape[i-1] - self.kernel_sizes[i] + 2* self.padding_sizes[i])/self.stride_sizes[i] + 1
+                self.output_shape.append(output_shape)
+
+        print(self.output_shape)
+
+        # first layer must be lstm 
+        self.lstm = nn.LSTM(7, self.hidden_size_lstm, num_layers=self.num_layer_lstm, batch_first=True, dropout=0.2)
+
+        # then dense 
+        self.dense1 = nn.Linear(self.hidden_size_lstm, self.hidden_neurons_dense[0])
+        
+        # set the conv and batchnorm layers 
+        for i in range(1, self.num_layers_conv+1):
+            if i == 1:
+                self.conv1 = nn.Conv1d(in_channels = self.hidden_neurons_dense[0], out_channels=self.output_channels[i-1], kernel_size= self.kernel_sizes[i-1], stride = self.stride_sizes[i-1], padding= self.padding_sizes[i-1])
+                self.batch1 = nn.BatchNorm1d(self.output_channels[i-1])
+            else:
+                setattr(self, 'conv'+str(i), nn.Conv1d(in_channels = self.output_channels[i-2], out_channels = self.output_channels[i-1], kernel_size= self.kernel_sizes[i-1], stride = self.stride_sizes[i-1], padding= self.padding_sizes[i-1]))
+                setattr(self, 'batch'+str(i), nn.BatchNorm1d(self.output_channels[i-1]))
+
+        # dense layers after conv 
+        for i in range(2, len(self.hidden_neurons_dense)+1):
+            if i == 2:
+                setattr(self, 'dense'+str(i), nn.Linear(int(self.output_shape[-1]), int(self.hidden_neurons_dense[1])))
+                
+            else:
+                setattr(self, 'dense'+str(i), nn.Linear(in_features=self.hidden_neurons_dense[i-2], out_features=self.hidden_neurons_dense[i-1])) 
+        
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(0.2)
+    
 
     def forward(self, x):
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        x = self.conv1(x)
-        #x = self.relu(x)
-        x = self.conv2(x)
-        #x = self.relu(x)
-        x = self.batch1(x)
-        x = self.conv3(x)
-        #x = self.relu(x)
-        x = self.batch2(x)
+        h_0 = torch.randn(self.num_layer_lstm, x.shape[0], self.hidden_size_lstm).to(device).double()
+        c_0 = torch.randn(self.num_layer_lstm, x.shape[0], self.hidden_size_lstm).to(device).double()
+
+        # output of lstm 
+        output, (hn, cn) = self.lstm(x, (h_0, c_0))  # lstm with input, hidden, and internal state
+
+        # output of first dense layer 
+        out = self.relu(self.dense1(self.relu(output)))
+        print(f'shape after first dense layer is {out.shape}')
+
+        for i in range(self.num_layers_conv):
+            conv_name = f'conv{i+1}' # or use whatever naming scheme you used for your conv layers
+            conv_layer = getattr(self, conv_name)
+            out = conv_layer(out)
+            print(f'shape after conv layer {i+1} is {out.shape}')
+            batch_name = f'batch{i+1}'
+            batch_norm = getattr(self, batch_name)
+            out = batch_norm(out)
+            print(f'shape after batch layer {i+1} is {out.shape}')
         
-        x, h = self.LSTM(x) 
-        x = torch.reshape(x,(x.shape[0],x.shape[1]*x.shape[2]))
+        for j in range(1, len(self.hidden_neurons_dense)-1):
+            dense_name = f'dense{j+1}'
+            dense_layer = getattr(self, dense_name)
+            out = self.relu(dense_layer(out))
+            print(f'shape after dense layer {j+1} is {out.shape}')
 
-        x = self.dropout(x)
-        output = self.fc1(x)
-        return output
-    
+        out = out = self.dropout(out)
+        
+        last_dense = f'dense{len(self.hidden_neurons_dense)}'
+        last_dense_layer = getattr(self, last_dense)
+        out = last_dense_layer(out)
+        print(f'output shape is {out.shape}')
+        print("its actually working - no way lets gooo")
+
+        return out 
+        
+
+
+       
