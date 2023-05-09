@@ -203,8 +203,8 @@ def train_evaluate(ga_individual_solution):
         print(f' size of predictions = {predictions.shape}')
         print(f'predictions = {predictions}')
         epoch = np.linspace(1, num_epochs+1, num_epochs)
-        plt.plot(epoch, predictions.squeeze(2), label='predictions')
-        plt.plot(y_test.squeeze(2).to('cpu').detach().numpy(), label='actual')
+        plt.plot(epoch, predictions.squeeze(2, dim = 0), label='predictions')
+        plt.plot(y_test.squeeze(2, dim = 0).to('cpu').detach().numpy(), label='actual')
         plt.legend()
         plt.show()
 
