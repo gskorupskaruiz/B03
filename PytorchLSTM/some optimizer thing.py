@@ -246,7 +246,7 @@ class Pso(object):
     
 pso = Pso(swarmsize=20,maxiter=14)
 # 1, 1,   50, 50,
-bp,value = pso.run(run_model,[1, 1, 1, 1],[100, 5, 100, 200000])
+bp,value = pso.run(run_model,[1, 1, 1, 1],[100, 5, 100, 100000])
 # n_hidden, n_layer, n_epoch, lr, test_size, cv_size, seq
 v = run_model(bp)
 print(bp, v)

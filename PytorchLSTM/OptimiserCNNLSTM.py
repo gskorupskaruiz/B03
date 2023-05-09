@@ -58,11 +58,7 @@ class Particle(object):
         self.velocity = [np.multiply(np.random.rand(dimensions),
                                      (upper_bound - lower_bound)).astype(int)]
 
-<<<<<<< HEAD:PytorchLSTM/import pyswarms.py
         self.best_position = self.position[:]
-=======
-        return allLosses #NEED TO RETURN THIS PYSWARMS NEED THIS
->>>>>>> ffe63842681d2dc271012a5debf869b4494eabf0:PytorchLSTM/OptimiserCNNLSTM.py
 
         self.function_value = [objective_function(self.best_position[-1])]
         self.best_function_value = self.function_value[:]
