@@ -115,11 +115,8 @@ class Particle(object):
 
         if self.function_value[-1] < self.best_function_value[-1]:
             self.best_position.append(self.position[-1][:])
-            print('YOOOOOOOOOOOOO')
-            print(self.best_position)
-            
             self.best_function_value.append(self.function_value[-1])
-            print(self.best_function_value)
+            
 
 class Pso(object):
     """PSO wrapper
@@ -132,13 +129,13 @@ class Pso(object):
         maxiter (int): Maximum number of generations the swarm will run
 
     """
-    def __init__(self, swarmsize=100, maxiter=100):
+    def __init__(self, swarmsize=5, maxiter=20):
         self.max_generations = maxiter
         self.swarmsize = swarmsize
-
-        self.omega = 0.5
-        self.phip = 0.5
-        self.phig = 0.5
+        print('PSO initialised')
+        self.omega = 0.9
+        self.phip = 0.3
+        self.phig = 0.3
 
         self.minstep = 1e-4
         self.minfunc = 1e-4
@@ -215,7 +212,7 @@ class Pso(object):
         print(self.best_position[-1], self.best_function_value[-1])
         
         return self.best_position[-1], self.best_function_value[-1]
-
+    
     def initialize_particles(self,
                              lower_bound,
                              upper_bound,
@@ -250,12 +247,11 @@ class Pso(object):
 
         return particles
     
-pso = Pso(swarmsize=1,maxiter=8)
+pso = Pso(swarmsize=2,maxiter=1)
 # n_hidden, n_layer, lr, seq
 lower_limit = [30, 2, 40, 5]
 upper_limit = [100, 5, 100, 40]
 bp,value = pso.run(run_model,lower_limit,upper_limit)
 # n_hidden, n_layer, n_epoch, lr, test_size, cv_size, seq
-v = run_model(bp)
 print('DONEEEEEEEEEEEEEEE')
-print(bp, v)
+print(bp, value)
