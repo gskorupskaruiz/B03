@@ -1,0 +1,14 @@
+2023-05-04 11:44:11,929 - pyswarms.backend.generators - ERROR - generate_swarm() takes an int for n_particles and dimensions and an array for bounds
+Traceback (most recent call last):
+  File "C:\Users\gretk\AppData\Roaming\Python\Python310\site-packages\pyswarms\backend\generators.py", line 74, in generate_swarm
+    lb, ub = bounds
+TypeError: cannot unpack non-iterable int object
+2023-05-04 11:59:26,140 - pyswarms.single.global_best - INFO - Optimize for 30 iters with {'nh': 20, 'nl': 3, 'ne': 200, 'lr': 0.01, 'ts': 0.1, 'cvs': 0.1, 'seq': 50}
+2023-05-04 12:06:35,994 - pyswarms.single.global_best - INFO - Optimize for 30 iters with {'c1': 0.5, 'c2': 0.3, 'w': 0.9}
+2023-05-04 12:09:18,815 - pyswarms.single.global_best - INFO - Optimize for 30 iters with {'c1': 0.5, 'c2': 0.3, 'w': 0.9}
+2023-05-04 12:15:37,725 - pyswarms.single.global_best - INFO - Optimize for 30 iters with {'c1': 0.5, 'c2': 0.3, 'w': 0.9, 'k': 2, 'p': 2, 'a': 0.5, 'b': 0.5, 'c': 0.5, 'd': 0.5, 'e': 0.5, 'f': 0.5, 'g': 0.5, 'h': 0.5, 'i': 0.5, 'j': 0.5}
+2023-05-04 12:16:11,556 - pyswarms.single.global_best - INFO - Optimize for 30 iters with {'c1': 0.5, 'c2': 0.3, 'w': 0.9, 'k': 2, 'p': 2, 'a': 0.5, 'b': 0.5, 'c': 0.5, 'd': 0.5, 'e': 0.5, 'f': 0.5, 'g': 0.5, 'h': 0.5, 'i': 0.5, 'j': 0.5}
+2023-05-04 12:18:29,211 - pyswarms.single.global_best - INFO - Optimize for 30 iters with {'c1': 0.5, 'c2': 0.3, 'w': 0.9}
+2023-05-04 12:19:56,076 - pyswarms.single.global_best - INFO - Optimize for 30 iters with {'c1': 0.5, 'c2': 0.3, 'w': 0.9}
+2023-05-04 12:23:04,162 - pyswarms.single.global_best - INFO - Optimize for 30 iters with {'c1': 0.5, 'c2': 0.3, 'w': 0.9}
+2023-05-04 12:24:50,304 - pyswarms.single.global_best - INFO - Optimize for 30 iters with {'c1': 0.5, 'c2': 0.3, 'w': 0.9}

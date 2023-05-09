@@ -130,3 +130,21 @@ def predict(self, X_test):
     SSqr = self.SigmaSqr * (1 - np.diag(k.T @ self.inv_K @ k))
 
     return f.flatten(), SSqr.flatten()
+
+def gaussian_search(X, y):
+    # List of C values
+    C_range = np.logspace(-10, 10, 21)
+    # List of gamma values
+    gamma_range = np.logspace(-10, 10, 21)
+    space = {
+    'C' : hp.choice('C', C_range),
+    'gamma' : hp.choice('gamma', gamma_range.tolist()+['scale', 'auto']),
+    'kernel' : hp.choice('kernel', ['rbf', 'poly'])
+    }
+
+    kfold = KFold(n_splits=3, shuffle=True, random_state=0)
+    bayes_trials = Trials()
+
+    # Optimize
+    best = fmin(fn = objective, space = space, algo = tpe.suggest, max_evals = 100, trials = bayes_trials)
+    print(space_eval(best))
