@@ -302,31 +302,31 @@ class ParametricCNNLSTM(nn.Module):
 
         # output of first dense layer 
         out = self.relu(self.dense1(self.relu(output)))
-        print(f'shape after first dense layer is {out.shape}')
+        # print(f'shape after first dense layer is {out.shape}')
 
         for i in range(self.num_layers_conv):
             conv_name = f'conv{i+1}' # or use whatever naming scheme you used for your conv layers
             conv_layer = getattr(self, conv_name)
             out = conv_layer(out)
-            print(f'shape after conv layer {i+1} is {out.shape}')
+            # print(f'shape after conv layer {i+1} is {out.shape}')
             batch_name = f'batch{i+1}'
             batch_norm = getattr(self, batch_name)
             out = batch_norm(out)
-            print(f'shape after batch layer {i+1} is {out.shape}')
+            # print(f'shape after batch layer {i+1} is {out.shape}')
         
         for j in range(1, len(self.hidden_neurons_dense)-1):
             dense_name = f'dense{j+1}'
             dense_layer = getattr(self, dense_name)
             out = self.relu(dense_layer(out))
-            print(f'shape after dense layer {j+1} is {out.shape}')
+            # print(f'shape after dense layer {j+1} is {out.shape}')
 
         out = out = self.dropout(out)
         
         last_dense = f'dense{len(self.hidden_neurons_dense)}'
         last_dense_layer = getattr(self, last_dense)
         out = last_dense_layer(out)
-        print(f'output shape is {out.shape}')
-        print("its actually working - no way lets gooo")
+        # print(f'output shape is {out.shape}')
+        # print("its actually working - no way lets gooo")
 
         return out 
         

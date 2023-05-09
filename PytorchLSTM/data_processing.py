@@ -109,7 +109,7 @@ def load_gpu_data_with_batches(data, test_size, cv_size, seq_length):
 		print("X_cv and y_cv are on GPU: ", X_cv.is_cuda, y_cv.is_cuda)
 		print(f"size of X_train: {X_train.size()} and y_train: {y_train.size()}")
 	
-	return x_tr, y_tr, x_t, y_t, x_v, y_v
+	return X_train, y_train, X_test, y_test, X_cv, y_cv
 
 
 def load_gpu_data(data, test_size, cv_size, seq_length):
