@@ -115,6 +115,7 @@ def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, verbose
 
 def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, verbose = True):
     epoch = []
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device) # set model to GPU
     #intiate early stopper
     early_stopper = EarlyStopper(patience=1e-16, min_delta=1e-6)
