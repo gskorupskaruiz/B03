@@ -277,12 +277,12 @@ def run_model(hyperparams):
     # n_hidden = 40 #input_size
     # n_layer = 2
     lr = lr/1000
-    n_epoch = 3
+    n_epoch = 20
     #lr = 0.005
     test_size = 0.1
-    cv_size = 0.1
+    cv_size = 0.1 
     seq = 20
-    batch_size = 10000
+    batch_size = 1000
     
     # gpu?
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -312,7 +312,7 @@ def run_model(hyperparams):
 
     model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense).double()
     #model = CNNLSTMog(input_size, seq, n_hidden, n_layer).double() 
-
+    model.to(device)
     criterion = torch.nn.MSELoss() 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 
