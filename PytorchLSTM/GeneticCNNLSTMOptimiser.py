@@ -42,6 +42,46 @@ def load_data(battery, test_size, cv_size):
     # split data
     X_train, y_train, X_test, y_test, X_cv, y_cv = train_test_validation_split(X, y, test_size, cv_size)
 
+
+
+    return X_train, y_train, X_test, y_test, X_cv, y_cv
+
+# Prepare data (reshape) (CHECK WHICH SHAPE NEEDED)
+def prepare_dataset(seq_length, X_train, y_train, X_test, y_test, X_cv, y_cv):
+    "Process data into the correct shape for the model for given hyper parameters"
+    
+    # reshape data (Gowri's code from load gpu data with batches func in data_processing.py)
+    x_tr = []
+    y_tr = []
+    for i in range(seq_length, len(X_train)):
+        x_tr.append(X_train[i-seq_length:i])
+        y_tr.append(y_train[i])
+        
+    # Convert to numpy arrays
+    x_tr = torch.tensor(np.array(x_tr))
+    y_tr = torch.tensor(y_tr).unsqueeze(1).unsqueeze(2)
+    print(y_tr.shape)
+
+    x_v = []
+    y_v = []
+    for i in range(seq_length, len(X_cv)):
+        x_v.append(X_cv[i-seq_length:i])
+        y_v.append(y_cv.iloc[i])
+
+    # Convert to numpy arrays
+    x_v = torch.tensor(x_v)
+    y_v = torch.tensor(y_v).unsqueeze(1).unsqueeze(2)
+
+    x_t = []
+    y_t = []
+    for i in range(seq_length, len(X_test)):
+        x_t.append(X_test[i-seq_length:i])
+        y_t.append(y_test[i])
+
+    # Convert to numpy arrays
+    x_t = torch.tensor(x_t)
+    y_t = torch.tensor(y_t).unsqueeze(1).unsqueeze(2)
+
     # gpu the data
     print(f"GPU available: {torch.cuda.is_available()}")
     if torch.cuda.is_available() == True:
@@ -54,46 +94,6 @@ def load_data(battery, test_size, cv_size):
         y_cv = torch.tensor(y_cv.values).to('cuda')
     else:
         print("THIS GA WILL TAKE A LONG TIME TO RUN ESPECIALLY WITHOUT THE GPU!!!")
-
-    return X_train, y_train, X_test, y_test, X_cv, y_cv
-
-# Prepare data (reshape) (CHECK WHICH SHAPE NEEDED)
-def prepare_dataset(seq_length, X_train, y_train, X_test, y_test, X_cv, y_cv):
-    "Process data into the correct shape for the model for given hyper parameters"
-    
-    # reshape data (Gowri's code from load gpu data with batches func in data_processing.py)
-    x_tr = []
-    y_tr = []
-    for i in range(seq_length, len(X_train)):
-        x_tr.append(X_train.values[i-seq_length:i])
-        y_tr.append(y_train.values[i])
-        
-    # Convert to numpy arrays
-    x_tr = torch.tensor(np.array(x_tr))
-    y_tr = torch.tensor(y_tr).unsqueeze(1).unsqueeze(2)
-    print(y_tr.shape)
-
-    x_v = []
-    y_v = []
-    for i in range(seq_length, len(X_cv)):
-        x_v.append(X_cv.values[i-seq_length:i])
-        y_v.append(y_cv.values[i])
-
-    # Convert to numpy arrays
-    x_v = torch.tensor(x_v)
-    y_v = torch.tensor(y_v).unsqueeze(1).unsqueeze(2)
-
-    x_t = []
-    y_t = []
-    for i in range(seq_length, len(X_test)):
-        x_t.append(X_test.values[i-seq_length:i])
-        y_t.append(y_test.values[i])
-
-    # Convert to numpy arrays
-    x_t = torch.tensor(x_t)
-    y_t = torch.tensor(y_t).unsqueeze(1).unsqueeze(2)
-
-
     return x_tr, y_tr, x_t, y_t, x_v, y_v
 
 # train evaluate (GA individuals)
@@ -134,6 +134,10 @@ def train_evaluate(ga_individual_solution):
     cnn_stride = [cnn_stride] * cnn_layers
     cnn_padding = [cnn_padding] * cnn_layers
     hidden_neurons_dense = [hidden_neurons_dense] * cnn_layers
+    batch_size += 1
+    cnn_layers += 1
+    lstm_layers += 1
+
 
     print(f"lstm Layers =  {lstm_layers}")
     print(f"lstm Sequential Length =  {lstm_sequential_length}")
@@ -150,6 +154,7 @@ def train_evaluate(ga_individual_solution):
 
     # Return 100 fitness if any hyperparameter == 0
     if batch_size ==0 or lstm_layers == 0 or lstm_sequential_length == 0 or lstm_neurons == 0 or learning_rate == 0 or batch_size == 0 or cnn_layers == 0 or cnn_kernel_size == 0 or cnn_stride == 0 or cnn_padding == 0 or hidden_neurons_dense == 0:
+        print("One of the hyperparameters is 0")
         return 100
     
     # change data so that seq len and batch size is changed (use prepare_dataset func
@@ -158,15 +163,19 @@ def train_evaluate(ga_individual_solution):
     datasetv = SeqDataset(x_data = X_cv, y_data = y_cv, seq_len = lstm_sequential_length, batch = batch_size)
     # intitialize the model based on the new hyperparameters
     model = ParametricCNNLSTM(input_size, lstm_layers, lstm_neurons, cnn_layers, cnn_kernel_size, cnn_stride, cnn_padding, cnn_output_size)
+    model.to(device)
     # train model
+    model.train()
     criterion = torch.nn.MSELoss(reduction='mean')
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     num_epochs = 20
     
     train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch, lf = criterion, optimizer = optimizer, verbose = True)
+    model.eval()
+    predictions = model(X_test).to('cpu').detach().numpy()
+
     plot = True
     if plot != False:
-        predictions = model(X_test).to('cpu').detach().numpy()
         epoch = np.linspace(1, n_epoch+1, n_epoch)
         plt.plot(epoch, predictions.squeeze(2), label='predictions')
         plt.plot(y_test.squeeze(2).to('cpu').detach().numpy(), label='actual')
@@ -192,7 +201,7 @@ if __name__ == '__main__':
     input_size = len(data_fields)
 
     # basically creates classes for the fitness and individual
-    creator.create('FitnessMax', base.Fitness, weights=(-1.0,))
+    creator.create('FitnessMax', base.Fitness, weights=[-1.0])
     creator.create('Individual', list, fitness=creator.FitnessMax)
 
     # create toolbox & initialize population (bernoulli random variables)
