@@ -328,8 +328,4 @@ class ParametricCNNLSTM(nn.Module):
      #   print(f'output shape is {out.shape}')
    #     print("its actually working - no way lets gooo")
 
-        return out 
-        
-
-
-       
+        return out
