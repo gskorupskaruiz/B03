@@ -79,7 +79,7 @@ def load_gpu_data_with_batches(data, test_size, cv_size, seq_length):
 		y_v.append(y_cv.values[i])
 
 	# Convert to numpy arrays
-	x_v = torch.tensor(x_v)
+	x_v = torch.tensor(np.array(x_v))
 	y_v = torch.tensor(y_v).unsqueeze(1).unsqueeze(2)
 
 	x_t = []
@@ -89,7 +89,7 @@ def load_gpu_data_with_batches(data, test_size, cv_size, seq_length):
 		y_t.append(y_test.values[i])
 
 	# Convert to numpy arrays
-	x_t = torch.tensor(x_t)
+	x_t = torch.tensor(np.array(x_t))
 	y_t = torch.tensor(y_t).unsqueeze(1).unsqueeze(2)
 
 
