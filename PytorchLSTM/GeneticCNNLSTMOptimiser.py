@@ -54,47 +54,52 @@ def prepare_dataset(seq_length, X_train, y_train, X_test, y_test, X_cv, y_cv):
     x_tr = []
     y_tr = []
     for i in range(seq_length, len(X_train)):
-        x_tr.append(X_train[i-seq_length:i])
-        y_tr.append(y_train[i])
+        x_tr.append(X_train.values[i-seq_length:i])
+        y_tr.append(y_train.values[i])
         
     # Convert to numpy arrays
     x_tr = torch.tensor(np.array(x_tr))
     y_tr = torch.tensor(y_tr).unsqueeze(1).unsqueeze(2)
-    print(y_tr.shape)
+    print(f'train shape {y_tr.shape}')
 
     x_v = []
     y_v = []
     for i in range(seq_length, len(X_cv)):
-        x_v.append(X_cv[i-seq_length:i])
-        y_v.append(y_cv.iloc[i])
+        x_v.append(X_cv.values[i-seq_length:i])
+        y_v.append(y_cv.values[i])
 
     # Convert to numpy arrays
-    x_v = torch.tensor(x_v)
+    x_v = torch.tensor(np.array(x_v))
     y_v = torch.tensor(y_v).unsqueeze(1).unsqueeze(2)
 
     x_t = []
     y_t = []
     for i in range(seq_length, len(X_test)):
-        x_t.append(X_test[i-seq_length:i])
-        y_t.append(y_test[i])
+        x_t.append(X_test.values[i-seq_length:i])
+        y_t.append(y_test.values[i])
 
     # Convert to numpy arrays
-    x_t = torch.tensor(x_t)
+    x_t = torch.tensor(np.array(x_t))
     y_t = torch.tensor(y_t).unsqueeze(1).unsqueeze(2)
 
     # gpu the data
     print(f"GPU available: {torch.cuda.is_available()}")
     if torch.cuda.is_available() == True:
-        print("Running on GPU")
-        X_train = torch.tensor(X_train.values).to('cuda')
-        y_train = torch.tensor(y_train.values).to('cuda')
-        X_test = torch.tensor(X_test.values).to('cuda')
-        y_test = torch.tensor(y_test.values).to('cuda')
-        X_cv = torch.tensor(X_cv.values).to('cuda')
-        y_cv = torch.tensor(y_cv.values).to('cuda')
+        print('Running on GPU')
+
+        y_train = y_tr.to('cuda').double()
+        X_train = x_tr.to('cuda').double()
+        X_test = x_t.to('cuda').double()
+        y_test = y_t.to('cuda').double()
+        X_cv = x_v.to('cuda').double()
+        y_cv = y_v.to('cuda').double()
+        print("X_train and y_train are on GPU: ", X_train.is_cuda, y_train.is_cuda)
+        print("X_test and y_test are on GPU: ", X_test.is_cuda, y_test.is_cuda)
+        print("X_cv and y_cv are on GPU: ", X_cv.is_cuda, y_cv.is_cuda)
+        print(f"size of X_train: {X_train.size()} and y_train: {y_train.size()}")
     else:
         print("THIS GA WILL TAKE A LONG TIME TO RUN ESPECIALLY WITHOUT THE GPU!!!")
-    return x_tr, y_tr, x_t, y_t, x_v, y_v
+    return X_train, y_train, X_test, y_test, X_cv, y_cv
 
 # train evaluate (GA individuals)
 def train_evaluate(ga_individual_solution):
@@ -122,11 +127,29 @@ def train_evaluate(ga_individual_solution):
     cnn_padding = cnn_padding_bit.uint
     cnn_output_size = cnn_output_size_bit.uint
     hidden_neurons_dense = hidden_neurons_dense_bit.uint
+
     batch_size = batch_size_bit.uint
 
     # resize hyperparameters
+    lstm_layers += 1
+    lstm_sequential_length += 1
+    lstm_neurons += 1
+    learning_rate += 1
+    cnn_layers += 1
+    cnn_kernel_size += 1
+    cnn_stride += 1
+    cnn_padding += 1
+    cnn_output_size += 1
+    hidden_neurons_dense += 1
+    batch_size += 1
     learning_rate = learning_rate/100
     batch_size = batch_size * 10
+
+    # get rid of possibility of Kernel size being bigger than input size
+    if cnn_kernel_size > lstm_sequential_length + 2* cnn_padding:
+        cnn_kernel_size = lstm_sequential_length + 2* cnn_padding 
+        print(f'cnn kernel size changed to {cnn_kernel_size} as it was bigger than the input size')
+
 
     # ensure lists are the correct length
     cnn_output_size = [cnn_output_size] * cnn_layers
@@ -134,9 +157,8 @@ def train_evaluate(ga_individual_solution):
     cnn_stride = [cnn_stride] * cnn_layers
     cnn_padding = [cnn_padding] * cnn_layers
     hidden_neurons_dense = [hidden_neurons_dense] * cnn_layers
-    batch_size += 1
-    cnn_layers += 1
-    lstm_layers += 1
+    hidden_neurons_dense[0] = lstm_sequential_length
+    
 
 
     print(f"lstm Layers =  {lstm_layers}")
@@ -162,23 +184,27 @@ def train_evaluate(ga_individual_solution):
     dataset = SeqDataset(x_data = X_train, y_data = y_train, seq_len = lstm_sequential_length, batch = batch_size)
     datasetv = SeqDataset(x_data = X_cv, y_data = y_cv, seq_len = lstm_sequential_length, batch = batch_size)
     # intitialize the model based on the new hyperparameters
-    model = ParametricCNNLSTM(input_size, lstm_layers, lstm_neurons, cnn_layers, cnn_kernel_size, cnn_stride, cnn_padding, cnn_output_size)
+    model = ParametricCNNLSTM(num_layers_conv= cnn_layers, kernel_sizes = cnn_kernel_size, stride_sizes = cnn_stride, padding_sizes = cnn_padding, output_channels = cnn_output_size, hidden_neurons_dense = hidden_neurons_dense, num_layers_lstm = lstm_layers, hidden_size_lstm = lstm_neurons).double()
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device)
     # train model
     model.train()
     criterion = torch.nn.MSELoss(reduction='mean')
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    num_epochs = 20
+    num_epochs = 2
     
-    train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch, lf = criterion, optimizer = optimizer, verbose = True)
+    train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch = num_epochs, lf = criterion, optimizer = optimizer, verbose = True)
     model.eval()
     predictions = model(X_test).to('cpu').detach().numpy()
 
     plot = True
     if plot != False:
-        epoch = np.linspace(1, n_epoch+1, n_epoch)
-        plt.plot(epoch, predictions.squeeze(2), label='predictions')
-        plt.plot(y_test.squeeze(2).to('cpu').detach().numpy(), label='actual')
+        print(f"data type of predictions = {type(predictions)}")
+        print(f' size of predictions = {predictions.shape}')
+        print(f'predictions = {predictions}')
+        epoch = np.linspace(1, num_epochs+1, num_epochs)
+        plt.plot(epoch, predictions.squeeze(2, dim = 0), label='predictions')
+        plt.plot(y_test.squeeze(2, dim = 0).to('cpu').detach().numpy(), label='actual')
         plt.legend()
         plt.show()
 
