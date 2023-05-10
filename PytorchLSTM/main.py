@@ -316,15 +316,14 @@ if __name__ == '__main__':
     # num_layers_lstm = 2
     # hidden_neurons_dense = [30, 10, 1]
 
-    num_layers_conv = 6
-    output_channels = [15, 15, 15, 15, 15, 15]
-    kernel_sizes = [3, 3, 3, 3, 3, 3]
-    stride_sizes = [6, 6, 6, 6, 6, 6]
-    padding_sizes = [1, 1, 1, 1, 1, 1]
-    hidden_size_lstm = 40
-    num_layers_lstm = 2
-    hidden_neurons_dense = [1, 1, 1, 1, 1, 1]
-
+    num_layers_conv = 1
+    output_channels = [4]
+    kernel_sizes = [4]
+    stride_sizes = [3]
+    padding_sizes = [4]
+    hidden_size_lstm = 50
+    num_layers_lstm = 5
+    hidden_neurons_dense = [4, 1]
     model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq).double()
     #model = CNNLSTMog(input_size, seq, n_hidden, n_layer).double() 
 
