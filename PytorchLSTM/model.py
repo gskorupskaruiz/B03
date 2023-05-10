@@ -257,9 +257,7 @@ class ParametricCNNLSTM(nn.Module):
         self.output_shape = []
         for i in range(self.num_layers_conv):
             if i == 0:
-                # print(type(self.kernel_sizes), type(self.hidden_neurons_dense), type(self.padding_sizes), type(self.stride_sizes))
-                # print(i, self.kernel_sizes[i], self.padding_sizes[i], self.stride_sizes[i])
-                output_shape_1 = (self.hidden_neurons_dense[i] - self.kernel_sizes[i] + 2 * self.padding_sizes[i])/self.stride_sizes[i] + 1
+                output_shape_1 = (self.hidden_neurons_dense[i] - self.kernel_sizes[i] + 2* self.padding_sizes[i])/self.stride_sizes[i] + 1
                 self.output_shape.append(output_shape_1)
             else:
                 # print(f'this is for {i}')
