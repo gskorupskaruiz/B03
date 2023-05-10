@@ -146,8 +146,8 @@ def train_evaluate(ga_individual_solution):
     batch_size = batch_size * 10
 
     # get rid of possibility of Kernel size being bigger than input size
-    if cnn_kernel_size > lstm_sequential_length + 2* cnn_padding:
-        cnn_kernel_size = lstm_sequential_length + 2* cnn_padding 
+    if cnn_kernel_size > cnn_output_size + 2* cnn_padding:
+        cnn_kernel_size = cnn_output_size + 2* cnn_padding 
         print(f'cnn kernel size changed to {cnn_kernel_size} as it was bigger than the input size')
 
 
@@ -158,6 +158,7 @@ def train_evaluate(ga_individual_solution):
     cnn_padding = [cnn_padding] * cnn_layers
     hidden_neurons_dense = [hidden_neurons_dense] * cnn_layers
     hidden_neurons_dense[0] = lstm_sequential_length
+    
     
 
 
@@ -191,7 +192,7 @@ def train_evaluate(ga_individual_solution):
     model.train()
     criterion = torch.nn.MSELoss(reduction='mean')
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    num_epochs = 2
+    num_epochs = 4
     
     train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch = num_epochs, lf = criterion, optimizer = optimizer, verbose = True)
     model.eval()
@@ -202,14 +203,23 @@ def train_evaluate(ga_individual_solution):
         print(f"data type of predictions = {type(predictions)}")
         print(f' size of predictions = {predictions.shape}')
         print(f'predictions = {predictions}')
+        predictions.squeeze(2)
+        print(f"data type of predictions = {type(predictions)}")
+        print(f' size of predictions = {predictions.shape}')
+        print(f'predictions = {predictions}')
         epoch = np.linspace(1, num_epochs+1, num_epochs)
-        plt.plot(epoch, predictions.squeeze(2, dim = 0), label='predictions')
-        plt.plot(y_test.squeeze(2, dim = 0).to('cpu').detach().numpy(), label='actual')
+        plt.plot(predictions.squeeze(2), label='predictions')
+        plt.plot(y_test.squeeze().to('cpu').detach().numpy(), label='actual')
+        plt.legend()
+        plt.show()
+
+        plt.plot(epoch, train_hist, label='training loss')
+        plt.plot(epoch, val_hist, label='validation loss')
         plt.legend()
         plt.show()
 
     # evaluate model
-    loss_model = ((predictions - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
+    loss_model = ((predictions - y_test.to('cpu').detach().numpy()) ** 2).mean()
 
 
     print(f"loss of model = {loss_model}")
@@ -221,7 +231,7 @@ if __name__ == '__main__':
     # init variables and implementation of Ga using DEAP 
     battery = ["B0005"]
     population_size = 4
-    num_generations = 4
+    num_generations = 2
     entire_bit_array_length = 11 * 4 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
     X_train_raw, y_train_raw, X_test_raw, y_test_raw, X_cv_raw, y_cv_raw = load_data(battery, test_size=0.2, cv_size=0.2)
     input_size = len(data_fields)

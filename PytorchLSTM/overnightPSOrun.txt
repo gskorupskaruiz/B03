@@ -1,0 +1,5 @@
+(40000, 7) (5000, 7) (5000, 7)
+torch.Size([39980, 1, 1])
+GPU is availible:  False
+Epoch 1: train loss = 0.5772456289, val loss = 0.2756285920
+Epoch 2: train loss = 0.2928226943, val loss = 0.1220957521
