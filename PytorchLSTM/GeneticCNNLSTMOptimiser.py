@@ -120,7 +120,7 @@ def prepare_dataset(seq_length, X_train, y_train, X_test, y_test, X_cv, y_cv):
 
 # train evaluate (GA individuals)
 def train_evaluate(ga_individual_solution):
-    gene_length = 4
+    gene_length = 3
     import random
     # decode GA solution to get hyperparamteres
     lstm_layers_bit = BitArray(ga_individual_solution[0:gene_length]) # don't understand the bitarray stuff yet or the length given per hyperparameter
@@ -128,11 +128,11 @@ def train_evaluate(ga_individual_solution):
     lstm_sequential_length_bit = BitArray(ga_individual_solution[2*gene_length:3*gene_length])
     learning_rate_bit = BitArray(ga_individual_solution[3*gene_length:4*gene_length])
     cnn_layers_bit = BitArray(ga_individual_solution[4*gene_length:5*gene_length])
-    # cnn_kernel_size_bit = BitArray(ga_individual_solution[5*gene_length:6*gene_length])
-    # cnn_stride_bit = BitArray(ga_individual_solution[6*gene_length:7*gene_length])
-    # cnn_padding_bit = BitArray(ga_individual_solution[7*gene_length:8*gene_length])
-    # cnn_output_size_bit = BitArray(ga_individual_solution[8*gene_length:9*gene_length])
-    # hidden_neurons_dense_bit = BitArray(ga_individual_solution[9*gene_length:10*gene_length])
+    cnn_kernel_size_bit = BitArray(ga_individual_solution[5*gene_length:6*gene_length])
+    cnn_stride_bit = BitArray(ga_individual_solution[6*gene_length:7*gene_length])
+    cnn_padding_bit = BitArray(ga_individual_solution[7*gene_length:8*gene_length])
+    cnn_output_size_bit = BitArray(ga_individual_solution[8*gene_length:9*gene_length])
+    hidden_neurons_dense_bit = BitArray(ga_individual_solution[9*gene_length:10*gene_length])
     batch_size_bit = BitArray(ga_individual_solution[10*gene_length:11*gene_length])
 
     lstm_layers = lstm_layers_bit.uint
@@ -161,7 +161,8 @@ def train_evaluate(ga_individual_solution):
     hidden_neurons_dense += 1
     batch_size += 1
     learning_rate = learning_rate/100
-    batch_size = batch_size * 10
+    batch_size = batch_size * 1000
+    lstm_neurons *= 10 
 
     # get rid of possibility of Kernel size being bigger than input size
     if cnn_kernel_size > cnn_output_size + 2* cnn_padding:
@@ -174,10 +175,19 @@ def train_evaluate(ga_individual_solution):
     cnn_kernel_size = [cnn_kernel_size] * cnn_layers
     cnn_stride = [cnn_stride] * cnn_layers
     cnn_padding = [cnn_padding] * cnn_layers
-    hidden_neurons_dense = [hidden_neurons_dense] * cnn_layers
+    hidden_neurons_dense = [hidden_neurons_dense] * (cnn_layers)
+    hidden_neurons_dense.append(1)
     hidden_neurons_dense[0] = lstm_sequential_length
-    
-    
+
+    # just some test stuff   
+    # cnn_layers = 4
+    # cnn_output_size = [1, 1, 1, 1]
+    # cnn_kernel_size = [3, 3, 3, 3]
+    # cnn_stride = [4, 4, 4, 4]
+    # cnn_padding = [4, 4, 4, 4]
+    # lstm_neurons = 10
+    # lstm_layers = 2
+    # hidden_neurons_dense = [10, 10, 10, 10, 10]
 
 
     print(f"lstm Layers =  {lstm_layers}")
@@ -198,51 +208,53 @@ def train_evaluate(ga_individual_solution):
         print("One of the hyperparameters is 0 - try again haha")
         return 100
     
-    # change data so that seq len and batch size is changed (use prepare_dataset func
-    X_train, y_train, X_test, y_test, X_cv, y_cv = prepare_dataset(lstm_sequential_length, X_train_raw, y_train_raw, X_test_raw, y_test_raw, X_cv_raw, y_cv_raw)
-    dataset = SeqDataset(x_data = X_train, y_data = y_train, seq_len = lstm_sequential_length, batch = batch_size)
-    datasetv = SeqDataset(x_data = X_cv, y_data = y_cv, seq_len = lstm_sequential_length, batch = batch_size)
-    # intitialize the model based on the new hyperparameters
-    model = ParametricCNNLSTM(num_layers_conv= cnn_layers, kernel_sizes = cnn_kernel_size, stride_sizes = cnn_stride, padding_sizes = cnn_padding, output_channels = cnn_output_size, hidden_neurons_dense = hidden_neurons_dense, num_layers_lstm = lstm_layers, hidden_size_lstm = lstm_neurons).double()
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model.to(device)
-    # train model
-    model.train()
-    criterion = torch.nn.MSELoss(reduction='mean')
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    num_epochs = 4
-    
-    train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch = num_epochs, lf = criterion, optimizer = optimizer, verbose = True)
-    model.eval()
-    predictions = model(X_test).to('cpu').detach().numpy()
+    try:
+        # change data so that seq len and batch size is changed (use prepare_dataset func
+        X_train, y_train, X_test, y_test, X_cv, y_cv = prepare_dataset(lstm_sequential_length, X_train_raw, y_train_raw, X_test_raw, y_test_raw, X_cv_raw, y_cv_raw)
+        dataset = SeqDataset(x_data = X_train, y_data = y_train, seq_len = lstm_sequential_length, batch = batch_size)
+        datasetv = SeqDataset(x_data = X_cv, y_data = y_cv, seq_len = lstm_sequential_length, batch = batch_size)
+        # intitialize the model based on the new hyperparameters
 
-    plot = True
-    if plot != False:
-        print(f"data type of predictions = {type(predictions)}")
-        print(f' size of predictions = {predictions.shape}')
-        print(f'predictions = {predictions}')
-        predictions.squeeze(2)
-        print(f"data type of predictions = {type(predictions)}")
-        print(f' size of predictions = {predictions.shape}')
-        print(f'predictions = {predictions}')
-        epoch = np.linspace(1, num_epochs+1, num_epochs)
-        plt.plot(predictions.squeeze(2), label='predictions')
-        plt.plot(y_test.squeeze().to('cpu').detach().numpy(), label='actual')
-        plt.legend()
-        plt.show()
+        model = ParametricCNNLSTM(num_layers_conv= cnn_layers, kernel_sizes = cnn_kernel_size, stride_sizes = cnn_stride, padding_sizes = cnn_padding, output_channels = cnn_output_size, hidden_neurons_dense = hidden_neurons_dense, num_layers_lstm = lstm_layers, hidden_size_lstm = lstm_neurons, seq = lstm_sequential_length).double()
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        model.to(device)
+        # train model
+        model.train()
+        criterion = torch.nn.MSELoss(reduction='mean')
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+        num_epochs = 5
+        
+        train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch = num_epochs, lf = criterion, optimizer = optimizer, verbose = True)
+        model.eval()
+        predictions = model(X_test).to('cpu').detach().numpy()
 
-        plt.plot(epoch, train_hist, label='training loss')
-        plt.plot(epoch, val_hist, label='validation loss')
-        plt.legend()
-        plt.show()
+        plot = True
+        if plot != False:
+            print(f"data type of predictions = {type(predictions)}")
+            print(f' size of predictions = {predictions.shape}')
+            # print(f'predictions = {predictions}')
+            epoch = np.linspace(1, num_epochs+1, num_epochs)
+            plt.plot(predictions.squeeze(2), label='predictions')
+            plt.plot(y_test.squeeze().to('cpu').detach().numpy(), label='actual')
+            plt.legend()
+            plt.show()
 
-        # evaluate model
-        loss_model = ((predictions - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
+            plt.plot(epoch, train_hist, label='training loss')
+            plt.plot(epoch, val_hist, label='validation loss')
+            plt.legend()
+            plt.show()
+
+            # evaluate model
+            loss_model = ((predictions - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
 
 
-        print(f"loss of model = {loss_model}")
+            print(f"loss of model = {loss_model}")
 
-        return loss_model
+    except TypeError or RuntimeError:
+        print('Something went wrong, probably invalid set of hyper paremeters')
+        loss_model = 100
+    print(f'data type loss model {type(loss_model)}')
+    return [loss_model]
 
 if __name__ == '__main__':  
 
@@ -281,4 +293,3 @@ if __name__ == '__main__':
 
     # print best solution found
     best_individuals = tools.selBest(population, k=1)
-    print(f"\nBest individual is {best_individuals[0]}, \nwith fitness {best_individuals[0].fitness}")

@@ -282,9 +282,13 @@ class ParametricCNNLSTM(nn.Module):
             # set the conv and batchnorm layers 
             for i in range(1, self.num_layers_conv+1):
                 if i == 1:
-                    print(f'input is {self.hidden_neurons_dense[0]}, output is {self.output_channels[i-1]}')
-                    self.conv1 = nn.Conv1d(in_channels = self.seq, out_channels= self.output_channels[i-1], kernel_size= self.kernel_sizes[i-1], stride = self.stride_sizes[i-1], padding= self.padding_sizes[i-1])
-                    self.batch1 = nn.BatchNorm1d(self.output_channels[i-1])
+                    if self.num_layers_conv == 1:
+                        self.conv1 = nn.Conv1d(in_channels = self.seq, out_channels = 1, kernel_size= self.kernel_sizes[i-1], stride = self.stride_sizes[i-1], padding= self.padding_sizes[i-1])
+                        self.batch1 = nn.BatchNorm1d(1)
+                    else:
+                        print(f'input is {self.hidden_neurons_dense[0]}, output is {self.output_channels[i-1]}')
+                        self.conv1 = nn.Conv1d(in_channels = self.seq, out_channels= self.output_channels[i-1], kernel_size= self.kernel_sizes[i-1], stride = self.stride_sizes[i-1], padding= self.padding_sizes[i-1])
+                        self.batch1 = nn.BatchNorm1d(self.output_channels[i-1])
                 elif i == self.num_layers_conv:
                     setattr(self, 'conv'+str(i), nn.Conv1d(in_channels = self.output_channels[i-2], out_channels=1, kernel_size= self.kernel_sizes[i-1], stride = self.stride_sizes[i-1], padding= self.padding_sizes[i-1]))
                     setattr(self, 'batch'+str(i), nn.BatchNorm1d(1))
@@ -295,18 +299,20 @@ class ParametricCNNLSTM(nn.Module):
             # dense layers after conv 
             for i in range(2, len(self.hidden_neurons_dense)+1):
                 if i == 2:
+                    
                     setattr(self, 'dense'+str(i), nn.Linear(int(self.output_shape[-1]), int(self.hidden_neurons_dense[1])))
                 elif i == len(self.hidden_neurons_dense):
                     setattr(self, 'dense'+str(i), nn.Linear(in_features=self.hidden_neurons_dense[i-2], out_features=1)) 
                 else:
                     setattr(self, 'dense'+str(i), nn.Linear(in_features=self.hidden_neurons_dense[i-2], out_features=self.hidden_neurons_dense[i-1])) 
-            
+
+
             self.relu = nn.ReLU()
             self.dropout = nn.Dropout(0.2)
     
 
-    def forward(self, x):
-        print(f'shape of x is {x.shape}')
+    def forward(self, x, verbose = False):
+        if verbose: print(f'shape of x is {x.shape}') 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         h_0 = torch.randn(self.num_layer_lstm, x.shape[0], self.hidden_size_lstm).to(device).double()
@@ -314,33 +320,33 @@ class ParametricCNNLSTM(nn.Module):
 
         # output of lstm 
         output, (hn, cn) = self.lstm(x, (h_0, c_0))  # lstm with input, hidden, and internal state
-        print(f'shape after lstm is {output.shape}')
+        if verbose: print(f'shape after lstm is {output.shape}')
         # output of first dense layer 
         out = self.relu(self.dense1(self.relu(output)))
-        print(f'shape after first dense layer is {out.shape}')
+        if verbose: print(f'shape after first dense layer is {out.shape}')
 
         for i in range(self.num_layers_conv):
             conv_name = f'conv{i+1}' # or use whatever naming scheme you used for your conv layers
             conv_layer = getattr(self, conv_name)
             out = conv_layer(out)
-            print(f'shape after conv layer {i+1} is {out.shape}')
+            if verbose: print(f'shape after conv layer {i+1} is {out.shape}')
             batch_name = f'batch{i+1}'
             batch_norm = getattr(self, batch_name)
             out = batch_norm(out)
-            print(f'shape after batch layer {i+1} is {out.shape}')
+            if verbose: print(f'shape after batch layer {i+1} is {out.shape}')
         
         for j in range(1, len(self.hidden_neurons_dense)-1):
             dense_name = f'dense{j+1}'
             dense_layer = getattr(self, dense_name)
             out = self.relu(dense_layer(out))
-            print(f'shape after dense layer {j+1} is {out.shape}')
+            if verbose: print(f'shape after dense layer {j+1} is {out.shape}')
 
         out = out = self.dropout(out)
         
         last_dense = f'dense{len(self.hidden_neurons_dense)}'
         last_dense_layer = getattr(self, last_dense)
         out = last_dense_layer(out)
-        print(f'output shape is {out.shape}')
+        if verbose: print(f'output shape is {out.shape}')
         # print("its actually working - no way lets gooo")
 
         return out 
