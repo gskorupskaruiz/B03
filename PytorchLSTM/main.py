@@ -114,6 +114,8 @@ def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, verbose
     return train_loss_history, val_loss_history, epoch
 
 def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, verbose = True):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    
     epoch = []
     model.to(device) # set model to GPU
     #intiate early stopper
@@ -127,7 +129,7 @@ def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, 
         loss_v = 0
         loss = 0
         for l, (x, y) in enumerate(train_dataloader):
-            #print(y.shape, x.shape)
+            #print(f'shape of y and x are {y.shape}, {x.shape}')
             target_train = model(x) #.unsqueeze(2) uncomment this for simple lstm
             #print(target_train.shape, y.shape, x.shape)
             loss_train = lf(target_train, y)
@@ -249,6 +251,8 @@ class SeqDataset(Dataset):
         self.seq_len = seq_len
         self.batch = batch
 
+        #print(f'size of xdata from the dataset is {x_data.shape}')
+
     def __len__(self):
         return math.ceil((len(self.x_data) / self.batch))
 
@@ -296,22 +300,31 @@ if __name__ == '__main__':
     dataset = SeqDataset(x_data=X_train, y_data=y_train, seq_len=seq, batch=batch_size)
     datasetv = SeqDataset(x_data=X_val, y_data=y_val, seq_len=seq, batch=batch_size)
 
-    print(X_train.dtype)
+    #print(X_train.shape)
     #where is X_train
     print(f"x_train is on {X_train.device}, y_train is on {y_train.device}")
 
 
     # LsTM Model initialization
-    num_layers_conv = 3
-    output_channels = [32, 10, 1]
-    kernel_sizes = [2, 1, 2]
-    stride_sizes = [1, 1, 1]
-    padding_sizes = [0, 2, 2]
+    # num_layers_conv = 3
+    # output_channels = [32, 10, 1]
+    # kernel_sizes = [2, 1, 2]
+    # stride_sizes = [1, 1, 1]
+    # padding_sizes = [0, 2, 2]
+    # hidden_size_lstm = 40
+    # num_layers_lstm = 2
+    # hidden_neurons_dense = [30, 10, 1]
+
+    num_layers_conv = 6
+    output_channels = [15, 15, 15, 15, 15, 15]
+    kernel_sizes = [3, 3, 3, 3, 3, 3]
+    stride_sizes = [6, 6, 6, 6, 6, 6]
+    padding_sizes = [1, 1, 1, 1, 1, 1]
     hidden_size_lstm = 40
     num_layers_lstm = 2
-    hidden_neurons_dense = [20, 10, 1]
+    hidden_neurons_dense = [1, 1, 1, 1, 1, 1]
 
-    model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense).double()
+    model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq).double()
     #model = CNNLSTMog(input_size, seq, n_hidden, n_layer).double() 
 
     criterion = torch.nn.MSELoss() 
@@ -324,7 +337,7 @@ if __name__ == '__main__':
     predictions = model(X_test).to('cpu').detach().numpy()
     print(predictions.shape)
     epoch = np.linspace(1, n_epoch+1, n_epoch)
-    plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
+    plt.plot(predictions.squeeze(2), linewidth=2, color='red')
     plt.plot(y_test.squeeze(2).to('cpu').detach().numpy()) 
     plt.legend()
     plt.show()
