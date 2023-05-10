@@ -1,0 +1,168 @@
+(40000, 7) (5000, 7) (5000, 7)
+torch.Size([39980, 1, 1])
+GPU is availible:  False
+Epoch 1: train loss = 0.5129325817, val loss = 0.2235133660
+Epoch 2: train loss = 0.2329400376, val loss = 0.1194632357
+Epoch 3: train loss = 0.1932286859, val loss = 0.1255954471
+Epoch 4: train loss = 0.1929172023, val loss = 0.1276139086
+Epoch 5: train loss = 0.1635625896, val loss = 0.1132907766
+Epoch 6: train loss = 0.1706984717, val loss = 0.1337531544
+Epoch 7: train loss = 0.1745661694, val loss = 0.1177334920
+Epoch 8: train loss = 0.1572812385, val loss = 0.1094792730
+Epoch 9: train loss = 0.1586278981, val loss = 0.1208626710
+Epoch 10: train loss = 0.1565384327, val loss = 0.1153814430
+Epoch 11: train loss = 0.1537933992, val loss = 0.1157401540
+Epoch 12: train loss = 0.1597863896, val loss = 0.1111432111
+Epoch 13: train loss = 0.1671322964, val loss = 0.1155792887
+Epoch 14: train loss = 0.1677060962, val loss = 0.1229061173
+Epoch 15: train loss = 0.2658671600, val loss = 0.1315978818
+Epoch 16: train loss = 0.1997642873, val loss = 0.1347895678
+Epoch 17: train loss = 0.1847610442, val loss = 0.1192663947
+Epoch 18: train loss = 0.1741468098, val loss = 0.1233676364
+Epoch 19: train loss = 0.2048996140, val loss = 0.1928808573
+Epoch 20: train loss = 0.2782001050, val loss = 0.1977396977
+0.18922947455147043
+ParametricCNNLSTM(
+  (lstm): LSTM(7, 40, num_layers=2, batch_first=True, dropout=0.2)
+  (dense1): Linear(in_features=40, out_features=20, bias=True)
+  (conv1): Conv1d(20, 32, kernel_size=(2,), stride=(1,))
+  (batch1): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+  (conv2): Conv1d(32, 10, kernel_size=(1,), stride=(1,), padding=(2,))
+  (batch2): BatchNorm1d(10, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+  (conv3): Conv1d(10, 1, kernel_size=(2,), stride=(1,), padding=(2,))
+  (batch3): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+  (dense2): Linear(in_features=26, out_features=10, bias=True)
+  (dense3): Linear(in_features=10, out_features=1, bias=True)
+  (denseLast): Linear(in_features=1, out_features=1, bias=True)
+  (relu): ReLU()
+  (dropout): Dropout(p=0.2, inplace=False)
+)
+(40000, 7) (5000, 7) (5000, 7)
+torch.Size([39980, 1, 1])
+GPU is availible:  False
+Epoch 1: train loss = 0.7069808910, val loss = 0.3189971284
+Epoch 2: train loss = 0.4251552959, val loss = 0.2306120891
+Epoch 3: train loss = 0.4140206581, val loss = 0.2617211142
+Epoch 4: train loss = 0.3920469263, val loss = 0.3111208324
+Epoch 5: train loss = 0.3730836070, val loss = 0.2459821064
+Epoch 6: train loss = 0.3597787500, val loss = 0.2364914704
+Epoch 7: train loss = 0.3225525427, val loss = 0.2447881189
+Epoch 8: train loss = 0.3258057321, val loss = 0.2375355434
+Epoch 9: train loss = 0.3251287961, val loss = 0.2334634950
+Epoch 10: train loss = 0.3222450337, val loss = 0.2303744762
+Epoch 11: train loss = 0.2817420300, val loss = 0.2351873768
+Epoch 12: train loss = 0.3226192289, val loss = 0.2540569370
+Epoch 13: train loss = 0.3624930577, val loss = 0.2525512931
+Epoch 14: train loss = 0.3593257700, val loss = 0.2038959156
+Epoch 15: train loss = 0.3051015317, val loss = 0.2218613582
+Epoch 16: train loss = 0.2900212848, val loss = 0.2006125228
+Epoch 17: train loss = 0.2717224418, val loss = 0.2101239383
+Epoch 18: train loss = 0.2827817797, val loss = 0.2238523397
+Epoch 19: train loss = 0.2972946226, val loss = 0.2196084951
+Epoch 20: train loss = 0.2851586463, val loss = 0.2164657518
+0.2173679975358776
+ParametricCNNLSTM(
+  (lstm): LSTM(7, 40, num_layers=2, batch_first=True, dropout=0.2)
+  (dense1): Linear(in_features=40, out_features=20, bias=True)
+  (conv1): Conv1d(20, 32, kernel_size=(2,), stride=(1,))
+  (batch1): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+  (conv2): Conv1d(32, 10, kernel_size=(1,), stride=(1,), padding=(2,))
+  (batch2): BatchNorm1d(10, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+  (conv3): Conv1d(10, 1, kernel_size=(2,), stride=(1,), padding=(2,))
+  (batch3): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+  (dense2): Linear(in_features=26, out_features=10, bias=True)
+  (dense3): Linear(in_features=10, out_features=1, bias=True)
+  (denseLast): Linear(in_features=1, out_features=1, bias=True)
+  (relu): ReLU()
+  (dropout): Dropout(p=0.2, inplace=False)
+)
+(40000, 7) (5000, 7) (5000, 7)
+torch.Size([39980, 1, 1])
+GPU is availible:  False
+Epoch 1: train loss = 0.5583772618, val loss = 0.1421508220
+Epoch 2: train loss = 0.2269823396, val loss = 0.1149416930
+Epoch 3: train loss = 0.1621968310, val loss = 0.0989928444
+Epoch 4: train loss = 0.1654572288, val loss = 0.1042672491
+Epoch 5: train loss = 0.1841705176, val loss = 0.1042223019
+Epoch 6: train loss = 0.1635861808, val loss = 0.1067908028
+Epoch 7: train loss = 0.1880550611, val loss = 0.0981822695
+Epoch 8: train loss = 0.1550600732, val loss = 0.1012139310
+Epoch 9: train loss = 0.1521527744, val loss = 0.0930812868
+Epoch 10: train loss = 0.1498365753, val loss = 0.0873276706
+Epoch 11: train loss = 0.1568127760, val loss = 0.0923415927
+Epoch 12: train loss = 0.1537818373, val loss = 0.0919706471
+Epoch 13: train loss = 0.1521777760, val loss = 0.0966456694
+Epoch 14: train loss = 0.1697951996, val loss = 0.1404444272
+Epoch 15: train loss = 0.1881719684, val loss = 0.1181512780
+Epoch 16: train loss = 0.1837952068, val loss = 0.1207224940
+Epoch 17: train loss = 0.1868619734, val loss = 0.1264789911
+Epoch 18: train loss = 0.1688392941, val loss = 0.1128440631
+Epoch 19: train loss = 0.1812721939, val loss = 0.1189433749
+Epoch 20: train loss = 0.1778260929, val loss = 0.1271434065
+0.13365768896269484
+ParametricCNNLSTM(
+  (lstm): LSTM(7, 40, num_layers=2, batch_first=True, dropout=0.2)
+  (dense1): Linear(in_features=40, out_features=20, bias=True)
+  (conv1): Conv1d(20, 32, kernel_size=(2,), stride=(1,))
+  (batch1): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+  (conv2): Conv1d(32, 10, kernel_size=(1,), stride=(1,), padding=(2,))
+  (batch2): BatchNorm1d(10, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+  (conv3): Conv1d(10, 1, kernel_size=(2,), stride=(1,), padding=(2,))
+  (batch3): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+  (dense2): Linear(in_features=26, out_features=10, bias=True)
+  (dense3): Linear(in_features=10, out_features=1, bias=True)
+  (denseLast): Linear(in_features=1, out_features=1, bias=True)
+  (relu): ReLU()
+  (dropout): Dropout(p=0.2, inplace=False)
+)
+YOOOOOOOOOOOOO
+[[96, 4, 90, 20], [100, 5, 100, 25]]
+[0.18922947455147043, 0.13365768896269484]
+(40000, 7) (5000, 7) (5000, 7)
+torch.Size([39980, 1, 1])
+GPU is availible:  False
+Epoch 1: train loss = 0.5780057566, val loss = 0.2177154438
+Epoch 2: train loss = 0.3334368454, val loss = 0.2072135499
+Epoch 3: train loss = 0.2765541274, val loss = 0.2034047070
+Epoch 4: train loss = 0.2724763482, val loss = 0.1964948036
+Epoch 5: train loss = 0.2712111016, val loss = 0.2051135978
+Epoch 6: train loss = 0.2824821088, val loss = 0.2012991656
+Epoch 7: train loss = 0.2857465723, val loss = 0.2255061578
+Epoch 8: train loss = 0.3196520173, val loss = 0.2154366487
+Epoch 9: train loss = 0.2963815441, val loss = 0.2158056172
+Epoch 10: train loss = 0.2828736634, val loss = 0.2125091211
+Epoch 11: train loss = 0.2887931513, val loss = 0.2221764499
+Epoch 12: train loss = 0.2582372700, val loss = 0.1761363009
+Epoch 13: train loss = 0.2526534016, val loss = 0.1980210474
+Epoch 14: train loss = 0.2583296475, val loss = 0.1781308558
+Epoch 15: train loss = 0.2695121863, val loss = 0.1836362555
+Epoch 16: train loss = 0.2698459908, val loss = 0.1728763733
+Epoch 17: train loss = 0.2469583044, val loss = 0.1749583614
+Epoch 18: train loss = 0.2510847067, val loss = 0.1731447066
+Epoch 19: train loss = 0.2438678185, val loss = 0.1756967646
+Epoch 20: train loss = 0.2409705815, val loss = 0.1773021143
+0.1718722566586073
+ParametricCNNLSTM(
+  (lstm): LSTM(7, 40, num_layers=2, batch_first=True, dropout=0.2)
+  (dense1): Linear(in_features=40, out_features=20, bias=True)
+  (conv1): Conv1d(20, 32, kernel_size=(2,), stride=(1,))
+  (batch1): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+  (conv2): Conv1d(32, 10, kernel_size=(1,), stride=(1,), padding=(2,))
+  (batch2): BatchNorm1d(10, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+  (conv3): Conv1d(10, 1, kernel_size=(2,), stride=(1,), padding=(2,))
+  (batch3): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+  (dense2): Linear(in_features=26, out_features=10, bias=True)
+  (dense3): Linear(in_features=10, out_features=1, bias=True)
+  (denseLast): Linear(in_features=1, out_features=1, bias=True)
+  (relu): ReLU()
+  (dropout): Dropout(p=0.2, inplace=False)
+)
+(40000, 7) (5000, 7) (5000, 7)
+torch.Size([39980, 1, 1])
+GPU is availible:  False
+Epoch 1: train loss = 0.7566216910, val loss = 0.3923113550
+Epoch 2: train loss = 0.4839307458, val loss = 0.3523057712
+Epoch 3: train loss = 0.4771912214, val loss = 0.3541395514
+Epoch 4: train loss = 0.4648740417, val loss = 0.3755672360
+Epoch 5: train loss = 0.4822289343, val loss = 0.3786452291
+Epoch 6: train loss = 0.4932157783, val loss = 0.3610286377
