@@ -83,7 +83,8 @@ soc_new = [];
 for i=1:1:616
     load('B0007.mat');
 
-    if B0007.cycle(i).type == 'discharge'
+    % if B0007.cycle(i).type== 'discharge';
+    if strcmp(B0007.cycle(i).type, 'discharge')
 
         LiPoly.RecordingTime            = B0007.cycle(i).data.Time;
         LiPoly.Measured_Voltage         = B0007.cycle(i).data.Voltage_measured;
