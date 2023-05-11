@@ -199,47 +199,6 @@ class CNNLSTMog(nn.Module):
         output = self.fc1(x)
         return output
     
-
-# class ParametricCNNLSTM():
-#     def __init__(self, input_size output_size, hidden_size, num_layers, cnn_layers, cnn_kernel_size, cnn_stride, cnn_padding, cnn_output_size):
-#         super(CNNLSTM, self).__init__()
-        
-#         for i in range(cnn_layers):
-#             setattr(self, 'conv'+i, nn.Conv1d(in_channels = input_size , out_channels = cnn_output_size, kernel_size= cnn_kernel_size , stride = cnn_stride , padding= cnn_padding))
-
-
-        
-#         self.batch1 =nn.BatchNorm1d(32)
-#         self.conv3 = nn.Conv1d(32, 32, kernel_size=1, stride = 1, padding=1)
-#         self.batch2 =nn.BatchNorm1d(32)
-        
-#         self.LSTM = nn.LSTM(input_size=10, hidden_size=hidden_size,
-#                             num_layers=num_layers, batch_first=True)
-        
-#         self.fc1 = nn.Linear(32*hidden_size, output_size)
-#         self.dropout = nn.Dropout(0.1)
-#         self.relu = nn.ReLU
-        
-
-#     def forward(self, x):
-
-#         x = self.conv1(x)
-#         #x = self.relu(x)
-#         x = self.conv2(x)
-#         #x = self.relu(x)
-#         x = self.batch1(x)
-#         x = self.conv3(x)
-#         #x = self.relu(x)
-#         x = self.batch2(x)
-        
-#         x, h = self.LSTM(x) 
-#         x = torch.reshape(x,(x.shape[0],x.shape[1]*x.shape[2]))
-
-#         x = self.dropout(x)
-#         output = self.fc1(x)
-#         return output
-    
-
 class ParametricCNNLSTM(nn.Module):
     def __init__(self, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq):
         super(ParametricCNNLSTM, self).__init__()
@@ -257,18 +216,25 @@ class ParametricCNNLSTM(nn.Module):
         self.output_shape = []
         for i in range(self.num_layers_conv):
             if i == 0:
-                output_shape_1 = (self.hidden_neurons_dense[i] - self.kernel_sizes[i] + 2* self.padding_sizes[i])/self.stride_sizes[i] + 1
-                self.output_shape.append(output_shape_1)
+                if self.kernel_sizes[i] > self.hidden_neurons_dense[i] + 2 * self.padding_sizes[i]:
+                    print('changed kernel size')
+                    self.kernel_sizes[i] = self.hidden_neurons_dense[i] + 2 * self.padding_sizes[i] - 1
+                    output_shape_1 = (self.hidden_neurons_dense[i] - self.kernel_sizes[i] + 2* self.padding_sizes[i])/self.stride_sizes[i] + 1
+                    self.output_shape.append(output_shape_1)
+                else:
+                    output_shape_1 = (self.hidden_neurons_dense[i] - self.kernel_sizes[i] + 2* self.padding_sizes[i])/self.stride_sizes[i] + 1
+                    self.output_shape.append(output_shape_1)
             else:
-                # print(f'this is for {i}')
-                # print(self.output_shape[i-1])
-                # print(self.kernel_sizes[i])
-                # print(self.padding_sizes[i])
-                # print(self.stride_sizes[i])
-                output_shape = (self.output_shape[i-1] - self.kernel_sizes[i] + 2* self.padding_sizes[i])/self.stride_sizes[i] + 1
-                self.output_shape.append(output_shape)
+                if self.kernel_sizes[i] > self.output_shape[i-1] + 2 * self.padding_sizes[i-1]:
+                    print('changed kernel size')
+                    self.kernel_sizes[i] = self.output_shape[i-1] + 2 * self.padding_sizes[i-1] - 1
+                    output_shape = (self.output_shape[i-1] - self.kernel_sizes[i] + 2* self.padding_sizes[i])/self.stride_sizes[i] + 1
+                    self.output_shape.append(output_shape)
+                else:
+                    output_shape = (self.output_shape[i-1] - self.kernel_sizes[i] + 2* self.padding_sizes[i])/self.stride_sizes[i] + 1
+                    self.output_shape.append(output_shape)
 
-        # print(self.output_shape)
+        print(self.output_shape)
         if self.output_shape[-1] <=0:
             print('change inputs')
         
@@ -290,10 +256,11 @@ class ParametricCNNLSTM(nn.Module):
                         self.conv1 = nn.Conv1d(in_channels = self.seq, out_channels= self.output_channels[i-1], kernel_size= self.kernel_sizes[i-1], stride = self.stride_sizes[i-1], padding= self.padding_sizes[i-1])
                         self.batch1 = nn.BatchNorm1d(self.output_channels[i-1])
                 elif i == self.num_layers_conv:
-                    setattr(self, 'conv'+str(i), nn.Conv1d(in_channels = self.output_channels[i-2], out_channels=1, kernel_size= self.kernel_sizes[i-1], stride = self.stride_sizes[i-1], padding= self.padding_sizes[i-1]))
+                    
+                    setattr(self, 'conv'+str(i), nn.Conv1d(in_channels = self.output_channels[i-2], out_channels=1, kernel_size= int(self.kernel_sizes[i-1]), stride = self.stride_sizes[i-1], padding= self.padding_sizes[i-1]))
                     setattr(self, 'batch'+str(i), nn.BatchNorm1d(1))
                 else:
-                    setattr(self, 'conv'+str(i), nn.Conv1d(in_channels = self.output_channels[i-2], out_channels = self.output_channels[i-1], kernel_size= self.kernel_sizes[i-1], stride = self.stride_sizes[i-1], padding= self.padding_sizes[i-1]))
+                    setattr(self, 'conv'+str(i), nn.Conv1d(in_channels = int(self.output_channels[i-2]), out_channels = self.output_channels[i-1], kernel_size= int(self.kernel_sizes[i-1]), stride = self.stride_sizes[i-1], padding= self.padding_sizes[i-1]))
                     setattr(self, 'batch'+str(i), nn.BatchNorm1d(self.output_channels[i-1]))
 
             # dense layers after conv 
@@ -354,3 +321,41 @@ class ParametricCNNLSTM(nn.Module):
 
 
        
+# class ParametricCNNLSTM():
+#     def __init__(self, input_size output_size, hidden_size, num_layers, cnn_layers, cnn_kernel_size, cnn_stride, cnn_padding, cnn_output_size):
+#         super(CNNLSTM, self).__init__()
+        
+#         for i in range(cnn_layers):
+#             setattr(self, 'conv'+i, nn.Conv1d(in_channels = input_size , out_channels = cnn_output_size, kernel_size= cnn_kernel_size , stride = cnn_stride , padding= cnn_padding))
+
+
+        
+#         self.batch1 =nn.BatchNorm1d(32)
+#         self.conv3 = nn.Conv1d(32, 32, kernel_size=1, stride = 1, padding=1)
+#         self.batch2 =nn.BatchNorm1d(32)
+        
+#         self.LSTM = nn.LSTM(input_size=10, hidden_size=hidden_size,
+#                             num_layers=num_layers, batch_first=True)
+        
+#         self.fc1 = nn.Linear(32*hidden_size, output_size)
+#         self.dropout = nn.Dropout(0.1)
+#         self.relu = nn.ReLU
+        
+
+#     def forward(self, x):
+
+#         x = self.conv1(x)
+#         #x = self.relu(x)
+#         x = self.conv2(x)
+#         #x = self.relu(x)
+#         x = self.batch1(x)
+#         x = self.conv3(x)
+#         #x = self.relu(x)
+#         x = self.batch2(x)
+        
+#         x, h = self.LSTM(x) 
+#         x = torch.reshape(x,(x.shape[0],x.shape[1]*x.shape[2]))
+
+#         x = self.dropout(x)
+#         output = self.fc1(x)
+#         return output
