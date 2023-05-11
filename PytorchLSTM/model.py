@@ -252,7 +252,7 @@ class ParametricCNNLSTM(nn.Module):
                         self.conv1 = nn.Conv1d(in_channels = self.seq, out_channels = 1, kernel_size= self.kernel_sizes[i-1], stride = self.stride_sizes[i-1], padding= self.padding_sizes[i-1])
                         self.batch1 = nn.BatchNorm1d(1)
                     else:
-                        print(f'input is {self.hidden_neurons_dense[0]}, output is {self.output_channels[i-1]}')
+                  #      print(f'input is {self.hidden_neurons_dense[0]}, output is {self.output_channels[i-1]}')
                         self.conv1 = nn.Conv1d(in_channels = self.seq, out_channels= self.output_channels[i-1], kernel_size= self.kernel_sizes[i-1], stride = self.stride_sizes[i-1], padding= self.padding_sizes[i-1])
                         self.batch1 = nn.BatchNorm1d(self.output_channels[i-1])
                 elif i == self.num_layers_conv:

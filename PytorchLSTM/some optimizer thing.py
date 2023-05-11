@@ -303,8 +303,8 @@ class NormalOptimizer:
         best_params, best_loss = self.best_option(fun, n_init)
         
         
-        self.lower_bound = best_params - 3
-        self.upper_bound = best_params + 3
+        self.lower_bound = best_params - [3, 1, 8, 5, 500]
+        self.upper_bound = best_params + [3, 1, 8, 5, 500]
         
         first_iter = self.best_option(fun, n_iter)
         
@@ -322,14 +322,15 @@ class NormalOptimizer:
         self.run(fun, n_iter, n_init)
         
 # pso = Pso(swarmsize=1,maxiter=4)
-# # n_hidden, n_layer, lr, seq
-lower_limit = [60, 2, 40, 20]
-upper_limit = [120, 5, 100, 50]
+# n_hidden, n_layer, lr, seq, batch_size, num_layers_conv, output_channels_val, kernel_sizes_val, stride_sizes_val, padding_sizes_val, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense_val
+# 
+lower_limit = [60, 2, 40, 20, 1000, 1, 1, 1, 1, 1, 1, 10, 1]
+upper_limit = [120, 5, 100, 50, 10000, 8, 8, 8, 8, 8, 8, 100, 4]
 
-print(loss)
 opt = NormalOptimizer(lower_limit, upper_limit)
-optimized = opt.run(run_model, n_iter=5, n_init=5)
-#print(optimized)
+optimized = opt.run(run_model, n_iter=3, n_init=4)
+
+print(optimized)
 # bp,value = pso.run(run_model,lower_limit, upper_limit)
 # # n_hidden, n_layer, n_epoch, lr, test_size, cv_size, seq
 # print('DONEEEEEEEEEEEEEEE')
