@@ -77,19 +77,19 @@ ylabel('vt Error [%]');
 xlabel('Time[hr]');
 grid minor
 
-voltage_new = [];
-soc_new = [];
+voltage_B0005 = [];
+soc_B0005 = [];
 
 for i=1:1:616
-    load('B0007.mat');
+    load('B0005.mat');
 
     % if B0007.cycle(i).type== 'discharge';
-    if strcmp(B0007.cycle(i).type, 'discharge')
+    if strcmp(B0005.cycle(i).type, 'discharge')
 
-        LiPoly.RecordingTime            = B0007.cycle(i).data.Time;
-        LiPoly.Measured_Voltage         = B0007.cycle(i).data.Voltage_measured;
-        LiPoly.Measured_Current         = B0007.cycle(i).data.Current_measured;
-        LiPoly.Measured_Temperature     = B0007.cycle(i).data.Temperature_measured;
+        LiPoly.RecordingTime            = B0005.cycle(i).data.Time;
+        LiPoly.Measured_Voltage         = B0005.cycle(i).data.Voltage_measured;
+        LiPoly.Measured_Current         = B0005.cycle(i).data.Current_measured;
+        LiPoly.Measured_Temperature     = B0005.cycle(i).data.Temperature_measured;
 
         LiPoly.Measured_Current_R       = - LiPoly.Measured_Current;
 
@@ -97,8 +97,8 @@ for i=1:1:616
 
         [SOC_Estimated, Vt_Estimated, Vt_Error] = EKFalgorithm(LiPoly.Measured_Current_R, LiPoly.Measured_Voltage, LiPoly.Measured_Temperature);
     
-        soc_new    = [soc_new;SOC_Estimated];
-        voltage_new = [voltage_new;Vt_Estimated];
+        soc_B0005    = [soc_B0005;SOC_Estimated];
+        voltage_B0005 = [voltage_B0005;Vt_Estimated];
 
     end 
     % RMSE_Vt = sqrt((sum((LiPoly.Measured_Voltage - Vt_Estimated).^2)) /(length(LiPoly.Measured_Voltage)))*1000; % mV
