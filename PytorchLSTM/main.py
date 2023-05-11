@@ -114,7 +114,10 @@ def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, verbose
     return train_loss_history, val_loss_history, epoch
 
 def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, verbose = True):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    
     epoch = []
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device) # set model to GPU
     #intiate early stopper
     early_stopper = EarlyStopper(patience=1e-16, min_delta=1e-6)
@@ -127,7 +130,7 @@ def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, 
         loss_v = 0
         loss = 0
         for l, (x, y) in enumerate(train_dataloader):
-            #print(y.shape, x.shape)
+            #print(f'shape of y and x are {y.shape}, {x.shape}')
             target_train = model(x) #.unsqueeze(2) uncomment this for simple lstm
             #print(target_train.shape, y.shape, x.shape)
             loss_train = lf(target_train, y)
@@ -249,6 +252,8 @@ class SeqDataset(Dataset):
         self.seq_len = seq_len
         self.batch = batch
 
+        #print(f'size of xdata from the dataset is {x_data.shape}')
+
     def __len__(self):
         return math.ceil((len(self.x_data) / self.batch))
 
@@ -280,7 +285,7 @@ if __name__ == '__main__':
     test_size = 0.1
     cv_size = 0.1
     seq = 20
-    batch_size = 10000
+    batch_size = 1000
     
     # gpu?
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -288,27 +293,38 @@ if __name__ == '__main__':
     #data initialization
     X_train, y_train, X_test, y_test, X_val, y_val = load_gpu_data_with_batches(data, test_size=test_size, cv_size=cv_size, seq_length=seq)  
     #print(y_train)
+
+        
     X_train, y_train, X_test, y_test, X_val, y_val = X_train.to(device), y_train.to(device), X_test.to(device), y_test.to(device), X_val.to(device), y_val.to(device)
+    #X_train, y_train, X_test, y_test, X_val, y_val = X_train.to(device), y_train.to(device), X_test.to(device), y_test.to(device), X_val.to(device), y_val.to(device)
     
     dataset = SeqDataset(x_data=X_train, y_data=y_train, seq_len=seq, batch=batch_size)
     datasetv = SeqDataset(x_data=X_val, y_data=y_val, seq_len=seq, batch=batch_size)
 
-    print(X_train.dtype)
+    #print(X_train.shape)
     #where is X_train
     print(f"x_train is on {X_train.device}, y_train is on {y_train.device}")
 
 
     # LsTM Model initialization
-    num_layers_conv = 3
-    output_channels = [32, 10, 1]
-    kernel_sizes = [2, 1, 2]
-    stride_sizes = [1, 1, 1]
-    padding_sizes = [0, 2, 2]
-    hidden_size_lstm = 40
-    num_layers_lstm = 2
-    hidden_neurons_dense = [20, 10, 1]
+    # num_layers_conv = 3
+    # output_channels = [32, 10, 1]
+    # kernel_sizes = [2, 1, 2]
+    # stride_sizes = [1, 1, 1]
+    # padding_sizes = [0, 2, 2]
+    # hidden_size_lstm = 40
+    # num_layers_lstm = 2
+    # hidden_neurons_dense = [30, 10, 1]
 
-    model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense).double()
+    num_layers_conv = 1
+    output_channels = [4]
+    kernel_sizes = [4]
+    stride_sizes = [3]
+    padding_sizes = [4]
+    hidden_size_lstm = 50
+    num_layers_lstm = 5
+    hidden_neurons_dense = [4, 1]
+    model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq).double()
     #model = CNNLSTMog(input_size, seq, n_hidden, n_layer).double() 
 
     criterion = torch.nn.MSELoss() 
@@ -321,7 +337,7 @@ if __name__ == '__main__':
     predictions = model(X_test).to('cpu').detach().numpy()
     print(predictions.shape)
     epoch = np.linspace(1, n_epoch+1, n_epoch)
-    plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
+    plt.plot(predictions.squeeze(2), linewidth=2, color='red')
     plt.plot(y_test.squeeze(2).to('cpu').detach().numpy()) 
     plt.legend()
     plt.show()

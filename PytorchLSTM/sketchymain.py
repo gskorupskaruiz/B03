@@ -1,9 +1,11 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
 from model import *
 import numpy as np
-from data_processing import load_gpu_data
+from data_processing import load_gpu_data, load_gpu_data_with_batches
 from torch.utils.data import DataLoader, TensorDataset
+import torch
+from torch.utils.data import Dataset
+import math 
 # import plot
 import matplotlib.pyplot as plt
 def load_data_normalise(battery):
@@ -12,20 +14,9 @@ def load_data_normalise(battery):
     for i in battery:
         data.append(pd.read_csv("data/" + i + "_TTD.csv"))
     data = pd.concat(data)
-    # print(data)
     # normalize the data
     normalized_data = (data-data.mean(axis=0))/data.std(axis=0)
-
-
-    # for i in battery:
-    #     data += pd.read_csv("data/" + i + "_TTD.csv").to_numpy().tolist()
-    # print(f"data size {len(data)}")
-    # data = pd.DataFrame(data)
-    # normalized_data = (data-data.mean(axis=0))/data.std(axis=0)
     return normalized_data
-
-
-
 
 def testing_func(X_test, y_test):
     rmse_test, result_test = 0, list()
@@ -75,11 +66,11 @@ class EarlyStopper:
             else:
                 return False          
 
-def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, es_patience, es_delta, verbose = True):
+def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, verbose = True):
     epoch = []
- #   model.to(device) # set model to GPU
+    model.to(device) # set model to GPU
     #intiate early stopper
-    early_stopper = EarlyStopper(patience=es_patience, min_delta=es_delta)
+    early_stopper = EarlyStopper(patience=1e-16, min_delta=1e-6)
     # X_train = X_train.double()
     # y_train = y_train.double()
     # X_val = X_val.double()
@@ -91,7 +82,7 @@ def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, es_pati
 
     for i in range(n_epoch):
         target_train = model(X_train).unsqueeze(2) # i changed this 
-        #target_train.reshape(4000, 10, 1)
+
         target_val = model(X_val).unsqueeze(2) # i changed this - added the unsqueeze thing 
         # print(f'size of target_train {target_train.shape} and size of y_train {y_train.shape}')
         # print(f"x_train {X_train.shape} and y_train {y_train.shape}")
@@ -104,60 +95,67 @@ def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, es_pati
         optimizer.zero_grad()
         loss_train.backward()
         optimizer.step()
+        print(loss_train)
 
         # if verbose:
         print(f"Epoch {i+1}: train loss = {loss_train.item():.4f}, val loss = {loss_val.item():.4f}")
 
         # if early_stopper.early_stop(loss_val.item()):
-        #     #print(f"Early stopping at epoch {i+1}")
-        #     break
+        #      print(f"Early stopping at epoch {i+1}")
+        #      break
     return train_loss_history, val_loss_history, epoch
 
-# def train(model, battery):
-#     model.to(device) # set model to GPU
-#      # number of samples
-#      # grouped data per sample
+def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, verbose = True):
+    epoch = []
+  #  model.to(device) # set model to GPU
+    #intiate early stopper
+    early_stopper = EarlyStopper(patience=1e-16, min_delta=1e-6)
 
-#     norm_data = load_data_normalise(battery)
-    
-#     X_train, y_train, X_test, y_test, X_cv, y_cv = load_gpu_data(norm_data, test_size=test_size, cv_size=cv_size)
-#     train_dataset = TensorDataset(X_train, y_train)
-#     print(y_train.shape)
-#     train_loader = DataLoader(train_dataset, batch_size=10, shuffle=True)
-#     val_dataset = TensorDataset(X_cv, y_cv)
-#     val_loader = DataLoader(val_dataset, batch_size=10)
-#     test_dataset = TensorDataset(X_test, y_test)
-#     test_loader = DataLoader(test_dataset, batch_size=10)
-#     # X = norm_data.drop("TTD", axis = 1)
-#     # y = norm_data["TTD"]
-#     # X_train, y_train, X_test, y_test, X_cv, y_cv  = train_test_validation_split(X, y, test_size, cv_size)
-#     num_train = len(X_train)
-#     rmse_temp = 1000
-#     epoch_loss = 0
-#     for epoch in range(n_epoch):
-#         # print(X_train[0]) this highlighets the issue that the data doesn't change so need to fix data loaders
-#         model.train() # set model to training mode
-#         optimizer.zero_grad() # calc and set grad = 0
-#         outputs = model(X_train) # forward pass
-#         print(f"size of output {outputs.shape}, size of y_train {y_train.shape}")
-#         loss = criterion(outputs, y_train) # calc loss for current pass
-#         loss = torch.unsqueeze(loss, 0) # add dimension to loss
-#         epoch_loss += loss.item() # add loss to epoch loss
-#         loss.backward() # update model parameters
-#         optimizer.step() # update loss func   
+    with torch.no_grad():
+        train_loss_history = []
+        val_loss_history = []
+
+    for i in range(n_epoch):
+        loss_v = 0
+        loss = 0
+        for l, (x, y) in enumerate(train_dataloader):
+            target_train = model(x) #.unsqueeze(2) uncomment this for simple lstm
+            loss_train = lf(target_train, y)
+            loss += loss_train.item()
+            #train_loss_history.append(loss_train.item())
+            epoch.append(i+1)
+            optimizer.zero_grad()
+            loss_train.backward()
+            optimizer.step()
+
+        for k, (xv, yv) in enumerate(val_dataloader):
+            
+            target_val = model(xv) #.unsqueeze(2) uncomment this for simple lstm
+            loss_val = lf(target_val, yv)
+            loss_v += loss_val.item()
+
+        train_loss = loss/len(train_dataloader)
+        val_loss = loss_v/len(val_dataloader)
         
-#         model.eval() # evaluate mode model (ie no drop out)
-#         result, rmse = testing_func(X_test, y_test)  #run test through model
-
-#         if rmse_temp < rmse and rmse_temp <0.5:
-#             result, rmse = result_temp, rmse_temp
-#             print("Early stopping ")
-#             break
         
-#         rmse_temp, result_temp = rmse, result #store lst rmse
-#         print("Epoch: %d, loss: %1.5f, rmse: %1.5f" % (epoch, loss , rmse))
+        if i == 0 and float(train_loss)>1:
+            print('Loss is too high')
+            break
+        if i == 2 and float(train_loss)>0.5:
+            print('Loss is too high')
+            break
+        if epoch == 4 and float(train_loss)>0.3:
+            print('Loss is too high')
+            break
+        
+        train_loss_history.append(train_loss)
+        val_loss_history.append(val_loss)
+        
+        #epoch.append(i+1)
+        # if verbose:
+        print(f"Epoch {i+1}: train loss = {train_loss:.10f}, val loss = {val_loss:.10f}")
+    return train_loss_history, val_loss_history
 
-#     return rmse, result
 def plot_loss(train_loss, val_loss, epoch):
     plt.plot(epoch, train_loss, label='train loss')
     plt.plot(epoch, val_loss, label='val loss')
@@ -166,57 +164,132 @@ def plot_loss(train_loss, val_loss, epoch):
     plt.legend()
     plt.show()
 
+def lr_opt(model, X_train, y_train, X_val, y_val, n_epochs,time=False):
+        from scipy import stats
+        
+        learning_rate = stats.loguniform.rvs(10e-8, 1e0, size=15)
+        
+        loss = []
+        value = []
+        for i in learning_rate:
 
+            for module in model():
+                if isinstance(module, torch.nn.Linear):
+                    torch.nn.init.xavier_uniform_(module.weight)
+
+            torch.nn.init.xavier_uniform(model.weight)
+            print(f"current lrq 1qqqqqq is {i}")
+            lf = torch.nn.MSELoss()
+            optimizer = torch.optim.Adam(params = model.parameters(), lr=i)
+
+            train_loss_history, val_loss_history, epoch = train(model, X_train, y_train, X_val, y_val, n_epochs, lf, optimizer, verbose=True,)
+            
+            final_loss = train_loss_history[-1]
+            loss.append(final_loss)
+            value.append(i)
+        
+        #print(loss, type(loss))
+        loss_arr = np.array(loss)
+        idx = np.where(loss_arr == np.amin(loss_arr))
+        idxs = (idx[0])
+        lr_best = value[int(idxs)]
+        
+        return lr_best
+
+class SeqDataset(Dataset):
+    def __init__(self, x_data, y_data, seq_len, batch):
+        self.x_data = x_data
+        self.y_data = y_data
+        self.seq_len = seq_len
+        self.batch = batch
+
+    def __len__(self):
+        return math.ceil((len(self.x_data) / self.batch))
+
+    def __getitem__(self, idx):
+        start_idx = idx * self.batch
+        end_idx = start_idx + self.batch
+
+        x = self.x_data[start_idx:end_idx]
+        y = self.y_data[start_idx:end_idx]
+
+        if end_idx > len(self.x_data):
+            x = self.x_data[start_idx:]
+            y = self.y_data[start_idx:]
+    
+        if x.shape[0] == 0:
+            raise StopIteration
+        
+        return x, y
 
 def run_model(hyperparams):
-	# import data
+    # import data
     battery = ['B0005', 'B0006', 'B0007', 'B0018']
     data = load_data_normalise(battery)
-    input_size = data.shape[1] -1 #len(data.columns) - 1
-    n_hidden, n_layer, n_epoch, lr = hyperparams
-    #test_size = test_size/100
- #   cv_size = cv_size/100
-    lr = lr/100000
-    #n_hidden = 20 #input_size
+    input_size = data.shape[1] - 1 #len(data.columns) - 1
+    print(hyperparams)
+    n_hidden, n_layer, lr, seq = hyperparams
+    # n_hidden = 40 #input_size
     # n_layer = 2
-    # n_epoch = 200
-    # # lr = 0.001
+    lr = lr/1000
+    n_epoch = 3
+    #lr = 0.005
     test_size = 0.1
     cv_size = 0.1
-    seq = 50
+   # seq = 20
+    batch_size = 1000
+    
     # gpu?
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     #data initialization
-    X_train, y_train, X_val, y_val, X_test, y_test = load_gpu_data(data, test_size=test_size, cv_size=cv_size, seq_length=seq)  
-    print(X_train.dtype)
+    X_train, y_train, X_test, y_test, X_val, y_val = load_gpu_data_with_batches(data, test_size=test_size, cv_size=cv_size, seq_length=seq)  
+    
+    #X_train, y_train, X_test, y_test, X_val, y_val = X_train.to(device), y_train.to(device), X_test.to(device), y_test.to(device), X_val.to(device), y_val.to(device)
+    
+    dataset = SeqDataset(x_data=X_train, y_data=y_train, seq_len=seq, batch=batch_size)
+    datasetv = SeqDataset(x_data=X_val, y_data=y_val, seq_len=seq, batch=batch_size)
+
+    #print(X_train.dtype)
     #where is X_train
-    print(f"x_train is on {X_train.device}, y_train is on {y_train.device}")
+    #print(f"x_train is on {X_train.device}, y_train is on {y_train.device}")
+
 
     # LsTM Model initialization
-    # modellstm= LSTM1(input_size, n_hidden, n_layer, seq).double() # ahh i changed the seq len thing too 
-    model = CNNLSTM(input_size, seq, n_hidden, n_layer).double() 
     
+    num_layers_conv = 3
+    output_channels = [32, 10, 1]
+    kernel_sizes = [2, 1, 2]
+    stride_sizes = [1, 1, 1]
+    padding_sizes = [0, 2, 2]
+    hidden_size_lstm = 40
+    num_layers_lstm = 2
+    hidden_neurons_dense = [seq, 10, 1]
+
+    model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense).double()
+    #model = CNNLSTMog(input_size, seq, n_hidden, n_layer).double() 
+    model.to(device)
     criterion = torch.nn.MSELoss() 
-    print(lr)
     optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 
-    
     # training and evaltuation
-    train_hist, val_hist, epoch = train(model, X_train, y_train, X_val, y_val, n_epoch, criterion, optimizer, es_patience = 1e-16, es_delta = 1e-12, verbose = True)
+    train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch, criterion, optimizer, verbose = True)
+    #train_hist, val_hist, epoch = train(model, X_train, y_train, X_val, y_val, n_epoch, criterion, optimizer, verbose = True)
+    
     predictions = model(X_test).to('cpu').detach().numpy()
-    # plt.plot(predictions)
-    # plt.plot(y_test.squeeze(2).to('cpu').detach().numpy())
+    #print(predictions.shape)
+    epoch = np.linspace(1, n_epoch+1, n_epoch)
+    # plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
+    # plt.plot(y_test.squeeze(2).to('cpu').detach().numpy()) 
+    # plt.legend()
     # plt.show()
 
-    loss = ((predictions - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
-    print(loss)
+    loss = ((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
+    print('Current loss: ', loss.round(5))
+    # plt.plot(epoch, train_hist)
+    # plt.plot(epoch, val_hist)
+    # plt.show()
     
-    
+   # print(model)
 
-    plt.plot(epoch, train_hist)
-    plt.plot(epoch, val_hist)
-    plt.show()
-    
-    print(model)
     return loss
