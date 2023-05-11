@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 
 import copy
 import numpy as np
+import datetime
 
 class Particle(object):
     """Particle class for PSO
@@ -22,13 +23,16 @@ class Particle(object):
         objective function (function): Black-box function to evaluate.
 
     """
+    
     def __init__(self,
                  lower_bound,
                  upper_bound,
                  dimensions,
                  objective_function):
+        
         self.reset(dimensions, lower_bound, upper_bound, objective_function)
-
+        
+        
     def reset(self,
               dimensions,
               lower_bound,
@@ -44,6 +48,7 @@ class Particle(object):
 			dimensions (int): Number of dimensions of the search space.
 
         """
+    
         position = []
         for i in range(dimensions):
             if lower_bound[i] < upper_bound[i]:
@@ -129,10 +134,11 @@ class Pso(object):
         maxiter (int): Maximum number of generations the swarm will run
 
     """
-    def __init__(self, swarmsize=5, maxiter=20):
+    def __init__(self, swarmsize=1, maxiter=4):
         self.max_generations = maxiter
         self.swarmsize = swarmsize
-        print('PSO initialised')
+        self.total_runs = self.swarmsize * (self.max_generations + 1)
+        print('***PSO initialised***')
         self.omega = 0.9
         self.phip = 0.3
         self.phig = 0.3
@@ -147,6 +153,7 @@ class Pso(object):
 
         self.retired_particles = []
 
+        
     def run(self, function, lower_bound, upper_bound, kwargs=None):
         """Perform a particle swarm optimization (PSO)
 
@@ -161,6 +168,8 @@ class Pso(object):
 			:param kwargs:
 
         """
+    
+        
         if kwargs is None:
             kwargs = {}
 
@@ -185,7 +194,14 @@ class Pso(object):
         # Start evolution
         generation = 1
         while generation <= self.max_generations:
+            
+            print('GENERATION: ', generation+1)
+            
+            if generation == self.max_generations: print('Finalising... (last run)')
+            n = 0
             for particle in self.particles:
+                n += 1
+                print(' (Particle ', n, ')')
                 particle.update_velocity(self.omega, self.phip, self.phig, self.best_position[-1])
                 particle.update_position(lower_bound, upper_bound, objective_function)
 
@@ -205,11 +221,10 @@ class Pso(object):
                     else:
                         self.best_function_value.append(particle.best_function_value[-1])
                         self.best_position.append(particle.best_position[-1][:])
-
+                print('----> Progress: ', round(n * generation*100/self.total_runs), '%')
 
 
             generation += 1
-        print(self.best_position[-1], self.best_function_value[-1])
         
         return self.best_position[-1], self.best_function_value[-1]
     
@@ -247,11 +262,76 @@ class Pso(object):
 
         return particles
     
-pso = Pso(swarmsize=2,maxiter=1)
-# n_hidden, n_layer, lr, seq
-lower_limit = [30, 2, 40, 5]
-upper_limit = [100, 5, 100, 40]
-bp,value = pso.run(run_model,lower_limit,upper_limit)
-# n_hidden, n_layer, n_epoch, lr, test_size, cv_size, seq
-print('DONEEEEEEEEEEEEEEE')
-print(bp, value)
+    
+class NormalOptimizer:
+    def __init__(self, lower_bound, upper_bound):
+        self.lower_bound = np.array(lower_bound)
+        self.upper_bound = np.array(upper_bound)
+  
+    def initialize_particle(self):
+        
+        return (np.random.randint(self.lower_bound, self.upper_bound))
+    
+    def compute(self, fun):
+        
+        particle = self.initialize_particle()
+        loss = fun(particle)
+        
+        return loss, particle
+        
+    def initial_run(self, fun, n_init):
+        initial_results = []
+        
+        for i in range(n_init):
+            initial_results.append(self.compute(fun))
+        return initial_results
+    
+    def best_option(self, fun, n_init):
+        
+        initiation = np.array(self.initial_run(fun, n_init))
+        losses = list(initiation.T[0])
+        params = list(initiation.T[1])
+        min_loss = min(losses)
+        
+        
+        starting_hyperparams = params[losses.index(min_loss)]
+        
+        return starting_hyperparams, min_loss
+    
+    def run(self, fun, n_iter, n_init):
+        
+        best_params, best_loss = self.best_option(fun, n_init)
+        
+        
+        self.lower_bound = best_params - 3
+        self.upper_bound = best_params + 3
+        
+        first_iter = self.best_option(fun, n_iter)
+        
+        min_iter = min(np.array(first_iter).T[1])
+        min_iter_params = np.array(first_iter).T[0][np.array(first_iter).T[1].tolist().index(max_iter)]
+        
+        if min_iter < best_loss:
+            return min_iter_params, min_iter
+        else:
+            print('Rerunning...')
+            print('Current best: ', best_params, best_loss)
+            self.rerun(fun, n_iter, n_init)
+    
+    def rerun(self, fun, n_iter, n_init):
+        self.run(fun, n_iter, n_init)
+        
+# pso = Pso(swarmsize=1,maxiter=4)
+# # n_hidden, n_layer, lr, seq
+lower_limit = [60, 2, 40, 20]
+upper_limit = [120, 5, 100, 50]
+
+print(loss)
+opt = NormalOptimizer(lower_limit, upper_limit)
+optimized = opt.run(run_model, n_iter=5, n_init=5)
+#print(optimized)
+# bp,value = pso.run(run_model,lower_limit, upper_limit)
+# # n_hidden, n_layer, n_epoch, lr, test_size, cv_size, seq
+# print('DONEEEEEEEEEEEEEEE')
+# print(bp, value)
+# print(datetime.datetime.now())

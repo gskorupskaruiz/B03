@@ -58,7 +58,7 @@ def load_gpu_data_with_batches(data, test_size, cv_size, seq_length):
 	X = data[:50000].drop(["TTD"], axis=1)
 	X_train, y_train, X_test, y_test, X_cv, y_cv = train_test_validation_split(X, y, test_size, cv_size)
 
-	print(X_train.shape, X_test.shape, X_cv.shape)
+	#print(X_train.shape, X_test.shape, X_cv.shape)
 
 	# Create sliding windows of length seq_len for xtrain and ytrain
 	x_tr = []
@@ -70,7 +70,7 @@ def load_gpu_data_with_batches(data, test_size, cv_size, seq_length):
 	# Convert to numpy arrays
 	x_tr = torch.tensor(np.array(x_tr))
 	y_tr = torch.tensor(y_tr).unsqueeze(1).unsqueeze(2)
-
+	#print(y_tr.shape)
 
 	x_v = []
 	y_v = []
@@ -93,7 +93,7 @@ def load_gpu_data_with_batches(data, test_size, cv_size, seq_length):
 	y_t = torch.tensor(y_t).unsqueeze(1).unsqueeze(2)
 
 	# go to gpu, "google gpu pytorch python"
-	print("GPU is availible: ", torch.cuda.is_available())
+	#print("GPU is availible: ", torch.cuda.is_available())
 	if torch.cuda.is_available() == True:
 		print('Running on GPU')
 
@@ -108,12 +108,18 @@ def load_gpu_data_with_batches(data, test_size, cv_size, seq_length):
 		print("X_cv and y_cv are on GPU: ", X_cv.is_cuda, y_cv.is_cuda)
 		print(f"size of X_train: {X_train.size()} and y_train: {y_train.size()}")
 	else:
-		X_train = torch.tensor(x_tr).double()
-		y_train = torch.tensor(y_tr).double()
-		X_test = torch.tensor(x_t).double()
-		y_test = torch.tensor(y_t).double()
-		X_cv = torch.tensor(x_v).double()
-		y_cv = torch.tensor(y_v).double()
+		# X_train = torch.tensor(x_tr).double()
+		# y_train = torch.tensor(y_tr).double()
+		# X_test = torch.tensor(x_t).double()
+		# y_test = torch.tensor(y_t).double()
+		# X_cv = torch.tensor(x_v).double()
+		# y_cv = torch.tensor(y_v).double()
+		X_train = x_tr.clone().detach().double()
+		y_train = y_tr.clone().detach().double()
+		X_test = x_t.clone().detach().double()
+		y_test = y_t.clone().detach().double()
+		X_cv = x_v.clone().detach().double()
+		y_cv = y_v.clone().detach().double()
 	
 	return X_train, y_train, X_test, y_test, X_cv, y_cv
 
@@ -124,7 +130,7 @@ def load_gpu_data(data, test_size, cv_size, seq_length):
 	X_train, y_train, X_test, y_test, X_cv, y_cv = train_test_validation_split(X, y, test_size, cv_size)
 
 # go to gpu, "google gpu pytorch python"
-	print("GPU is availible: ", torch.cuda.is_available())
+	#print("GPU is availible: ", torch.cuda.is_available())
 	if torch.cuda.is_available() == True:
 		print('Running on GPU')
 
@@ -153,7 +159,7 @@ def load_gpu_data(data, test_size, cv_size, seq_length):
 	# X_cv = torch.tensor(X_cv.values)
 	# y_cv = torch.tensor(y_cv.values)
 
-	print(X_train.shape, X_test.shape, X_cv.shape)
+	#print(X_train.shape, X_test.shape, X_cv.shape)
 
 	lex = len(X_train)
 	lex = lex/seq_length
