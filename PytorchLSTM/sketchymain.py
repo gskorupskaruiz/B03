@@ -148,6 +148,8 @@ def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, 
             print('Loss is too high')
             break
         
+        
+        
         train_loss_history.append(train_loss)
         val_loss_history.append(val_loss)
         
@@ -232,7 +234,7 @@ def run_model(hyperparams):
     # n_hidden = 40 #input_size
     # n_layer = 2
     lr = lr/1000
-    n_epoch = 3
+    n_epoch = 4
     #lr = 0.005
     test_size = 0.1
     cv_size = 0.1
@@ -296,8 +298,22 @@ def run_model(hyperparams):
     # plt.legend()
     # plt.show()
 
+    
     loss = ((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
+    
     print('Current loss: ', loss.round(5))
+    
+    if loss < 0.3:
+        print('yes')
+        
+        with open('PytorchLSTM/4e_hyper.txt', 'a') as f:
+            print('yess')
+            f.write(str(hyperparams))
+            f.write('\t')
+            f.write(str(loss))
+            f.write('\n')
+            
+    
     # plt.plot(epoch, train_hist)
     # plt.plot(epoch, val_hist)
     # plt.show()
