@@ -30,10 +30,10 @@ def train_test_validation_split(X, y, test_size, cv_size):
     return [X_train, y_train, X_test, y_test, X_cv, y_cv]
 
 def load_data(battery, test_size, cv_size):
-    data = [pd.read_csv("data/" + i + "_TTD.csv") for i in battery]
+    data = [pd.read_csv("data/" + i + "_TTD - with SOC.csv") for i in battery] #I've changed it to include the physical model implicitly 
     data = pd.concat(data)
     y = data["TTD"]
-    X = data.drop(["TTD"], axis=1)
+    X = data.drop(["TTD"], axis=1).drop(["Voltage_measured"], axis=1) #I though if we are using the new "better" voltage we wouldn't need to use the measure voltage (?)
 
     # normalize the data
     X = (X-X.mean(axis=0))/X.std(axis=0)
@@ -41,8 +41,6 @@ def load_data(battery, test_size, cv_size):
     
     # split data
     X_train, y_train, X_test, y_test, X_cv, y_cv = train_test_validation_split(X, y, test_size, cv_size)
-
-
 
     return X_train, y_train, X_test, y_test, X_cv, y_cv
 
@@ -245,7 +243,7 @@ def train_evaluate(ga_individual_solution):
             plt.show()
 
             # evaluate model
-            loss_model = ((predictions - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
+            loss_model = ((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
 
 
             print(f"loss of model = {loss_model}")
