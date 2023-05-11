@@ -92,7 +92,6 @@ def load_gpu_data_with_batches(data, test_size, cv_size, seq_length):
 	x_t = torch.tensor(np.array(x_t))
 	y_t = torch.tensor(y_t).unsqueeze(1).unsqueeze(2)
 
-
 	# go to gpu, "google gpu pytorch python"
 	#print("GPU is availible: ", torch.cuda.is_available())
 	if torch.cuda.is_available() == True:
