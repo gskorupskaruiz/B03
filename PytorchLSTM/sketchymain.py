@@ -95,6 +95,7 @@ def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, verbose
         optimizer.zero_grad()
         loss_train.backward()
         optimizer.step()
+        print(loss_train)
 
         # if verbose:
         print(f"Epoch {i+1}: train loss = {loss_train.item():.4f}, val loss = {loss_val.item():.4f}")
@@ -136,6 +137,17 @@ def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, 
         train_loss = loss/len(train_dataloader)
         val_loss = loss_v/len(val_dataloader)
         
+        
+        if i == 0 and float(train_loss)>1:
+            print('Loss is too high')
+            break
+        if i == 2 and float(train_loss)>0.5:
+            print('Loss is too high')
+            break
+        if epoch == 4 and float(train_loss)>0.3:
+            print('Loss is too high')
+            break
+        
         train_loss_history.append(train_loss)
         val_loss_history.append(val_loss)
         
@@ -166,7 +178,7 @@ def lr_opt(model, X_train, y_train, X_val, y_val, n_epochs,time=False):
                     torch.nn.init.xavier_uniform_(module.weight)
 
             torch.nn.init.xavier_uniform(model.weight)
-            print(f"current lr is {i}")
+            print(f"current lrq 1qqqqqq is {i}")
             lf = torch.nn.MSELoss()
             optimizer = torch.optim.Adam(params = model.parameters(), lr=i)
 
@@ -215,6 +227,7 @@ def run_model(hyperparams):
     battery = ['B0005', 'B0006', 'B0007', 'B0018']
     data = load_data_normalise(battery)
     input_size = data.shape[1] - 1 #len(data.columns) - 1
+    print(hyperparams)
     n_hidden, n_layer, lr, seq = hyperparams
     # n_hidden = 40 #input_size
     # n_layer = 2
@@ -272,8 +285,7 @@ def run_model(hyperparams):
     # plt.show()
 
     loss = ((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
-    print(loss)
-    
+    print('Current loss: ', loss.round(5))
     # plt.plot(epoch, train_hist)
     # plt.plot(epoch, val_hist)
     # plt.show()
