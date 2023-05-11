@@ -228,7 +228,7 @@ def run_model(hyperparams):
     data = load_data_normalise(battery)
     input_size = data.shape[1] - 1 #len(data.columns) - 1
     print(hyperparams)
-    n_hidden, n_layer, lr, seq = hyperparams
+    n_hidden, n_layer, lr, seq, batch_size, num_layers_conv, output_channels_val, kernel_sizes_val, stride_sizes_val, padding_sizes_val, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense_val = hyperparams
     # n_hidden = 40 #input_size
     # n_layer = 2
     lr = lr/1000
@@ -237,7 +237,7 @@ def run_model(hyperparams):
     test_size = 0.1
     cv_size = 0.1
    # seq = 20
-    batch_size = 1000
+    #batch_size = 1000
     
     # gpu?
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -257,16 +257,28 @@ def run_model(hyperparams):
 
     # LsTM Model initialization
     
-    num_layers_conv = 3
-    output_channels = [32, 10, 1]
-    kernel_sizes = [2, 1, 2]
-    stride_sizes = [1, 1, 1]
-    padding_sizes = [0, 2, 2]
-    hidden_size_lstm = 40
-    num_layers_lstm = 2
-    hidden_neurons_dense = [seq, 10, 1]
+    #num_layers_conv = 3
+    
+    #output_channels_val = 7
+    output_channels = [output_channels_val] * num_layers_conv
+    
+    #kernel_sizes_val = 2
+    kernel_sizes = [kernel_sizes_val] * num_layers_conv
+    
+    #stride_sizes_val = 1
+    stride_sizes = [stride_sizes_val] * num_layers_conv
+    
+    #padding_sizes_val = 1
+    padding_sizes = [padding_sizes_val] * num_layers_conv
+    
+    #hidden_size_lstm = 40
+    
+    #num_layers_lstm = 2
+    
+    #hidden_neurons_dense_val = 10
+    hidden_neurons_dense = [seq, hidden_neurons_dense_val, 1]
 
-    model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense).double()
+    model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq).double()
     #model = CNNLSTMog(input_size, seq, n_hidden, n_layer).double() 
     model.to(device)
     criterion = torch.nn.MSELoss() 
