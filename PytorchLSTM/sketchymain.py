@@ -141,7 +141,7 @@ def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, 
         if i == 0 and float(train_loss)>1:
             print('Loss is too high')
             break
-        if i == 2 and float(train_loss)>0.5:
+        if i == 2 and float(train_loss)>0.6:
             print('Loss is too high')
             break
         if epoch == 4 and float(train_loss)>0.3:
@@ -234,6 +234,7 @@ def run_model(hyperparams):
     # n_hidden = 40 #input_size
     # n_layer = 2
     lr = lr/1000
+    batch_size = batch_size*1000
     n_epoch = 4
     #lr = 0.005
     test_size = 0.1
@@ -312,7 +313,6 @@ def run_model(hyperparams):
             f.write('\t')
             f.write(str(loss))
             f.write('\n')
-            
     
     # plt.plot(epoch, train_hist)
     # plt.plot(epoch, val_hist)
