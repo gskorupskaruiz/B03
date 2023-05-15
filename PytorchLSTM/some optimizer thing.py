@@ -326,8 +326,8 @@ class NormalOptimizer:
 # pso = Pso(swarmsize=1,maxiter=4)
 # n_hidden, n_layer, lr, seq, batch_size, num_layers_conv, output_channels_val, kernel_sizes_val, stride_sizes_val, padding_sizes_val, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense_val
 # 
-lower_limit = [58, 2, 45, 10, 1200, 1, 5, 5, 3, 1, 3, 1, 30]
-upper_limit = [63, 3, 65, 30, 2000, 3, 8, 8, 7, 2, 6, 3, 55]
+lower_limit = [50, 1, 1, 5, 1000, 1, 1, 1, 1, 1, 1, 1, 10]
+upper_limit = [120, 5, 100, 60, 9000, 8, 8, 8, 8, 8, 20, 5, 60]
 
 opt = NormalOptimizer(lower_limit, upper_limit)
 optimized = opt.run(run_model, n_iter=3, n_init=15)
