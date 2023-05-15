@@ -33,7 +33,7 @@ def load_data(battery, test_size, cv_size):
     data = [pd.read_csv("data/" + i + "_TTD - with SOC.csv") for i in battery] #I've changed it to include the physical model implicitly 
     data = pd.concat(data)
     y = data["TTD"]
-    X = data.drop(["TTD"], axis=1).drop(["Voltage_measured"], axis=1) #I though if we are using the new "better" voltage we wouldn't need to use the measure voltage (?)
+    X = data.drop(["TTD"], axis=1).drop(["Voltage_measured"], axis=1) #I though if we are using the new "better" voltage we wouldn't need to use the measured voltage (?)
 
     # normalize the data
     X = (X-X.mean(axis=0))/X.std(axis=0)
