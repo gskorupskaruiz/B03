@@ -225,7 +225,7 @@ class SeqDataset(Dataset):
 
 def run_model(hyperparams):
     # import data
-    battery = ['B0006', 'B0007', 'B0018'] # no clue why but battery 5 just doesnt work - even though it has the same format and i use the same code :(
+    battery = ['B0005', 'B0006', 'B0007', 'B0018'] # no clue why but battery 5 just doesnt work - even though it has the same format and i use the same code :(
     data = load_data_normalise(battery)
     input_size = data.shape[1] - 1 #len(data.columns) - 1
     print(f'size of input is {input_size}')
@@ -287,24 +287,24 @@ def run_model(hyperparams):
     
     # WHYYYYYYY NO PREDICT GOWRIIIIII HELPPPPPPP
     
-    print(predictions)
+    #print(predictions)
     epoch = np.linspace(1, n_epoch+1, n_epoch)
-    plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
-    plt.plot(y_test.squeeze(2).to('cpu').detach().numpy()) 
-    plt.legend()
-    plt.show()
+    # plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
+    # plt.plot(y_test.squeeze(2).to('cpu').detach().numpy()) 
+    # plt.legend()
+    # plt.show()
 
     
     loss = ((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
 
     if loss != 'nan':
-        print(f'no wayy sooo cooool the model predicts! :)')
+    #    print(f'no wayy sooo cooool the model predicts! :)')
         print(f'btw the current loss is {loss.round(5)}')
     
     if loss < 0.3:
         print('yes')
         
-        with open('PytorchLSTM/4e_hyper.txt', 'a') as f:
+        with open('PytorchLSTM/final_runs.txt', 'a') as f:
             print('yess')
             f.write(str(hyperparams))
             f.write('\t')
@@ -312,12 +312,11 @@ def run_model(hyperparams):
             f.write('\n')
             
     
-    plt.plot(epoch, train_hist)
-    plt.plot(epoch, val_hist)
-    plt.show()
+    #plt.plot(epoch, train_hist)
+    #plt.plot(epoch, val_hist)
+    #plt.show()
     
    # print(model)
 
     return loss
 
-run_model([62 ,  2 , 55 , 26 ,966 ,  2 ,  5 ,  4,   2 ,  0 ,  5 ,  1 , 37])
