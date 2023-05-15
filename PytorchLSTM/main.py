@@ -26,6 +26,13 @@ def load_data_normalise(battery):
     # normalized_data = (data-data.mean(axis=0))/data.std(axis=0)
     return normalized_data
 
+def check_nan(battery):
+    data = []
+    data.append(pd.read_csv("data/" + 'B0005' + "_TTD - with SOC.csv"))
+    data = pd.concat(data)
+    return data.dropna()
+    
+
 def testing_func(X_test, y_test):
     rmse_test, result_test = 0, list()
 
@@ -79,10 +86,6 @@ def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, verbose
     model.to(device) # set model to GPU
     #intiate early stopper
     early_stopper = EarlyStopper(patience=1e-16, min_delta=1e-6)
-    # X_train = X_train.double()
-    # y_train = y_train.double()
-    # X_val = X_val.double()
-    # y_val = y_val.double()
 
     with torch.no_grad():
         train_loss_history = []
@@ -93,8 +96,6 @@ def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, verbose
         print(target_train.shape, y_train.shape)
 
         target_val = model(X_val).unsqueeze(2) # i changed this - added the unsqueeze thing 
-        # print(f'size of target_train {target_train.shape} and size of y_train {y_train.shape}')
-        # print(f"x_train {X_train.shape} and y_train {y_train.shape}")
         loss_train = lf(target_train, y_train)
         loss_val = lf(target_val, y_val)
         train_loss_history.append(loss_train.item())
@@ -105,12 +106,7 @@ def train(model, X_train, y_train, X_val, y_val, n_epoch, lf, optimizer, verbose
         loss_train.backward()
         optimizer.step()
 
-        # if verbose:
         print(f"Epoch {i+1}: train loss = {loss_train.item():.4f}, val loss = {loss_val.item():.4f}")
-
-        # if early_stopper.early_stop(loss_val.item()):
-        #      print(f"Early stopping at epoch {i+1}")
-        #      break
     return train_loss_history, val_loss_history, epoch
 
 def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, verbose = True):
@@ -213,38 +209,6 @@ def plot_loss(train_loss, val_loss, epoch):
     plt.legend()
     plt.show()
 
-def lr_opt(model, X_train, y_train, X_val, y_val, n_epochs,time=False):
-        from scipy import stats
-        
-        learning_rate = stats.loguniform.rvs(10e-8, 1e0, size=15)
-        
-        loss = []
-        value = []
-        for i in learning_rate:
-
-            for module in model():
-                if isinstance(module, torch.nn.Linear):
-                    torch.nn.init.xavier_uniform_(module.weight)
-
-            torch.nn.init.xavier_uniform(model.weight)
-            print(f"current lr is {i}")
-            lf = torch.nn.MSELoss()
-            optimizer = torch.optim.Adam(params = model.parameters(), lr=i)
-
-            train_loss_history, val_loss_history, epoch = train(model, X_train, y_train, X_val, y_val, n_epochs, lf, optimizer, verbose=True,)
-            
-            final_loss = train_loss_history[-1]
-            loss.append(final_loss)
-            value.append(i)
-        
-        #print(loss, type(loss))
-        loss_arr = np.array(loss)
-        idx = np.where(loss_arr == np.amin(loss_arr))
-        idxs = (idx[0])
-        lr_best = value[int(idxs)]
-        
-        return lr_best
-
 class SeqDataset(Dataset):
     def __init__(self, x_data, y_data, seq_len, batch):
         self.x_data = x_data
@@ -275,13 +239,13 @@ class SeqDataset(Dataset):
 
 if __name__ == '__main__': 
 	# import data
-    battery = ['B0005', 'B0006', 'B0007', 'B0018']
+    battery = ['B0006', 'B0007', 'B0018']
     data = load_data_normalise(battery)
     input_size = data.shape[1] - 2
     print(f'input_size of data is {input_size}') 
-    n_hidden = 40 #input_size
+    n_hidden = 20 #input_size
     n_layer = 2
-    n_epoch = 20
+    n_epoch = 2
     lr = 0.005
     test_size = 0.1
     cv_size = 0.1
@@ -293,19 +257,10 @@ if __name__ == '__main__':
 
     #data initialization
     X_train, y_train, X_test, y_test, X_val, y_val = load_gpu_data_with_batches(data, test_size=test_size, cv_size=cv_size, seq_length=seq)  
-    #print(y_train)
-
-        
     X_train, y_train, X_test, y_test, X_val, y_val = X_train.to(device), y_train.to(device), X_test.to(device), y_test.to(device), X_val.to(device), y_val.to(device)
-    #X_train, y_train, X_test, y_test, X_val, y_val = X_train.to(device), y_train.to(device), X_test.to(device), y_test.to(device), X_val.to(device), y_val.to(device)
-    
+    print(y_test)
     dataset = SeqDataset(x_data=X_train, y_data=y_train, seq_len=seq, batch=batch_size)
     datasetv = SeqDataset(x_data=X_val, y_data=y_val, seq_len=seq, batch=batch_size)
-
-    #print(X_train.shape)
-    #where is X_train
-    print(f"x_train is on {X_train.device}, y_train is on {y_train.device}")
-
 
     # LsTM Model initialization
     # num_layers_conv = 3
@@ -322,21 +277,18 @@ if __name__ == '__main__':
     kernel_sizes = [4]
     stride_sizes = [3]
     padding_sizes = [4]
-    hidden_size_lstm = 50
-    num_layers_lstm = 5
+    hidden_size_lstm = 20
+    num_layers_lstm = 2
     hidden_neurons_dense = [4, 1]
     model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq).double()
-    #model = CNNLSTMog(input_size, seq, n_hidden, n_layer).double() 
+    model.to(device)
 
     criterion = torch.nn.MSELoss() 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 
     # training and evaltuation
     train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch, criterion, optimizer, verbose = True)
-    #train_hist, val_hist, epoch = train(model, X_train, y_train, X_val, y_val, n_epoch, criterion, optimizer, verbose = True)
-    
     predictions = model(X_test).to('cpu').detach().numpy()
-    print(predictions.shape)
     epoch = np.linspace(1, n_epoch+1, n_epoch)
     plt.plot(predictions.squeeze(2), linewidth=2, color='red')
     plt.plot(y_test.squeeze(2).to('cpu').detach().numpy()) 
