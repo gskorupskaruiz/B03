@@ -12,7 +12,7 @@ def load_data_normalise(battery):
     data = []
     # for all battery files combine them into one dataframe
     for i in battery:
-        data.append(pd.read_csv("data/" + i + "_TTD.csv"))
+        data.append(pd.read_csv("data/" + i + "_TTD - with SOC.csv"))
     data = pd.concat(data)
     # normalize the data
     normalized_data = (data-data.mean(axis=0))/data.std(axis=0)
@@ -119,7 +119,7 @@ def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, 
         loss_v = 0
         loss = 0
         for l, (x, y) in enumerate(train_dataloader):
-            target_train = model(x) #.unsqueeze(2) uncomment this for simple lstm
+            target_train = model(x) # .unsqueeze(2) #uncomment this for simple lstm
             loss_train = lf(target_train, y)
             loss += loss_train.item()
             #train_loss_history.append(loss_train.item())
@@ -141,7 +141,7 @@ def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, 
         if i == 0 and float(train_loss)>1:
             print('Loss is too high')
             break
-        if i == 2 and float(train_loss)>0.6:
+        if i == 2 and float(train_loss)>0.5:
             print('Loss is too high')
             break
         if epoch == 4 and float(train_loss)>0.3:
@@ -234,7 +234,6 @@ def run_model(hyperparams):
     # n_hidden = 40 #input_size
     # n_layer = 2
     lr = lr/1000
-    batch_size = batch_size*1000
     n_epoch = 4
     #lr = 0.005
     test_size = 0.1
@@ -283,21 +282,26 @@ def run_model(hyperparams):
 
     model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq).double()
     #model = CNNLSTMog(input_size, seq, n_hidden, n_layer).double() 
-    model.to(device)
+    #model.to(device)
     criterion = torch.nn.MSELoss() 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 
     # training and evaltuation
     train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch, criterion, optimizer, verbose = True)
     #train_hist, val_hist, epoch = train(model, X_train, y_train, X_val, y_val, n_epoch, criterion, optimizer, verbose = True)
-    
+
     predictions = model(X_test).to('cpu').detach().numpy()
-    #print(predictions.shape)
+    
+    # WHYYYYYYY NO PREDICT GOWRIIIIII HELPPPPPPP
+    
+    
+    
+    print(predictions)
     epoch = np.linspace(1, n_epoch+1, n_epoch)
-    # plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
-    # plt.plot(y_test.squeeze(2).to('cpu').detach().numpy()) 
-    # plt.legend()
-    # plt.show()
+    plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
+    plt.plot(y_test.squeeze(2).to('cpu').detach().numpy()) 
+    plt.legend()
+    plt.show()
 
     
     loss = ((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
@@ -313,11 +317,14 @@ def run_model(hyperparams):
             f.write('\t')
             f.write(str(loss))
             f.write('\n')
+            
     
-    # plt.plot(epoch, train_hist)
-    # plt.plot(epoch, val_hist)
-    # plt.show()
+    plt.plot(epoch, train_hist)
+    plt.plot(epoch, val_hist)
+    plt.show()
     
    # print(model)
 
     return loss
+
+run_model([62 ,  2 , 55 , 26 ,966 ,  2 ,  5 ,  4,   2 ,  0 ,  5 ,  1 , 37])

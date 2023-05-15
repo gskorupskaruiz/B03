@@ -45,14 +45,14 @@ X_test = (X_test - torch.mean(X_test))/torch.std(X_test)
 y_train = (y_train - torch.mean(y_train))/torch.std(y_train)
 y_test = (y_test - torch.mean(y_test))/torch.std(y_test)
 
-
-
-
+#***********************************************************************************************************************
+#OFC THIS DOESNT WORK
+#***********************************************************************************************************************
 #MODEL
 
-def train(lr, n_hidden1, n_hidden2, n_epochs):
+def train(lr, n_hidden1, n_epochs):
 
-    model = nn.Sequential(nn.Linear(13, n_hidden1),nn.Sigmoid(),nn.Linear(n_hidden1, n_hidden2), nn.Sigmoid(),nn.Linear(n_hidden2, 1))
+    model = nn.Sequential(nn.Linear(13, n_hidden1),nn.ReLU(),nn.Linear(n_hidden1, 1))
 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr)
     loss_fn = nn.MSELoss()
@@ -76,44 +76,49 @@ def train(lr, n_hidden1, n_hidden2, n_epochs):
     y_val = model(X_test)
     loss_val = loss_fn(y_val, y_test)
     loss_val = loss_val.item()
-    print(y_val)
     return loss_val, model
 
 
 #HYPERPARAMETER OPTIMISATION
 
-lrs = np.linspace(0.001, 0.201, 15)
-n_hidden1 = np.arange(20, 100, 11)
-n_hidden2 = np.arange(20, 100, 11)
-n_epochs = np.arange(15, 51, 10)
+lrs = np.linspace(0.001, 0.101, 15)
+n_hidden1 = np.arange(10, 90, 3)
+# n_hidden2 = np.arange(10, 90, 9)
+n_epochs = 100
 
-losses = []
+# losses = []
 
-for lr in lrs:
-    for n in n_hidden1:
-        for m in n_epochs:
-            for i in n_hidden2:
-                loss, model = train(lr, n, i, m)
-                print(loss, lr, n, i, m)
-                iter = [loss, lr, n, i, m]
-                losses.append(iter)
+# for lr in lrs:
+#     for n in n_hidden1:
+#         loss, model = train(lr, n, n_epochs)
+#         print(loss, lr, n, n_epochs)
+#         iter = [loss, lr, n, n_epochs]
+#         losses.append(iter)
         
-losses = np.array(losses)
+# losses = np.array(losses)
 
-min_loss = min(losses[:,0])
-min_loss_index = np.where(losses[:,0] == min_loss)
-best_hyper = losses[min_loss_index][0]
+# min_loss = min(losses[:,0])
+# min_loss_index = np.where(losses[:,0] == min_loss)
+# best_hyper = losses[min_loss_index][0]
 
-lr_opt = float(best_hyper[1])
-n_hidden1_opt = int(best_hyper[2])
-n_hidden2_opt = int(best_hyper[3])
-n_epochs_opt = int(best_hyper[4])
+# lr_opt = float(best_hyper[1])
+# n_hidden1_opt = int(best_hyper[2])
+# #n_hidden2_opt = int(best_hyper[3])
+# n_epochs_opt = int(best_hyper[3])
 
-model_trained = train(lr_opt, n_hidden1_opt, n_hidden2_opt, n_epochs_opt)[1]
-print('Best loss and hyperparameters', best_hyper)
+loss_val, model_trained = train(0.08, 25, 100)
+#print('Best loss and hyperparameters', best_hyper)
 y_val = model_trained(X_test)
-print(y_val, y_test)
+print('y_val')
+print(y_val)
+print('y_test')
+print(y_test)
+print(loss_val)
+print(model_trained[0].weight.grad)
 
+#***********************************************************************************************************************
+#OFC THIS DOESNT WORK
+#***********************************************************************************************************************
 
 #print('Test loss:', float(nn.MSELoss(y_val, y_test)))
 

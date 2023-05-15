@@ -12,7 +12,7 @@ def load_data_normalise(battery):
     data = []
     # for all battery files combine them into one dataframe
     for i in battery:
-        data.append(pd.read_csv("data/" + i + "_TTD.csv"))
+        data.append(pd.read_csv("data/" + i + "_TTD - with SOC.csv"))
     data = pd.concat(data)
     # print(data)
     # normalize the data
@@ -277,7 +277,8 @@ if __name__ == '__main__':
 	# import data
     battery = ['B0005', 'B0006', 'B0007', 'B0018']
     data = load_data_normalise(battery)
-    input_size = data.shape[1] - 1 #len(data.columns) - 1
+    input_size = data.shape[1] - 2
+    print(f'input_size of data is {input_size}') 
     n_hidden = 40 #input_size
     n_layer = 2
     n_epoch = 20
