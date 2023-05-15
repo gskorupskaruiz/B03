@@ -301,7 +301,7 @@ def run_model(hyperparams):
     #    print(f'no wayy sooo cooool the model predicts! :)')
         print(f'btw the current loss is {loss.round(5)}')
     
-    if loss < 0.3:
+    if loss < 0.2:
         print('yes')
         
         with open('PytorchLSTM/final_runs.txt', 'a') as f:
@@ -312,11 +312,12 @@ def run_model(hyperparams):
             f.write('\n')
             
     
-    #plt.plot(epoch, train_hist)
-    #plt.plot(epoch, val_hist)
-    #plt.show()
+    # plt.plot(epoch, train_hist)
+    # plt.plot(epoch, val_hist)
+    # plt.show()
     
    # print(model)
 
     return loss
 
+#run_model( [86  , 2,  60 , 28 ,393 ,  2 ,  5 ,  6  , 5  , 3 , 10  , 1  ,41])
