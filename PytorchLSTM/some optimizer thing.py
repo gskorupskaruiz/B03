@@ -327,7 +327,7 @@ class NormalOptimizer:
 # n_hidden, n_layer, lr, seq, batch_size, num_layers_conv, output_channels_val, kernel_sizes_val, stride_sizes_val, padding_sizes_val, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense_val
 # 
 lower_limit = [60, 1, 1, 5, 1000, 1, 1, 1, 1, 1, 1, 1, 15]
-upper_limit = [120, 3, 100, 60, 9000, 8, 8, 8, 8, 8, 20, 5, 60]
+upper_limit = [120, 3, 100, 60, 9000, 8, 8, 8, 8, 8, 20, 3, 60]
 
 opt = NormalOptimizer(lower_limit, upper_limit)
 optimized = opt.run(run_model, n_iter=5, n_init=10)
