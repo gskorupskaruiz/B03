@@ -55,7 +55,7 @@ def train_test_validation_split(X, y, test_size, cv_size):
 
 def load_gpu_data_with_batches(data, test_size, cv_size, seq_length):
 	y = data["TTD"]
-	X = data.drop(["TTD"], axis=1).drop(["SOC"], axis=1).drop('Voltage', axis = 1)
+	X = data.drop(["TTD"], axis=1).drop(["Voltage_measured"], axis=1)
 	X_train, y_train, X_test, y_test, X_cv, y_cv = train_test_validation_split(X, y, test_size, cv_size)
 
 	#print(X_train.shape, X_test.shape, X_cv.shape)
@@ -179,7 +179,7 @@ def load_gpu_data(data, test_size, cv_size, seq_length):
 
 
 if __name__ == '__main__': 
-	find_TTD("B0029")
-	find_TTD("B0030")
-	find_TTD("B0031")
-	find_TTD("B0032")
+	# find_TTD("B0029")
+	# find_TTD("B0030")
+	# find_TTD("B0031")
+	# find_TTD("B0032")

@@ -240,7 +240,7 @@ class ParametricCNNLSTM(nn.Module):
         
         else:
             # first layer must be lstm 
-            self.lstm = nn.LSTM(7, self.hidden_size_lstm, num_layers=self.num_layer_lstm, batch_first=True, dropout=0.2) # changed the input becasue the data from physical model is different
+            self.lstm = nn.LSTM(8, self.hidden_size_lstm, num_layers=self.num_layer_lstm, batch_first=True, dropout=0.2) # changed the input becasue the data from physical model is different
 
             # then dense 
             self.dense1 = nn.Linear(self.hidden_size_lstm, self.hidden_neurons_dense[0])
