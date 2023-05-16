@@ -119,7 +119,7 @@ def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, 
     model.to(device) # set model to GPU
     #intiate early stopper
     early_stopper = EarlyStopper(patience=1e-16, min_delta=1e-6)
-
+    model.train()
     with torch.no_grad():
         train_loss_history = []
         val_loss_history = []
