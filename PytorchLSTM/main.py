@@ -352,3 +352,5 @@ if __name__ == '__main__':
     plt.show()
     
     print(model)
+
+    model.save(torch.state_dict(), 'model.pt')
