@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader, TensorDataset
 import torch
 from torch.utils.data import Dataset
 import math 
+from bitstring import BitArray  
 # import plot
 import matplotlib.pyplot as plt
 def load_data_normalise(battery):
@@ -273,7 +274,7 @@ if __name__ == '__main__':
     # hidden_size_lstm = 40
     # num_layers_lstm = 2
     # hidden_neurons_dense = [30, 10, 1]
-
+    
     num_layers_conv = 2
     output_channels = [5, 5]
     kernel_sizes = [6, 6]
@@ -282,6 +283,78 @@ if __name__ == '__main__':
     hidden_size_lstm = 10
     num_layers_lstm = 1
     hidden_neurons_dense = [28, 41,  1]
+    ga = True
+    if ga:
+        gene_length = 4
+        ga_individual_solution = [0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1]
+        lstm_layers_bit = BitArray(ga_individual_solution[0:gene_length]) # don't understand the bitarray stuff yet or the length given per hyperparameter
+        lstm_neurons_bit = BitArray(ga_individual_solution[gene_length:2*gene_length])
+        lstm_sequential_length_bit = BitArray(ga_individual_solution[2*gene_length:3*gene_length])
+        learning_rate_bit = BitArray(ga_individual_solution[3*gene_length:4*gene_length])
+        cnn_layers_bit = BitArray(ga_individual_solution[4*gene_length:5*gene_length])
+        cnn_kernel_size_bit = BitArray(ga_individual_solution[5*gene_length:6*gene_length])
+        cnn_stride_bit = BitArray(ga_individual_solution[6*gene_length:7*gene_length])
+        cnn_padding_bit = BitArray(ga_individual_solution[7*gene_length:8*gene_length])
+        cnn_output_size_bit = BitArray(ga_individual_solution[8*gene_length:9*gene_length])
+        hidden_neurons_dense_bit = BitArray(ga_individual_solution[9*gene_length:10*gene_length])
+        batch_size_bit = BitArray(ga_individual_solution[10*gene_length:11*gene_length])
+
+        lstm_layers = lstm_layers_bit.uint
+        lstm_sequential_length = lstm_sequential_length_bit.uint
+        lstm_neurons = lstm_neurons_bit.uint
+        learning_rate = learning_rate_bit.uint
+        cnn_layers = cnn_layers_bit.uint
+        cnn_kernel_size = cnn_kernel_size_bit.uint
+        cnn_stride = cnn_stride_bit.uint
+        cnn_padding = cnn_padding_bit.uint
+        cnn_output_size = cnn_output_size_bit.uint
+        hidden_neurons_dense = hidden_neurons_dense_bit.uint
+
+        batch_size = batch_size_bit.uint
+
+        # resize hyperparameters
+        lstm_layers += 1
+        lstm_sequential_length += 1
+        lstm_neurons += 1
+        learning_rate += 1
+        cnn_layers += 1
+        cnn_kernel_size += 1
+        cnn_stride += 1
+        cnn_padding += 1
+        cnn_output_size += 1
+        hidden_neurons_dense += 1
+        batch_size += 1
+        learning_rate = learning_rate/100
+        batch_size = batch_size * 100
+        lstm_neurons *= 10 
+
+        # get rid of possibility of Kernel size being bigger than input size
+        if cnn_kernel_size > cnn_output_size + 2* cnn_padding:
+            cnn_kernel_size = cnn_output_size + 2* cnn_padding 
+            print(f'cnn kernel size changed to {cnn_kernel_size} as it was bigger than the input size')
+
+
+        # ensure lists are the correct length
+        cnn_output_size = [cnn_output_size] * cnn_layers
+        cnn_kernel_size = [cnn_kernel_size] * cnn_layers
+        cnn_stride = [cnn_stride] * cnn_layers
+        cnn_padding = [cnn_padding] * cnn_layers
+        hidden_neurons_dense = [hidden_neurons_dense] * (cnn_layers)
+        hidden_neurons_dense.append(1)
+        hidden_neurons_dense[0] = lstm_sequential_length
+
+        print(f"lstm Layers =  {lstm_layers}")
+        print(f"lstm Sequential Length =  {lstm_sequential_length}")
+        print(f"lstm Neurons =  {lstm_neurons}")
+        print(f"learning rate =  {learning_rate}")
+        print(f"cnn layers =  {cnn_layers}")
+        print(f"cnn kernel size =  {cnn_kernel_size}")
+        print(f"cnn stride =  {cnn_stride}")
+        print(f"cnn padding =  {cnn_padding}")
+        print(f"cnn neurons =  {cnn_output_size}")
+        print(f"hidden neurons =  {hidden_neurons_dense}")
+        print(f"batch size =  {batch_size}")
+
     model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq).double()
     model.to(device)
 
@@ -317,4 +390,4 @@ if __name__ == '__main__':
 # pd.DataFrame(predictions.squeeze(2)).to_csv('PytorchLSTM/predictionsjustLSTM.csv')
 # pd.DataFrame(y_test.squeeze(2).to('cpu').detach().numpy()).to_csv('PytorchLSTM/y_testjustLSTM.csv')
 # pd.DataFrame(time).to_csv('PytorchLSTM/timejustLSTM.csv')
-torch.save(model, 'PytorchLSTM/hyrbidmodel')
+# torch.save(model, 'PytorchLSTM/hyrbidmodel')

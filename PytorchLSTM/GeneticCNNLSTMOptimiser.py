@@ -260,7 +260,7 @@ if __name__ == '__main__':
     # init variables and implementation of Ga using DEAP 
     battery = ["B0005"]
     population_size = 10
-    num_generations = 4
+    num_generations = 10
     entire_bit_array_length = 19 * 4 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
     X_train_raw, y_train_raw, X_test_raw, y_test_raw, X_cv_raw, y_cv_raw = load_data(battery, test_size=0.2, cv_size=0.2)
     input_size = len(data_fields) - 1
@@ -279,10 +279,10 @@ if __name__ == '__main__':
 
     # ordered cross over for mating
     toolbox.register("mate", tools.cxOrdered)
-    # mutations
+    # mutati
     toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0.6)
     # selection algorithm
-    toolbox.register("select", tools.selRoulette)
+    toolbox.register("select", tools.selTournament, tournsize=int(population_size/2))
     # evaluation fitness of individuals
     toolbox.register("evaluate", train_evaluate) # this train evaluate might not be allowed to have gene)length as input
 
@@ -292,3 +292,4 @@ if __name__ == '__main__':
 
     # print best solution found
     best_individuals = tools.selBest(population, k=1)
+    print('Best ever individual = ', best_individuals[0], '\nFitness = ', best_individuals[0].fitness.values[0])
