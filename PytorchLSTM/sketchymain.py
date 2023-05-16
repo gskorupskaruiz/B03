@@ -12,7 +12,7 @@ def load_data_normalise(battery):
     data = []
     # for all battery files combine them into one dataframe
     for i in battery:
-        data.append(pd.read_csv("data/" + i + "_TTD.csv"))
+        data.append(pd.read_csv("data/" + i + "_TTD - with SOC.csv"))
     data = pd.concat(data)
     # normalize the data
     normalized_data = (data-data.mean(axis=0))/data.std(axis=0)
@@ -119,7 +119,7 @@ def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, 
         loss_v = 0
         loss = 0
         for l, (x, y) in enumerate(train_dataloader):
-            target_train = model(x) #.unsqueeze(2) uncomment this for simple lstm
+            target_train = model(x) # .unsqueeze(2) #uncomment this for simple lstm
             loss_train = lf(target_train, y)
             loss += loss_train.item()
             #train_loss_history.append(loss_train.item())
@@ -147,7 +147,6 @@ def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, 
         if epoch == 4 and float(train_loss)>0.3:
             print('Loss is too high')
             break
-        
         
         
         train_loss_history.append(train_loss)
@@ -226,9 +225,10 @@ class SeqDataset(Dataset):
 
 def run_model(hyperparams):
     # import data
-    battery = ['B0005', 'B0006', 'B0007', 'B0018']
+    battery = ['B0005', 'B0006', 'B0007', 'B0018'] # no clue why but battery 5 just doesnt work - even though it has the same format and i use the same code :(
     data = load_data_normalise(battery)
     input_size = data.shape[1] - 1 #len(data.columns) - 1
+    print(f'size of input is {input_size}')
     print(hyperparams)
     n_hidden, n_layer, lr, seq, batch_size, num_layers_conv, output_channels_val, kernel_sizes_val, stride_sizes_val, padding_sizes_val, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense_val = hyperparams
     # n_hidden = 40 #input_size
@@ -247,16 +247,10 @@ def run_model(hyperparams):
     #data initialization
     X_train, y_train, X_test, y_test, X_val, y_val = load_gpu_data_with_batches(data, test_size=test_size, cv_size=cv_size, seq_length=seq)  
     
-    #X_train, y_train, X_test, y_test, X_val, y_val = X_train.to(device), y_train.to(device), X_test.to(device), y_test.to(device), X_val.to(device), y_val.to(device)
+    X_train, y_train, X_test, y_test, X_val, y_val = X_train.to(device), y_train.to(device), X_test.to(device), y_test.to(device), X_val.to(device), y_val.to(device)
     
     dataset = SeqDataset(x_data=X_train, y_data=y_train, seq_len=seq, batch=batch_size)
     datasetv = SeqDataset(x_data=X_val, y_data=y_val, seq_len=seq, batch=batch_size)
-
-    #print(X_train.dtype)
-    #where is X_train
-    #print(f"x_train is on {X_train.device}, y_train is on {y_train.device}")
-
-
     # LsTM Model initialization
     
     #num_layers_conv = 3
@@ -281,7 +275,6 @@ def run_model(hyperparams):
     hidden_neurons_dense = [seq, hidden_neurons_dense_val, 1]
 
     model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq).double()
-    #model = CNNLSTMog(input_size, seq, n_hidden, n_layer).double() 
     model.to(device)
     criterion = torch.nn.MSELoss() 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr)
@@ -289,9 +282,12 @@ def run_model(hyperparams):
     # training and evaltuation
     train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch, criterion, optimizer, verbose = True)
     #train_hist, val_hist, epoch = train(model, X_train, y_train, X_val, y_val, n_epoch, criterion, optimizer, verbose = True)
-    
+
     predictions = model(X_test).to('cpu').detach().numpy()
-    #print(predictions.shape)
+    
+    # WHYYYYYYY NO PREDICT GOWRIIIIII HELPPPPPPP
+    
+    #print(predictions)
     epoch = np.linspace(1, n_epoch+1, n_epoch)
     # plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
     # plt.plot(y_test.squeeze(2).to('cpu').detach().numpy()) 
@@ -300,13 +296,15 @@ def run_model(hyperparams):
 
     
     loss = ((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
+
+    if loss != 'nan':
+    #    print(f'no wayy sooo cooool the model predicts! :)')
+        print(f'btw the current loss is {loss.round(5)}')
     
-    print('Current loss: ', loss.round(5))
-    
-    if loss < 0.3:
+    if loss < 0.2:
         print('yes')
         
-        with open('PytorchLSTM/4e_hyper.txt', 'a') as f:
+        with open('PytorchLSTM/final_runs.txt', 'a') as f:
             print('yess')
             f.write(str(hyperparams))
             f.write('\t')
@@ -321,3 +319,5 @@ def run_model(hyperparams):
    # print(model)
 
     return loss
+
+#run_model( [86  , 2,  60 , 28 ,393 ,  2 ,  5 ,  6  , 5  , 3 , 10  , 1  ,41])

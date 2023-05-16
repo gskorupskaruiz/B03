@@ -302,8 +302,8 @@ class NormalOptimizer:
         
         best_params, best_loss = self.best_option(fun, n_init)
         
-        iter_step_up = [3, 1, 8, 5, 500, 1, 1, 1, 1, 1, 1, 1, 5]
-        iter_step_down = [3, 0, 8, 5, 500, 0, 1, 1, 1, 1, 1, 0, 5]
+        iter_step_up =   [3, 1, 8, 5, 500, 1, 1, 1, 1, 1, 1, 1, 5]
+        iter_step_down = [8, 0, 0, 4, 500, 0, 0, 0, 0, 0, 0, 0, 5]
         
         self.lower_bound = best_params - iter_step_down
         self.upper_bound = best_params + iter_step_up
@@ -326,11 +326,11 @@ class NormalOptimizer:
 # pso = Pso(swarmsize=1,maxiter=4)
 # n_hidden, n_layer, lr, seq, batch_size, num_layers_conv, output_channels_val, kernel_sizes_val, stride_sizes_val, padding_sizes_val, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense_val
 # 
-lower_limit = [40, 2, 40, 20, 1000, 1, 1, 1, 1, 1, 1, 2, 10]
-upper_limit = [120, 5, 100, 50, 10000, 4, 8, 8, 8, 8, 8, 5, 50]
+lower_limit = [60, 1, 1, 5, 1000, 1, 1, 1, 1, 1, 1, 1, 15]
+upper_limit = [120, 3, 100, 60, 9000, 8, 8, 8, 8, 8, 20, 5, 60]
 
 opt = NormalOptimizer(lower_limit, upper_limit)
-optimized = opt.run(run_model, n_iter=8, n_init=30)
+optimized = opt.run(run_model, n_iter=5, n_init=10)
 
 print(optimized)
 # bp,value = pso.run(run_model,lower_limit, upper_limit)
