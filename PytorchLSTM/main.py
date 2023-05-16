@@ -245,12 +245,12 @@ if __name__ == '__main__':
     print(f'input_size of data is {input_size}') 
     n_hidden = 20 #input_size
     n_layer = 2
-    n_epoch = 2
-    lr = 0.005
+    n_epoch = 20
+    lr = 60/1000
     test_size = 0.1
     cv_size = 0.1
-    seq = 20
-    batch_size = 1000
+    seq = 28
+    batch_size = 393
     
     # gpu?
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -272,14 +272,14 @@ if __name__ == '__main__':
     # num_layers_lstm = 2
     # hidden_neurons_dense = [30, 10, 1]
 
-    num_layers_conv = 1
-    output_channels = [4]
-    kernel_sizes = [4]
-    stride_sizes = [3]
-    padding_sizes = [4]
-    hidden_size_lstm = 20
+    num_layers_conv = 2
+    output_channels = [5, 5]
+    kernel_sizes = [6, 6]
+    stride_sizes = [5, 5]
+    padding_sizes = [3,3]
+    hidden_size_lstm = 10
     num_layers_lstm = 2
-    hidden_neurons_dense = [4, 1]
+    hidden_neurons_dense = [28, 41,  1]
     model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq).double()
     model.to(device)
 
@@ -288,6 +288,7 @@ if __name__ == '__main__':
 
     # training and evaltuation
     train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch, criterion, optimizer, verbose = True)
+    model.eval()
     predictions = model(X_test).to('cpu').detach().numpy()
     epoch = np.linspace(1, n_epoch+1, n_epoch)
     plt.plot(predictions.squeeze(2), linewidth=2, color='red')
@@ -305,4 +306,6 @@ if __name__ == '__main__':
     
     print(model)
 
-    model.save(torch.state_dict(), 'model.pt')
+torch.save(model.state_dict(), 'PytorchLSTM/model.pt')
+pd.DataFrame(predictions.squeeze(2)).to_csv('PytorchLSTM/predictions.csv')
+pd.DataFrame(y_test.squeeze(2).to('cpu').detach().numpy()).to_csv('PytorchLSTM/y_test.csv')
