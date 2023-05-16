@@ -247,7 +247,7 @@ if __name__ == '__main__':
     print(f'input_size of data is {input_size}') 
     n_hidden = 20 #input_size
     n_layer = 2
-    n_epoch = 20
+    n_epoch = 25
     lr = 60/1000
     test_size = 0.1
     cv_size = 0.1
