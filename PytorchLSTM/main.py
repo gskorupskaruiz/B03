@@ -15,6 +15,7 @@ def load_data_normalise(battery):
         data.append(pd.read_csv("data/" + i + "_TTD - with SOC.csv"))
     data = pd.concat(data)
     # print(data)
+    time = data["Time"]
     # normalize the data
     normalized_data = (data-data.mean(axis=0))/data.std(axis=0)
 
@@ -24,7 +25,7 @@ def load_data_normalise(battery):
     # print(f"data size {len(data)}")
     # data = pd.DataFrame(data)
     # normalized_data = (data-data.mean(axis=0))/data.std(axis=0)
-    return normalized_data
+    return normalized_data, time
 
 def check_nan(battery):
     data = []
@@ -240,17 +241,18 @@ class SeqDataset(Dataset):
 if __name__ == '__main__': 
 	# import data
     battery = ['B0006', 'B0007', 'B0018']
-    data = load_data_normalise(battery)
+    battery = ['B0018']
+    data, time = load_data_normalise(battery)
     input_size = data.shape[1] - 2
     print(f'input_size of data is {input_size}') 
     n_hidden = 20 #input_size
     n_layer = 2
-    n_epoch = 2
-    lr = 0.005
+    n_epoch = 25
+    lr = 60/1000
     test_size = 0.1
     cv_size = 0.1
-    seq = 20
-    batch_size = 1000
+    seq = 28
+    batch_size = 393
     
     # gpu?
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -272,14 +274,14 @@ if __name__ == '__main__':
     # num_layers_lstm = 2
     # hidden_neurons_dense = [30, 10, 1]
 
-    num_layers_conv = 1
-    output_channels = [4]
-    kernel_sizes = [4]
-    stride_sizes = [3]
-    padding_sizes = [4]
-    hidden_size_lstm = 20
-    num_layers_lstm = 2
-    hidden_neurons_dense = [4, 1]
+    num_layers_conv = 2
+    output_channels = [5, 5]
+    kernel_sizes = [6, 6]
+    stride_sizes = [5, 5]
+    padding_sizes = [3,3]
+    hidden_size_lstm = 10
+    num_layers_lstm = 1
+    hidden_neurons_dense = [28, 41,  1]
     model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq).double()
     model.to(device)
 
@@ -288,10 +290,13 @@ if __name__ == '__main__':
 
     # training and evaltuation
     train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch, criterion, optimizer, verbose = True)
+    model.eval()
     predictions = model(X_test).to('cpu').detach().numpy()
     epoch = np.linspace(1, n_epoch+1, n_epoch)
-    plt.plot(predictions.squeeze(2), linewidth=2, color='red')
-    plt.plot(y_test.squeeze(2).to('cpu').detach().numpy()) 
+    plt.plot(predictions.squeeze(2), linewidth=2, color='red', label = 'Predicted')
+    plt.plot(y_test.squeeze(2).to('cpu').detach().numpy(), label = 'Actual') 
+    plt.xlabel('Time (seconds)')
+    plt.ylabel('Time to Discharge (seconds))')
     plt.legend()
     plt.show()
 
@@ -299,8 +304,16 @@ if __name__ == '__main__':
     print(loss)
     
     import matplotlib.pyplot as plt
-    plt.plot(epoch, train_hist)
-    plt.plot(epoch, val_hist)
+    plt.plot(epoch, train_hist, label = 'Train Loss')
+    plt.plot(epoch, val_hist, label = 'Val Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss (MSE seconds))')
+    plt.legend()
     plt.show()
     
     print(model)
+
+torch.save(model.state_dict(), 'PytorchLSTM/modeljustLSTM.pt')
+pd.DataFrame(predictions.squeeze(2)).to_csv('PytorchLSTM/predictionsjustLSTM.csv')
+pd.DataFrame(y_test.squeeze(2).to('cpu').detach().numpy()).to_csv('PytorchLSTM/y_testjustLSTM.csv')
+pd.DataFrame(time).to_csv('PytorchLSTM/timejustLSTM.csv')

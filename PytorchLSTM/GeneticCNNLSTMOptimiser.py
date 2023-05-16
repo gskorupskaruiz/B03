@@ -14,7 +14,7 @@ from bitstring import BitArray
 
 data_fields = {
         'Voltage_measured', 'Current_measured', 'Temperature_measured',
-        'Current_charge', 'Voltage_charge', 'Time', 'Capacity'}
+        'Current_charge', 'Voltage_charge', 'Time', 'Capacity', 'SOC'}
 
 def train_test_validation_split(X, y, test_size, cv_size):
     "Splits data into train, test and cross validation sets"
@@ -216,6 +216,7 @@ def train_evaluate(ga_individual_solution):
         model = ParametricCNNLSTM(num_layers_conv= cnn_layers, kernel_sizes = cnn_kernel_size, stride_sizes = cnn_stride, padding_sizes = cnn_padding, output_channels = cnn_output_size, hidden_neurons_dense = hidden_neurons_dense, num_layers_lstm = lstm_layers, hidden_size_lstm = lstm_neurons, seq = lstm_sequential_length).double()
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         model.to(device)
+
         # train model
         model.train()
         criterion = torch.nn.MSELoss(reduction='mean')
@@ -226,7 +227,7 @@ def train_evaluate(ga_individual_solution):
         model.eval()
         predictions = model(X_test).to('cpu').detach().numpy()
 
-        plot = True
+        plot = False
         if plot != False:
             print(f"data type of predictions = {type(predictions)}")
             print(f' size of predictions = {predictions.shape}')
@@ -243,10 +244,10 @@ def train_evaluate(ga_individual_solution):
             plt.show()
 
             # evaluate model
-            loss_model = ((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
+        loss_model = ((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
 
 
-            print(f"loss of model = {loss_model}")
+        print(f"loss of model = {loss_model}")
 
     except TypeError or RuntimeError:
         print('Something went wrong, probably invalid set of hyper paremeters')
@@ -258,7 +259,7 @@ if __name__ == '__main__':
 
     # init variables and implementation of Ga using DEAP 
     battery = ["B0005"]
-    population_size = 4
+    population_size = 10
     num_generations = 4
     entire_bit_array_length = 19 * 4 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
     X_train_raw, y_train_raw, X_test_raw, y_test_raw, X_cv_raw, y_cv_raw = load_data(battery, test_size=0.2, cv_size=0.2)
