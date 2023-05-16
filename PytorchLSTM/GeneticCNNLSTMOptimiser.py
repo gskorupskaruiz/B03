@@ -159,7 +159,7 @@ def train_evaluate(ga_individual_solution):
     hidden_neurons_dense += 1
     batch_size += 1
     learning_rate = learning_rate/100
-    batch_size = batch_size * 1000
+    batch_size = batch_size * 100
     lstm_neurons *= 10 
 
     # get rid of possibility of Kernel size being bigger than input size
