@@ -313,7 +313,8 @@ if __name__ == '__main__':
     
     print(model)
 
-torch.save(model.state_dict(), 'PytorchLSTM/modeljustLSTM.pt')
-pd.DataFrame(predictions.squeeze(2)).to_csv('PytorchLSTM/predictionsjustLSTM.csv')
-pd.DataFrame(y_test.squeeze(2).to('cpu').detach().numpy()).to_csv('PytorchLSTM/y_testjustLSTM.csv')
-pd.DataFrame(time).to_csv('PytorchLSTM/timejustLSTM.csv')
+# torch.save(model.state_dict(), 'PytorchLSTM/modeljustLSTM.pt')
+# pd.DataFrame(predictions.squeeze(2)).to_csv('PytorchLSTM/predictionsjustLSTM.csv')
+# pd.DataFrame(y_test.squeeze(2).to('cpu').detach().numpy()).to_csv('PytorchLSTM/y_testjustLSTM.csv')
+# pd.DataFrame(time).to_csv('PytorchLSTM/timejustLSTM.csv')
+torch.save(model, 'PytorchLSTM/hyrbidmodel')
