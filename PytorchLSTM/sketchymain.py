@@ -179,7 +179,7 @@ def lr_opt(model, X_train, y_train, X_val, y_val, n_epochs,time=False):
                     torch.nn.init.xavier_uniform_(module.weight)
 
             torch.nn.init.xavier_uniform(model.weight)
-            print(f"current lrq 1qqqqqq is {i}")
+            print(f"current lr is {i}")
             lf = torch.nn.MSELoss()
             optimizer = torch.optim.Adam(params = model.parameters(), lr=i)
 
@@ -226,15 +226,15 @@ class SeqDataset(Dataset):
 def run_model(hyperparams):
     # import data
     all_losses = []
-    kfold_test = [['B0005'], ['B0006'], ['B0007'], ['B0018']]
-    kfold_train = [['B0005', 'B0006', 'B0007'], ['B0005', 'B0007', 'B0018'], ['B0005', 'B0006', 'B0018'], ['B0006', 'B0007', 'B0018']]
-    battery = ['B0005', 'B0006', 'B0007', 'B0018'] # no clue why but battery 5 just doesnt work - even though it has the same format and i use the same code :(
+    kfold_test = [['B0032'],['B0031'],['B0030'],['B0018'], ['B0007'],['B0006'],['B0005']]
+    kfold_train = [['B0005', 'B0006', 'B0007', 'B0018', 'B0030', 'B0031'], ['B0005', 'B0006', 'B0007', 'B0018', 'B0030', 'B0032'], ['B0005', 'B0006', 'B0007', 'B0018', 'B0031', 'B0032'], ['B0005', 'B0006', 'B0007', 'B0030', 'B0031', 'B0032'], ['B0005', 'B0006', 'B0018', 'B0030', 'B0031', 'B0032'], ['B0005', 'B0007', 'B0018', 'B0030', 'B0031', 'B0032'], ['B0006', 'B0007', 'B0018', 'B0030', 'B0031', 'B0032']]
+    battery = ['B0005', 'B0006', 'B0007', 'B0018', 'B0030', 'B0031', 'B0032'] # no clue why but battery 5 just doesnt work - even though it has the same format and i use the same code :(
 
     for i in range(4):
         battery = kfold_train[i]
         test_battery = load_data_normalise(kfold_test[i])
         
-        
+        print(kfold_test[i])
         data = load_data_normalise(battery)
         input_size = data.shape[1] - 1 #len(data.columns) - 1
         print(f'size of input is {input_size}')
@@ -322,7 +322,7 @@ def run_model(hyperparams):
     if loss < 0.3:
         print('yes')
         
-        with open('PytorchLSTM/final_runs_cv.txt', 'a') as f:
+        with open('PytorchLSTM/final_runs_8cv.txt', 'a') as f:
             print('yess')
             f.write(str(hyperparams))
             f.write('\t')
@@ -337,5 +337,3 @@ def run_model(hyperparams):
    # print(model)
 
     return loss
-
-run_model( [92  , 2,  11 , 43 ,1503 ,  4 ,  1 ,  5  , 2  , 4 , 13  , 3  ,50])

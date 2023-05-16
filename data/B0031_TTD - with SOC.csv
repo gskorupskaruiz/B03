@@ -1,4 +1,4 @@
-Voltage_measured,Current_measured,Temperature_measured,Current_charge,Voltage_charge,Time,Capacity,TTD,SOC,Voltage 
+Voltage_measured,Current_measured,Temperature_measured,Current_charge,Voltage_charge,Time,Capacity,TTD,SOC,Voltage
 4.116561749,-5.51E-05,42.83003631,0.0006,0,0,1.666675194,1572.359,1,4.200799945
 4.116560276,0.00159943,42.83746344,0.0004,4.132,9.359,1.666675194,1563,0.9519229,4.147934994
 3.786774822,-3.974957053,42.88719309,3.997,1.808,19.453,1.666675194,1552.906,0.973779683,4.101638732
