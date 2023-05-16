@@ -15,6 +15,7 @@ def load_data_normalise(battery):
         data.append(pd.read_csv("data/" + i + "_TTD - with SOC.csv"))
     data = pd.concat(data)
     # print(data)
+    time = data["Time"]
     # normalize the data
     normalized_data = (data-data.mean(axis=0))/data.std(axis=0)
 
@@ -24,7 +25,7 @@ def load_data_normalise(battery):
     # print(f"data size {len(data)}")
     # data = pd.DataFrame(data)
     # normalized_data = (data-data.mean(axis=0))/data.std(axis=0)
-    return normalized_data
+    return normalized_data, time
 
 def check_nan(battery):
     data = []
@@ -240,7 +241,7 @@ class SeqDataset(Dataset):
 if __name__ == '__main__': 
 	# import data
     battery = ['B0006', 'B0007', 'B0018']
-    data = load_data_normalise(battery)
+    data, time = load_data_normalise(battery)
     input_size = data.shape[1] - 2
     print(f'input_size of data is {input_size}') 
     n_hidden = 20 #input_size
@@ -278,7 +279,7 @@ if __name__ == '__main__':
     stride_sizes = [5, 5]
     padding_sizes = [3,3]
     hidden_size_lstm = 10
-    num_layers_lstm = 2
+    num_layers_lstm = 3
     hidden_neurons_dense = [28, 41,  1]
     model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq).double()
     model.to(device)
@@ -309,3 +310,4 @@ if __name__ == '__main__':
 torch.save(model.state_dict(), 'PytorchLSTM/model.pt')
 pd.DataFrame(predictions.squeeze(2)).to_csv('PytorchLSTM/predictions.csv')
 pd.DataFrame(y_test.squeeze(2).to('cpu').detach().numpy()).to_csv('PytorchLSTM/y_test.csv')
+pd.DataFrame(time).to_csv('PytorchLSTM/time.csv')
