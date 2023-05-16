@@ -1,13 +1,13 @@
 clc; clear; close all;
 
-load('B0005.mat');
+load('B0030.mat');
 t = readtable('B0005_TTD.csv');
 fieldnames(t);
 
-LiPoly.RecordingTime            = B0005.cycle(2).data.Time;
-LiPoly.Measured_Voltage         = B0005.cycle(2).data.Voltage_measured;
-LiPoly.Measured_Current         = B0005.cycle(2).data.Current_measured;
-LiPoly.Measured_Temperature     = B0005.cycle(2).data.Temperature_measured;
+LiPoly.RecordingTime            = B0030.cycle(2).data.Time;
+LiPoly.Measured_Voltage         = B0030.cycle(2).data.Voltage_measured;
+LiPoly.Measured_Current         = B0030.cycle(2).data.Current_measured;
+LiPoly.Measured_Temperature     = B0030.cycle(2).data.Temperature_measured;
 
 
 % LiPoly.RecordingTime_alt            = table2array(readtable('B0005_TTD.csv', 'range', 'F1:F198')); %readtable('B0005_TTD.csv', 'range', 'F1:F198');
@@ -77,19 +77,19 @@ ylabel('vt Error [%]');
 xlabel('Time[hr]');
 grid minor
 
-voltage_B0005 = [];
-soc_B0005 = [];
+voltage_B0032 = [];
+soc_B0032 = [];
 
-for i=1:1:616
-    load('B0005.mat');
+for i=1:1:97
+    load('B0032.mat');
 
     % if B0007.cycle(i).type== 'discharge';
-    if strcmp(B0005.cycle(i).type, 'discharge')
+    if strcmp(B0032.cycle(i).type, 'discharge')
 
-        LiPoly.RecordingTime            = B0005.cycle(i).data.Time;
-        LiPoly.Measured_Voltage         = B0005.cycle(i).data.Voltage_measured;
-        LiPoly.Measured_Current         = B0005.cycle(i).data.Current_measured;
-        LiPoly.Measured_Temperature     = B0005.cycle(i).data.Temperature_measured;
+        LiPoly.RecordingTime            = B0032.cycle(i).data.Time;
+        LiPoly.Measured_Voltage         = B0032.cycle(i).data.Voltage_measured;
+        LiPoly.Measured_Current         = B0032.cycle(i).data.Current_measured;
+        LiPoly.Measured_Temperature     = B0032.cycle(i).data.Temperature_measured;
 
         LiPoly.Measured_Current_R       = - LiPoly.Measured_Current;
 
@@ -97,8 +97,8 @@ for i=1:1:616
 
         [SOC_Estimated, Vt_Estimated, Vt_Error] = EKFalgorithm(LiPoly.Measured_Current_R, LiPoly.Measured_Voltage, LiPoly.Measured_Temperature);
     
-        soc_B0005    = [soc_B0005;SOC_Estimated];
-        voltage_B0005 = [voltage_B0005;Vt_Estimated];
+        soc_B0032    = [soc_B0032;SOC_Estimated];
+        voltage_B0032 = [voltage_B0032;Vt_Estimated];
 
     end 
 %     RMSE_Vt = sqrt((sum((LiPoly.Measured_Voltage - Vt_Estimated).^2)) /(length(LiPoly.Measured_Voltage)))*1000; % mV
