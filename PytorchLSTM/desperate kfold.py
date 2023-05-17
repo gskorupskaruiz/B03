@@ -16,9 +16,7 @@ def load_data_normalise(battery):
     data = pd.concat(data)
     # normalize the data
     normalized_data = (data-data.mean(axis=0))/data.std(axis=0)
-    mean_ttd = data["TTD"].mean(axis=0)
-    std_ttd = data["TTD"].std(axis=0)
-    return normalized_data, mean_ttd, std_ttd
+    return normalized_data
 
 def testing_func(X_test, y_test):
     rmse_test, result_test = 0, list()
@@ -167,38 +165,6 @@ def plot_loss(train_loss, val_loss, epoch):
     plt.legend()
     plt.show()
 
-def lr_opt(model, X_train, y_train, X_val, y_val, n_epochs,time=False):
-        from scipy import stats
-        
-        learning_rate = stats.loguniform.rvs(10e-8, 1e0, size=15)
-        
-        loss = []
-        value = []
-        for i in learning_rate:
-
-            for module in model():
-                if isinstance(module, torch.nn.Linear):
-                    torch.nn.init.xavier_uniform_(module.weight)
-
-            torch.nn.init.xavier_uniform(model.weight)
-            print(f"current lr is {i}")
-            lf = torch.nn.MSELoss()
-            optimizer = torch.optim.Adam(params = model.parameters(), lr=i)
-
-            train_loss_history, val_loss_history, epoch = train(model, X_train, y_train, X_val, y_val, n_epochs, lf, optimizer, verbose=True,)
-            
-            final_loss = train_loss_history[-1]
-            loss.append(final_loss)
-            value.append(i)
-        
-        #print(loss, type(loss))
-        loss_arr = np.array(loss)
-        idx = np.where(loss_arr == np.amin(loss_arr))
-        idxs = (idx[0])
-        lr_best = value[int(idxs)]
-        
-        return lr_best
-
 class SeqDataset(Dataset):
     def __init__(self, x_data, y_data, seq_len, batch):
         self.x_data = x_data
@@ -226,33 +192,43 @@ class SeqDataset(Dataset):
         return x, y
 
 def run_model_cv(hyperparams):
-    # import data
+    
     all_losses = []
-    kfold_test = [['B0032'],['B0031'], ['B0029'], ['B0018'], ['B0007'],['B0006'],['B0005']]
-    kfold_train = [['B0005', 'B0006', 'B0007', 'B0018', 'B0029', 'B0031'], ['B0005', 'B0006', 'B0007', 'B0018','B0029', 'B0032'], ['B0005', 'B0006', 'B0007', 'B0018', 'B0031', 'B0032'],['B0005', 'B0006', 'B0007', 'B0029', 'B0031', 'B0032'], ['B0005', 'B0006', 'B0018', 'B0029', 'B0031', 'B0032'], ['B0005', 'B0007', 'B0018', 'B0029', 'B0031', 'B0032'], ['B0006', 'B0007', 'B0018', 'B0029', 'B0031', 'B0032']]
-    battery = ['B0005', 'B0006', 'B0007', 'B0018', 'B0029', 'B0030', 'B0031', 'B0032'] # no clue why but battery 5 just doesnt work - even though it has the same format and i use the same code :(
+    
+    # SPECIFY K
+    k_fold = 7
+    
+    #IMPORTANT - IF YOU'RE RUNNING THIS FOR LSTM ONLY CHANGE THE NR OF LSTM INPUTS IN THE MODEL (LINE 243 AFAIK)
+    
+    if k_fold == 7:
+    # for 7-fold cross validation
+        kfold_test = [['B0032'],['B0031'], ['B0029'], ['B0018'], ['B0007'],['B0006'],['B0005']]
+        kfold_train = [['B0005', 'B0006', 'B0007', 'B0018', 'B0029', 'B0031'], ['B0005', 'B0006', 'B0007', 'B0018','B0029', 'B0032'], ['B0005', 'B0006', 'B0007', 'B0018', 'B0031', 'B0032'],['B0005', 'B0006', 'B0007', 'B0029', 'B0031', 'B0032'], ['B0005', 'B0006', 'B0018', 'B0029', 'B0031', 'B0032'], ['B0005', 'B0007', 'B0018', 'B0029', 'B0031', 'B0032'], ['B0006', 'B0007', 'B0018', 'B0029', 'B0031', 'B0032']]
+    elif k_fold == 4:
+    # for 4-fold cross validation
+        kfold_test = [['B0005'],['B0006'], ['B0007'], ['B0018']]
+        kfold_train = [['B0006', 'B0007', 'B0018'], ['B0005', 'B0007', 'B0018'], ['B0005', 'B0006', 'B0018'], ['B0005', 'B0006', 'B0007']]
+    
+    
+    battery = ['B0005', 'B0006', 'B0007', 'B0018', 'B0029', 'B0031', 'B0032']
 
-    for i in range(7):
+    for i in range(k_fold):
         battery = kfold_train[i]
-        test_battery, mean_ttd_x, std_ttd_x = load_data_normalise(kfold_test[i])
+        test_battery = load_data_normalise(kfold_test[i])
         
         print(kfold_test[i])
-        data, mean_ttd, std_ttd = load_data_normalise(battery)
+        data = load_data_normalise(battery)
         input_size = data.shape[1] - 1 #len(data.columns) - 1
-        print(f'size of input is {input_size}')
+
         print(hyperparams)
         n_hidden, n_layer, lr, seq, batch_size, num_layers_conv, output_channels_val, kernel_sizes_val, stride_sizes_val, padding_sizes_val, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense_val = hyperparams
-        # n_hidden = 40 #input_size
-        # n_layer = 2
+
         lr = lr/1000
         n_epoch = 3
-        #lr = 0.005
+
         test_size = 0.1
         cv_size = 0.1
-    # seq = 20
-        #batch_size = 1000
-        
-        # gpu?
+
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         #data initialization
@@ -267,25 +243,14 @@ def run_model_cv(hyperparams):
         datasetv = SeqDataset(x_data=X_valkf, y_data=y_valkf, seq_len=seq, batch=batch_size)
         # LsTM Model initialization
         
-        #num_layers_conv = 3
-        
-        #output_channels_val = 7
         output_channels = [output_channels_val] * num_layers_conv
         
-        #kernel_sizes_val = 2
         kernel_sizes = [kernel_sizes_val] * num_layers_conv
         
-        #stride_sizes_val = 1
         stride_sizes = [stride_sizes_val] * num_layers_conv
         
-        #padding_sizes_val = 1
         padding_sizes = [padding_sizes_val] * num_layers_conv
-        
-        #hidden_size_lstm = 40
-        
-        #num_layers_lstm = 2
-        
-        #hidden_neurons_dense_val = 10
+    
         hidden_neurons_dense = [seq, hidden_neurons_dense_val, 1]
         
         model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq).double()
@@ -298,42 +263,44 @@ def run_model_cv(hyperparams):
         train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch, criterion, optimizer, verbose = True)
         #train_hist, val_hist, epoch = train(model, X_train, y_train, X_val, y_val, n_epoch, criterion, optimizer, verbose = True)
         model.eval()
-        predictions = model(X_kfold).to('cpu').detach().numpy() 
+        predictions = model(X_kfold).to('cpu').detach().numpy()
+    
         loss = ((predictions.squeeze(2) - y_kfold.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
+
         # if loss>0.5:
         #     print('no')
         #     break
         
-
-        y_kfold = y_kfold * std_ttd + mean_ttd
-        predictions = predictions * std_ttd + mean_ttd
         print(f'Loss at {i}th cross validation', loss)
         all_losses.append(loss)
-        plt.plot(predictions.squeeze(2), label='Predicted', linewidth=2, color='red')
-        plt.plot(y_kfold.squeeze(2).to('cpu').detach().numpy(), label='Actual') 
-        plt.ylabel("Time to Discharge (seconds)")
-        plt.xlabel("Instance (-)")
-        plt.legend()
-        plt.show()
-    # WHYYYYYYY NO PREDICT GOWRIIIIII HELPPPPPPP
+        # plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
+        # plt.plot(y_kfold.squeeze(2).to('cpu').detach().numpy()) 
+        # plt.legend()
+        # plt.show()
+    
     
     loss = np.mean(all_losses)
     
     epoch = np.linspace(1, n_epoch+1, n_epoch)
     
+
+
+
     if loss != 'nan':
     #    print(f'no wayy sooo cooool the model predicts! :)')
         print(f'btw the current loss is {loss.round(5)}')
     
-    if loss < 0.3:
-        print('yes')
+    
+    # UNCOMMENT IF YOU WANT TO SAVE THE LOSSES
+    # if loss < 0.3:
+    #     print('yes')
         
-        with open('PytorchLSTM/final_runs_aaaaa.txt', 'a') as f:
-            print('yess')
-            f.write(str(hyperparams))
-            f.write('\t')
-            f.write(str(loss))
-            f.write('\n')
+    #     with open('PytorchLSTM/final_runs_aaaaa.txt', 'a') as f:
+    #         print('yess')
+    #         f.write(str(hyperparams))
+    #         f.write('\t')
+    #         f.write(str(loss))
+    #         f.write('\n')
             
     
     # plt.plot(epoch, train_hist)
@@ -344,4 +311,5 @@ def run_model_cv(hyperparams):
 
     return loss
 
-print(run_model_cv([105   , 2 ,  38  ,  9 ,4774  ,  3  ,  7  ,  2  ,  6 ,   1 ,  10 ,   2  , 15]))
+testing_hyperparameters = [105, 2, 38, 9, 4774, 3, 7, 2, 6, 1, 10, 2, 15]
+print(run_model_cv(testing_hyperparameters))
