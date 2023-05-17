@@ -33,7 +33,7 @@ def load_data(battery, test_size, cv_size):
     data = [pd.read_csv("data/" + i + "_TTD - with SOC.csv") for i in battery] #I've changed it to include the physical model implicitly 
     data = pd.concat(data)
     y = data["TTD"]
-    X = data.drop(["TTD"], axis=1).drop(["Voltage_measured"], axis=1) #I though if we are using the new "better" voltage we wouldn't need to use the measured voltage (?)
+    X = data.drop(["TTD"], axis=1).drop(["SOC"], axis=1).drop(['Voltage'], axis =1) #I though if we are using the new "better" voltage we wouldn't need to use the measured voltage (?)
 
     # normalize the data
     X = (X-X.mean(axis=0))/X.std(axis=0)
@@ -261,7 +261,7 @@ if __name__ == '__main__':
     battery = ["B0005"]
     population_size = 10
     num_generations = 10
-    entire_bit_array_length = 19 * 4 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
+    entire_bit_array_length = 19 * 3 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
     X_train_raw, y_train_raw, X_test_raw, y_test_raw, X_cv_raw, y_cv_raw = load_data(battery, test_size=0.2, cv_size=0.2)
     input_size = len(data_fields) - 1
 
@@ -291,5 +291,6 @@ if __name__ == '__main__':
 
 
     # print best solution found
-    best_individuals = tools.selBest(population, k=1)
+    best_individuals = tools.selBest(population, k=5)
     print('Best ever individual = ', best_individuals[0], '\nFitness = ', best_individuals[0].fitness.values[0])
+    print(f'list of individuals = {best_individuals}')
