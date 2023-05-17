@@ -12,32 +12,11 @@ def load_data_normalise(battery):
     data = []
     # for all battery files combine them into one dataframe
     for i in battery:
-        data.append(pd.read_csv("data/" + i + "_TTD - with SOC.csv"))
+        data.append(pd.read_csv("data/" + i + "_TTD.csv"))
     data = pd.concat(data)
     # normalize the data
     normalized_data = (data-data.mean(axis=0))/data.std(axis=0)
     return normalized_data
-
-def testing_func(X_test, y_test):
-    rmse_test, result_test = 0, list()
-
-    # one interation 
-    test_predict = model.forward(X_test)
-
-    y_pred = model(X_test)
-    rmse_test = np.sqrt(criterion(y_pred, y_test).item())
-    # for ite in range(1, num + 1):
-    #     X_test = group_for_test.get_group(ite).iloc[:, 2:]
-    #     X_test_tensors = torch.Tensor(X_test.to_numpy())
-    #     X_test_tensors = torch.reshape(X_test_tensors, (X_test_tensors.shape[0], 1, X_test_tensors.shape[1]))
-
-    #     test_predict = model.forward(X_test_tensors)
-    #     data_predict = max(test_predict[-1].detach().numpy(), 0)
-    #     result_test.append(data_predict)
-    #     rmse_test = np.add(np.power((data_predict - y_test.to_numpy()[ite - 1]), 2), rmse_test)
-
-    # rmse_test = (np.sqrt(rmse_test / num)).item()
-    return result_test, rmse_test
 
 class EarlyStopper:
     def __init__(self, patience=1, min_delta=0.):
@@ -138,15 +117,15 @@ def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, 
         val_loss = loss_v/len(val_dataloader)
         
         
-        if i == 0 and float(train_loss)>1:
-            print('Loss is too high')
-            break
-        if i == 2 and float(train_loss)>0.5:
-            print('Loss is too high')
-            break
-        if epoch == 4 and float(train_loss)>0.3:
-            print('Loss is too high')
-            break
+        # if i == 0 and float(train_loss)>1:
+        #     print('Loss is too high')
+        #     break
+        # if i == 2 and float(train_loss)>0.5:
+        #     print('Loss is too high')
+        #     break
+        # if epoch == 4 and float(train_loss)>0.3:
+        #     print('Loss is too high')
+        #     break
         
         
         train_loss_history.append(train_loss)
@@ -196,9 +175,9 @@ def run_model_cv(hyperparams):
     all_losses = []
     
     # SPECIFY K
-    k_fold = 7
+    k_fold = 4
     
-    #IMPORTANT - IF YOU'RE RUNNING THIS FOR LSTM ONLY CHANGE THE NR OF LSTM INPUTS IN THE MODEL (LINE 243 AFAIK)
+    #IMPORTANT - IF YOU'RE RUNNING THIS FOR LSTM ONLY CHANGE THE Number OF LSTM INPUTS IN THE  model.py (LINE 243 AFAIK)
     
     if k_fold == 7:
     # for 7-fold cross validation
@@ -311,5 +290,5 @@ def run_model_cv(hyperparams):
 
     return loss
 
-testing_hyperparameters = [105, 2, 38, 9, 4774, 3, 7, 2, 6, 1, 10, 2, 15]
+testing_hyperparameters = [120, 2, 30, 8, 800, 1, 7, 1, 2, 1, 50, 7, 1]
 print(run_model_cv(testing_hyperparameters))

@@ -287,8 +287,8 @@ if __name__ == '__main__':
     if ga:
         print('running ga individual')
         gene_length = 3
-        ga_individual_solution =  [0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0]
-
+        ga_individual_solution =  [1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1]
+        
         lstm_layers_bit = BitArray(ga_individual_solution[0:gene_length]) # don't understand the bitarray stuff yet or the length given per hyperparameter
         lstm_neurons_bit = BitArray(ga_individual_solution[gene_length:2*gene_length])
         lstm_sequential_length_bit = BitArray(ga_individual_solution[2*gene_length:3*gene_length])
@@ -356,6 +356,8 @@ if __name__ == '__main__':
         print(f"cnn neurons =  {cnn_output_size}")
         print(f"hidden neurons =  {hidden_neurons_dense}")
         print(f"batch size =  {batch_size}")
+        
+        print('Gretas sketchy parameters:', [120, 2, learning_rate*1000, lstm_sequential_length, batch_size, cnn_layers, cnn_output_size[0], cnn_kernel_size[0], cnn_stride[0], cnn_padding[0], lstm_neurons, lstm_layers, hidden_neurons_dense[1] ])
 
     model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq).double()
     model.to(device)
