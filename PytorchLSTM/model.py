@@ -313,6 +313,7 @@ class ParametricCNNLSTM(nn.Module):
         last_dense = f'dense{len(self.hidden_neurons_dense)}'
         last_dense_layer = getattr(self, last_dense)
         out = last_dense_layer(out)
+        
         if verbose: print(f'output shape is {out.shape}')
         # print("its actually working - no way lets gooo")
 

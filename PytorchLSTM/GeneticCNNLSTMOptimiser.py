@@ -37,12 +37,14 @@ def load_data(battery, test_size, cv_size):
 
     # normalize the data
     X = (X-X.mean(axis=0))/X.std(axis=0)
+    mean_ttd, std_ttd = y.mean(axis=0), y.std(axis=0)
     y = (y-y.mean(axis=0))/y.std(axis=0)
+    
     
     # split data
     X_train, y_train, X_test, y_test, X_cv, y_cv = train_test_validation_split(X, y, test_size, cv_size)
 
-    return X_train, y_train, X_test, y_test, X_cv, y_cv
+    return X_train, y_train, X_test, y_test, X_cv, y_cv, mean_ttd, std_ttd
 
 # Prepare data (reshape) (CHECK WHICH SHAPE NEEDED)
 def prepare_dataset(seq_length, X_train, y_train, X_test, y_test, X_cv, y_cv):
@@ -225,16 +227,21 @@ def train_evaluate(ga_individual_solution):
         
         train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch = num_epochs, lf = criterion, optimizer = optimizer, verbose = True)
         model.eval()
-        predictions = model(X_test).to('cpu').detach().numpy()
-
-        plot = False
+        predictions = model(X_test).to('cpu').detach().numpy() 
+        # y_test = y_test * std_ttd + mean_ttd
+        # print(f'mean is {mean_ttd} std is {std_ttd}')
+        plot = True
         if plot != False:
-            print(f"data type of predictions = {type(predictions)}")
-            print(f' size of predictions = {predictions.shape}')
+            predictions_mod = model(X_test).to('cpu').detach().numpy() * std_ttd + mean_ttd
+            y_test_mod = y_test * std_ttd + mean_ttd
+            print(f"data type of predictions = {type(predictions_mod)}")
+            print(f' size of predictions = {predictions_mod.shape}')
             # print(f'predictions = {predictions}')
             epoch = np.linspace(1, num_epochs+1, num_epochs)
-            plt.plot(predictions.squeeze(2), label='predictions')
-            plt.plot(y_test.squeeze().to('cpu').detach().numpy(), label='actual')
+            plt.plot(predictions_mod.squeeze(2), label='Predictions')
+            plt.plot(y_test_mod.squeeze().to('cpu').detach().numpy(), label='Actual')
+            plt.ylabel("Time to Discharge (seconds)")
+            plt.xlabel("Instance (-)")
             plt.legend()
             plt.show()
 
@@ -261,8 +268,8 @@ if __name__ == '__main__':
     battery = ["B0005"]
     population_size = 10
     num_generations = 10
-    entire_bit_array_length = 19 * 3 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
-    X_train_raw, y_train_raw, X_test_raw, y_test_raw, X_cv_raw, y_cv_raw = load_data(battery, test_size=0.2, cv_size=0.2)
+    entire_bit_array_length = 19 * 4 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
+    X_train_raw, y_train_raw, X_test_raw, y_test_raw, X_cv_raw, y_cv_raw, mean_ttd, std_ttd = load_data(battery, test_size=0.2, cv_size=0.2)
     input_size = len(data_fields) - 1
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
