@@ -179,7 +179,7 @@ def load_gpu_data(data, test_size, cv_size, seq_length):
 
 
 # if __name__ == '__main__': 
-	# find_TTD("B0029")
-	# find_TTD("B0030")
-	# find_TTD("B0031")
-	# find_TTD("B0032")
+# 	find_TTD("B0029")
+# 	find_TTD("B0030")
+# 	find_TTD("B0031")
+# 	find_TTD("B0032")

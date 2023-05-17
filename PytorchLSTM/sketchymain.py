@@ -12,7 +12,7 @@ def load_data_normalise(battery):
     data = []
     # for all battery files combine them into one dataframe
     for i in battery:
-        data.append(pd.read_csv("data/" + i + "_TTD - with SOC.csv"))
+        data.append(pd.read_csv("data/" + i + "_TTD.csv"))
     data = pd.concat(data)
     # normalize the data
     normalized_data = (data-data.mean(axis=0))/data.std(axis=0)
@@ -300,14 +300,17 @@ def run_model_cv(hyperparams):
     
         loss = ((predictions.squeeze(2) - y_kfold.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
 
+        all_losses.append(loss)
         # if loss>0.5:
         #     print('no')
         #     break
         
         print(f'Loss at {i}th cross validation', loss)
-        all_losses.append(loss)
+        
+        # plt.style.use('seaborn-dark')
         # plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
         # plt.plot(y_kfold.squeeze(2).to('cpu').detach().numpy()) 
+        
         # plt.legend()
         # plt.show()
     # WHYYYYYYY NO PREDICT GOWRIIIIII HELPPPPPPP
@@ -326,7 +329,7 @@ def run_model_cv(hyperparams):
     if loss < 0.3:
         print('yes')
         
-        with open('PytorchLSTM/final_runs_aaaaa.txt', 'a') as f:
+        with open('PytorchLSTM/final_runs_8cv.txt', 'a') as f:
             print('yess')
             f.write(str(hyperparams))
             f.write('\t')

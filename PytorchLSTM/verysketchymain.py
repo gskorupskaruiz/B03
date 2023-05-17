@@ -248,10 +248,10 @@ def run_model(hyperparams):
     loss = ((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
 
 
-    # plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
-    # plt.plot(y_test.squeeze(2).to('cpu').detach().numpy()) 
-    # plt.legend()
-    # plt.show()
+    plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
+    plt.plot(y_test.squeeze(2).to('cpu').detach().numpy()) 
+    plt.legend()
+    plt.show()
     
     epoch = np.linspace(1, n_epoch+1, n_epoch)
 
@@ -269,10 +269,12 @@ def run_model(hyperparams):
             f.write('\n')
             
     
-    # plt.plot(epoch, train_hist)
-    # plt.plot(epoch, val_hist)
-    # plt.show()
+    plt.plot(epoch, train_hist)
+    plt.plot(epoch, val_hist)
+    plt.show()
     
    # print(model)
 
     return loss
+
+#run_model([116   , 2  , 10 ,  22, 5312  ,  1  ,  2   , 2   , 2  ,  6   ,18   , 1   ,21])
