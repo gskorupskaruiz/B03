@@ -288,7 +288,7 @@ if __name__ == '__main__':
         print('running ga individual')
         gene_length = 3
         ga_individual_solution =  [0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0]
-        
+
         lstm_layers_bit = BitArray(ga_individual_solution[0:gene_length]) # don't understand the bitarray stuff yet or the length given per hyperparameter
         lstm_neurons_bit = BitArray(ga_individual_solution[gene_length:2*gene_length])
         lstm_sequential_length_bit = BitArray(ga_individual_solution[2*gene_length:3*gene_length])
@@ -389,7 +389,7 @@ if __name__ == '__main__':
     print(model)
 
 # torch.save(model.state_dict(), 'PytorchLSTM/Data_for_first_draft/data_driven_model.pt')
-pd.DataFrame(predictions.squeeze(2)).to_csv('PytorchLSTM/Data_for_first_draft/predictions_data_driven.csv')
-pd.DataFrame(y_test.squeeze(2).to('cpu').detach().numpy()).to_csv('PytorchLSTM/Data_for_first_draft/y_test_data_driven.csv')
-pd.DataFrame(time).to_csv('PytorchLSTM/Data_for_first_draft/time_data_driven.csv')
-torch.save(model, 'PytorchLSTM/Data_for_first_draft/model_data_driven.pt')
+# pd.DataFrame(predictions.squeeze(2)).to_csv('PytorchLSTM/Data_for_first_draft/predictions_data_driven.csv')
+# pd.DataFrame(y_test.squeeze(2).to('cpu').detach().numpy()).to_csv('PytorchLSTM/Data_for_first_draft/y_test_data_driven.csv')
+# pd.DataFrame(time).to_csv('PytorchLSTM/Data_for_first_draft/time_data_driven.csv')
+# torch.save(model, 'PytorchLSTM/Data_for_first_draft/model_data_driven.pt')
