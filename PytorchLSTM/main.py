@@ -119,7 +119,7 @@ def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, 
     model.to(device) # set model to GPU
     #intiate early stopper
     early_stopper = EarlyStopper(patience=1e-16, min_delta=1e-6)
-
+    model.train()
     with torch.no_grad():
         train_loss_history = []
         val_loss_history = []
@@ -285,8 +285,10 @@ if __name__ == '__main__':
     hidden_neurons_dense = [28, 41,  1]
     ga = True
     if ga:
-        gene_length = 4
-        ga_individual_solution = [0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1]
+        print('running ga individual')
+        gene_length = 3
+        ga_individual_solution =  [0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0]
+        
         lstm_layers_bit = BitArray(ga_individual_solution[0:gene_length]) # don't understand the bitarray stuff yet or the length given per hyperparameter
         lstm_neurons_bit = BitArray(ga_individual_solution[gene_length:2*gene_length])
         lstm_sequential_length_bit = BitArray(ga_individual_solution[2*gene_length:3*gene_length])
@@ -386,8 +388,8 @@ if __name__ == '__main__':
     
     print(model)
 
-# torch.save(model.state_dict(), 'PytorchLSTM/modeljustLSTM.pt')
-# pd.DataFrame(predictions.squeeze(2)).to_csv('PytorchLSTM/predictionsjustLSTM.csv')
-# pd.DataFrame(y_test.squeeze(2).to('cpu').detach().numpy()).to_csv('PytorchLSTM/y_testjustLSTM.csv')
-# pd.DataFrame(time).to_csv('PytorchLSTM/timejustLSTM.csv')
-# torch.save(model, 'PytorchLSTM/hyrbidmodel')
+# torch.save(model.state_dict(), 'PytorchLSTM/Data_for_first_draft/data_driven_model.pt')
+pd.DataFrame(predictions.squeeze(2)).to_csv('PytorchLSTM/Data_for_first_draft/predictions_data_driven.csv')
+pd.DataFrame(y_test.squeeze(2).to('cpu').detach().numpy()).to_csv('PytorchLSTM/Data_for_first_draft/y_test_data_driven.csv')
+pd.DataFrame(time).to_csv('PytorchLSTM/Data_for_first_draft/time_data_driven.csv')
+torch.save(model, 'PytorchLSTM/Data_for_first_draft/model_data_driven.pt')
