@@ -106,63 +106,6 @@ class LSTM1(nn.Module):
         #print(out.shape)
         return out
 
-
-class CNNLSTM(nn.Module):
-    def __init__(self, input_size, hidden_size, num_layers, seq_length, batch):
-        super(CNNLSTM, self).__init__()
-        self.input_size = input_size  # input size
-        self.hidden_size = hidden_size  # hidden state
-        self.num_layers = num_layers  # number of layers
-        self.seq_length = seq_length
-        self.batch = batch   
-
-        self.lstm = nn.LSTM(input_size=7, hidden_size=hidden_size, num_layers=num_layers, batch_first=True,
-                            dropout=0.2)
-        self.fc_1 = nn.Linear(hidden_size, 20)  # fully connected 1
-
-        self.conv1 = nn.Conv1d(20, 32, kernel_size=2, stride=1) # note: output_shape_conv1 = (input_channel_conv1 - kernel + 2*padding)/stride + 1   [so here (20-2)/1+1 = 19]
-        self.batch1 =nn.BatchNorm1d(32)
-        self.conv2 = nn.Conv1d(32, 1, kernel_size=1, stride = 1, padding=2) # note: output_shape_conv3 = output_shape_conv2 - kernel + 2*padding)/stride + 1  [so here (19-1+4)/1+1 = 23]
-        self.batch2 =nn.BatchNorm1d(1)
-
-        self.fc_2 = nn.Linear(23, 10)  # fully connected 2 - here the number of hidden_input_neurons = output_shape_conv3
-        self.fc = nn.Linear(10, 1)  # fully connected last layer
-        
-        self.dropout = nn.Dropout(0.2)
-        self.relu = nn.ReLU()
-
-    def forward(self, x):
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-        h_0 = torch.randn(self.num_layers, x.size(0), self.hidden_size).to(device).double()
-        c_0 = torch.randn(self.num_layers, x.size(0), self.hidden_size).to(device).double()
-
-        output, (hn, cn) = self.lstm(x, (h_0, c_0))  # lstm with input, hidden, and internal state
-
-        out = self.relu(self.fc_1(self.relu(output)))
-        #out = self.relu(self.fc_2(out))
-
-        print(f"after lstm {output.shape}")
-        print(f"after first dense lstm {out.shape}")
-
-        out = self.conv1(out)
-        print(f"after first conv {out.shape}")
-
-        out = self.batch1(out)
-        print(f"after batchnorm1 {out.shape}")
-        out = self.conv2(out)
-        print(f"after conv2 {out.shape}")
-        out = self.batch2(out)
-        print(f"after batchnorm2 {out.shape}")
-        out = self.relu(self.fc_2(out))
-        print(f"after dense {out.shape}")
-        out = self.dropout(out)
-        
-        outg = self.fc(out)
-        # print(f"last {outg.shape}")
-        return outg
-    
-
 class CNNLSTMog(nn.Module):
     def __init__(self, input_size, output_size, hidden_size, num_layers):
         super(CNNLSTMog, self).__init__()
@@ -200,7 +143,7 @@ class CNNLSTMog(nn.Module):
         return output
     
 class ParametricCNNLSTM(nn.Module):
-    def __init__(self, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq):
+    def __init__(self, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, inputlstm):
         super(ParametricCNNLSTM, self).__init__()
    
         self.output_channels = output_channels
@@ -212,6 +155,7 @@ class ParametricCNNLSTM(nn.Module):
         self.num_layer_lstm = num_layers_lstm
         self.hidden_neurons_dense = hidden_neurons_dense 
         self.seq = seq
+        self.inputlstm = inputlstm
         
         self.output_shape = []
         for i in range(self.num_layers_conv):
@@ -240,7 +184,7 @@ class ParametricCNNLSTM(nn.Module):
         
         else:
             # first layer must be lstm 
-            self.lstm = nn.LSTM(6, self.hidden_size_lstm, num_layers=self.num_layer_lstm, batch_first=True, dropout=0.2) # changed the input becasue the data from physical model is different
+            self.lstm = nn.LSTM(self.inputlstm, self.hidden_size_lstm, num_layers=self.num_layer_lstm, batch_first=True, dropout=0.2) # changed the input becasue the data from physical model is different
 
             # then dense 
             self.dense1 = nn.Linear(self.hidden_size_lstm, self.hidden_neurons_dense[0])
@@ -320,43 +264,3 @@ class ParametricCNNLSTM(nn.Module):
         return out 
         
 
-
-       
-# class ParametricCNNLSTM():
-#     def __init__(self, input_size output_size, hidden_size, num_layers, cnn_layers, cnn_kernel_size, cnn_stride, cnn_padding, cnn_output_size):
-#         super(CNNLSTM, self).__init__()
-        
-#         for i in range(cnn_layers):
-#             setattr(self, 'conv'+i, nn.Conv1d(in_channels = input_size , out_channels = cnn_output_size, kernel_size= cnn_kernel_size , stride = cnn_stride , padding= cnn_padding))
-
-
-        
-#         self.batch1 =nn.BatchNorm1d(32)
-#         self.conv3 = nn.Conv1d(32, 32, kernel_size=1, stride = 1, padding=1)
-#         self.batch2 =nn.BatchNorm1d(32)
-        
-#         self.LSTM = nn.LSTM(input_size=10, hidden_size=hidden_size,
-#                             num_layers=num_layers, batch_first=True)
-        
-#         self.fc1 = nn.Linear(32*hidden_size, output_size)
-#         self.dropout = nn.Dropout(0.1)
-#         self.relu = nn.ReLU
-        
-
-#     def forward(self, x):
-
-#         x = self.conv1(x)
-#         #x = self.relu(x)
-#         x = self.conv2(x)
-#         #x = self.relu(x)
-#         x = self.batch1(x)
-#         x = self.conv3(x)
-#         #x = self.relu(x)
-#         x = self.batch2(x)
-        
-#         x, h = self.LSTM(x) 
-#         x = torch.reshape(x,(x.shape[0],x.shape[1]*x.shape[2]))
-
-#         x = self.dropout(x)
-#         output = self.fc1(x)
-#         return output
