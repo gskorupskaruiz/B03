@@ -16,9 +16,7 @@ def load_data_normalise(battery):
     data = pd.concat(data)
     # normalize the data
     normalized_data = (data-data.mean(axis=0))/data.std(axis=0)
-    mean_ttd = data["TTD"].mean(axis=0)
-    std_ttd = data["TTD"].std(axis=0)
-    return normalized_data, mean_ttd, std_ttd
+    return normalized_data
 
 def testing_func(X_test, y_test):
     rmse_test, result_test = 0, list()
@@ -234,10 +232,10 @@ def run_model_cv(hyperparams):
 
     for i in range(7):
         battery = kfold_train[i]
-        test_battery, mean_ttd_x, std_ttd_x = load_data_normalise(kfold_test[i])
+        test_battery = load_data_normalise(kfold_test[i])
         
         print(kfold_test[i])
-        data, mean_ttd, std_ttd = load_data_normalise(battery)
+        data = load_data_normalise(battery)
         input_size = data.shape[1] - 1 #len(data.columns) - 1
         print(f'size of input is {input_size}')
         print(hyperparams)
@@ -298,22 +296,16 @@ def run_model_cv(hyperparams):
         train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch, criterion, optimizer, verbose = True)
         #train_hist, val_hist, epoch = train(model, X_train, y_train, X_val, y_val, n_epoch, criterion, optimizer, verbose = True)
         model.eval()
-        predictions = model(X_kfold).to('cpu').detach().numpy() 
+        predictions = model(X_kfold).to('cpu').detach().numpy()
+    
         loss = ((predictions.squeeze(2) - y_kfold.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
-<<<<<<< HEAD
 
         all_losses.append(loss)
-=======
->>>>>>> 4ae1fbf5175e5dc8e8fc1814fbe2a5f5053e2e05
         # if loss>0.5:
         #     print('no')
         #     break
         
-
-        y_kfold = y_kfold * std_ttd + mean_ttd
-        predictions = predictions * std_ttd + mean_ttd
         print(f'Loss at {i}th cross validation', loss)
-<<<<<<< HEAD
         
         # plt.style.use('seaborn-dark')
         # plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
@@ -321,21 +313,15 @@ def run_model_cv(hyperparams):
         
         # plt.legend()
         # plt.show()
-=======
-        all_losses.append(loss)
-        plt.plot(predictions.squeeze(2), label='Predicted', linewidth=2, color='red')
-        plt.plot(y_kfold.squeeze(2).to('cpu').detach().numpy(), label='Actual') 
-        plt.ylabel("Time to Discharge (seconds)")
-        plt.xlabel("Instance (-)")
-        plt.legend()
-        plt.show()
->>>>>>> 4ae1fbf5175e5dc8e8fc1814fbe2a5f5053e2e05
     # WHYYYYYYY NO PREDICT GOWRIIIIII HELPPPPPPP
     
     loss = np.mean(all_losses)
     
     epoch = np.linspace(1, n_epoch+1, n_epoch)
     
+
+
+
     if loss != 'nan':
     #    print(f'no wayy sooo cooool the model predicts! :)')
         print(f'btw the current loss is {loss.round(5)}')

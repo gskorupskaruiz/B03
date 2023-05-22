@@ -331,7 +331,7 @@ lower_limit = [60, 1, 1, 5, 500, 1, 1, 1, 1, 1, 1, 1, 15]
 upper_limit = [120, 3, 100, 60, 7000, 8, 8, 8, 8, 8, 20, 3, 60]
 
 opt = NormalOptimizer(lower_limit, upper_limit)
-optimized = opt.run(run_model_cv, n_iter=3, n_init=10)
+optimized = opt.run(run_model_cv, n_iter=3, n_init=20)
 
 print(optimized)
 # bp,value = pso.run(run_model,lower_limit, upper_limit)
