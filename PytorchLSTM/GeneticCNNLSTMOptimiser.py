@@ -135,7 +135,6 @@ def prepare_dataset(seq_length, X_train, y_train, X_test, y_test, X_cv, y_cv):
 # train evaluate (GA individuals)
 def train_evaluate(ga_individual_solution):
     gene_length = 3
-    import random
     # decode GA solution to get hyperparamteres
     lstm_layers_bit = BitArray(ga_individual_solution[0:gene_length]) # don't understand the bitarray stuff yet or the length given per hyperparameter
     lstm_neurons_bit = BitArray(ga_individual_solution[gene_length:2*gene_length])
@@ -280,7 +279,7 @@ if __name__ == '__main__':
     battery = ["B0005"]
     population_size = 10
     num_generations = 10
-    entire_bit_array_length = 19 * 4 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
+    entire_bit_array_length = 19 * 3 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
     X_train_raw, y_train_raw, X_test_raw, y_test_raw, X_cv_raw, y_cv_raw, mean_ttd, std_ttd = load_data(battery, test_size=0.2, cv_size=0.2)
     input_size = len(data_fields) - 1
 
