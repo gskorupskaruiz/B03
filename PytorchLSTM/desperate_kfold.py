@@ -122,9 +122,9 @@ def run_model_cv(hyperparams, which_model, k_fold):
     
         loss = ((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
 
-        if loss > 0.5:
-            print(f'Loss is greater than 0.5 at {i+1}th cross validation, stopping iteration')
-            break
+        # if loss > 0.5:
+        #     print(f'Loss is greater than 0.5 at {i+1}th cross validation, stopping iteration')
+        #     break
         
         print(f'Loss at {i+1}th cross validation', loss)
         all_losses.append(loss)
@@ -172,4 +172,6 @@ Define the hyperparameters to be tested
 
 testing_hyperparameters = [120, 2, 30, 8, 800, 1, 7, 1, 2, 1, 50, 7, 1]
 
+
+# CHOOSE 'LSTM-CNN' OR 'hybrid' AS THE MODEL
 print(run_model_cv(testing_hyperparameters, 'LSTM-CNN', 4))
