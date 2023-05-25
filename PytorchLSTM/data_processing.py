@@ -53,24 +53,19 @@ def train_test_validation_split(X, y, test_size, cv_size):
     return [X_train, y_train, X_test, y_test, X_cv, y_cv]
 
 
-def load_gpu_data_with_batches(data, test_size, cv_size, seq_length):
+def load_gpu_data_with_batches_hybrid(data, test_size, cv_size, seq_length):
 	y = data["TTD"]
 	X = data.drop(["TTD"], axis=1).drop(["Voltage_measured"], axis=1)
 	X_train, y_train, X_test, y_test, X_cv, y_cv = train_test_validation_split(X, y, test_size, cv_size)
 
-	#print(X_train.shape, X_test.shape, X_cv.shape)
-
-	# Create sliding windows of length seq_len for xtrain and ytrain
 	x_tr = []
 	y_tr = []
 	for i in range(seq_length, len(X_train)):
 		x_tr.append(X_train.values[i-seq_length:i])
 		y_tr.append(y_train.values[i])
 		
-	# Convert to numpy arrays
 	x_tr = torch.tensor(np.array(x_tr))
 	y_tr = torch.tensor(y_tr).unsqueeze(1).unsqueeze(2)
-	#print(y_tr.shape)
 
 	x_v = []
 	y_v = []
@@ -78,7 +73,6 @@ def load_gpu_data_with_batches(data, test_size, cv_size, seq_length):
 		x_v.append(X_cv.values[i-seq_length:i])
 		y_v.append(y_cv.values[i])
 
-	# Convert to numpy arrays
 	x_v = torch.tensor(np.array(x_v))
 	y_v = torch.tensor(y_v).unsqueeze(1).unsqueeze(2)
 
@@ -88,15 +82,11 @@ def load_gpu_data_with_batches(data, test_size, cv_size, seq_length):
 		x_t.append(X_test.values[i-seq_length:i])
 		y_t.append(y_test.values[i])
 
-	# Convert to numpy arrays
 	x_t = torch.tensor(np.array(x_t))
 	y_t = torch.tensor(y_t).unsqueeze(1).unsqueeze(2)
 
-	# go to gpu, "google gpu pytorch python"
-	#print("GPU is availible: ", torch.cuda.is_available())
 	if torch.cuda.is_available() == True:
 		print('Running on GPU')
-
 		X_train = x_tr.to('cuda').double()
 		y_train = y_tr.to('cuda').double()
 		X_test = x_t.to('cuda').double()
@@ -108,12 +98,6 @@ def load_gpu_data_with_batches(data, test_size, cv_size, seq_length):
 		print("X_cv and y_cv are on GPU: ", X_cv.is_cuda, y_cv.is_cuda)
 		print(f"size of X_train: {X_train.size()} and y_train: {y_train.size()}")
 	else:
-		# X_train = torch.tensor(x_tr).double()
-		# y_train = torch.tensor(y_tr).double()
-		# X_test = torch.tensor(x_t).double()
-		# y_test = torch.tensor(y_t).double()
-		# X_cv = torch.tensor(x_v).double()
-		# y_cv = torch.tensor(y_v).double()
 		X_train = x_tr.clone().detach().double()
 		y_train = y_tr.clone().detach().double()
 		X_test = x_t.clone().detach().double()
@@ -123,6 +107,59 @@ def load_gpu_data_with_batches(data, test_size, cv_size, seq_length):
 	
 	return X_train, y_train, X_test, y_test, X_cv, y_cv
 
+def load_gpu_data_with_batches(data, test_size, cv_size, seq_length):
+	y = data["TTD"]
+	X = data.drop(["TTD"], axis=1)
+	X_train, y_train, X_test, y_test, X_cv, y_cv = train_test_validation_split(X, y, test_size, cv_size)
+
+	x_tr = []
+	y_tr = []
+	for i in range(seq_length, len(X_train)):
+		x_tr.append(X_train.values[i-seq_length:i])
+		y_tr.append(y_train.values[i])
+		
+	x_tr = torch.tensor(np.array(x_tr))
+	y_tr = torch.tensor(y_tr).unsqueeze(1).unsqueeze(2)
+
+	x_v = []
+	y_v = []
+	for i in range(seq_length, len(X_cv)):
+		x_v.append(X_cv.values[i-seq_length:i])
+		y_v.append(y_cv.values[i])
+
+	x_v = torch.tensor(np.array(x_v))
+	y_v = torch.tensor(y_v).unsqueeze(1).unsqueeze(2)
+
+	x_t = []
+	y_t = []
+	for i in range(seq_length, len(X_test)):
+		x_t.append(X_test.values[i-seq_length:i])
+		y_t.append(y_test.values[i])
+
+	x_t = torch.tensor(np.array(x_t))
+	y_t = torch.tensor(y_t).unsqueeze(1).unsqueeze(2)
+
+	if torch.cuda.is_available() == True:
+		print('Running on GPU')
+		X_train = x_tr.to('cuda').double()
+		y_train = y_tr.to('cuda').double()
+		X_test = x_t.to('cuda').double()
+		y_test = y_t.to('cuda').double()
+		X_cv = x_v.to('cuda').double()
+		y_cv = y_v.to('cuda').double()
+		print("X_train and y_train are on GPU: ", X_train.is_cuda, y_train.is_cuda)
+		print("X_test and y_test are on GPU: ", X_test.is_cuda, y_test.is_cuda)
+		print("X_cv and y_cv are on GPU: ", X_cv.is_cuda, y_cv.is_cuda)
+		print(f"size of X_train: {X_train.size()} and y_train: {y_train.size()}")
+	else:
+		X_train = x_tr.clone().detach().double()
+		y_train = y_tr.clone().detach().double()
+		X_test = x_t.clone().detach().double()
+		y_test = y_t.clone().detach().double()
+		X_cv = x_v.clone().detach().double()
+		y_cv = y_v.clone().detach().double()
+	
+	return X_train, y_train, X_test, y_test, X_cv, y_cv
 
 def load_gpu_data(data, test_size, cv_size, seq_length):
 	y = data["TTD"][:50000]

@@ -29,11 +29,11 @@ def train_test_validation_split(X, y, test_size, cv_size):
     # return split data
     return [X_train, y_train, X_test, y_test, X_cv, y_cv]
 
-def load_data(battery, test_size, cv_size):
-    data = [pd.read_csv("data/" + i + "_TTD - with SOC.csv") for i in battery] #I've changed it to include the physical model implicitly 
+def load_data_hybrid(battery, test_size, cv_size):
+    data = [pd.read_csv("data/" + i + "_TTD - with SOC.csv") for i in battery] 
     data = pd.concat(data)
     y = data["TTD"]
-    X = data.drop(["TTD"], axis=1).drop(["SOC"], axis=1).drop(['Voltage'], axis =1) #I though if we are using the new "better" voltage we wouldn't need to use the measured voltage (?)
+    X = data.drop(["TTD"], axis=1).drop(['Voltage_measured'], axis=1) 
 
     # normalize the data
     X = (X-X.mean(axis=0))/X.std(axis=0)
@@ -41,6 +41,20 @@ def load_data(battery, test_size, cv_size):
     y = (y-y.mean(axis=0))/y.std(axis=0)
     
     
+    # split data
+    X_train, y_train, X_test, y_test, X_cv, y_cv = train_test_validation_split(X, y, test_size, cv_size)
+
+    return X_train, y_train, X_test, y_test, X_cv, y_cv, mean_ttd, std_ttd
+
+def load_data(battery, test_size, cv_size):
+    data = [pd.read_csv("data/" + i + "_TTD.csv") for i in battery] 
+    data = pd.concat(data)
+    y = data["TTD"]
+    X = data.drop(["TTD"], axis=1)
+    # normalize the data
+    X = (X-X.mean(axis=0))/X.std(axis=0)
+    mean_ttd, std_ttd = y.mean(axis=0), y.std(axis=0)
+    y = (y-y.mean(axis=0))/y.std(axis=0)
     # split data
     X_train, y_train, X_test, y_test, X_cv, y_cv = train_test_validation_split(X, y, test_size, cv_size)
 
@@ -213,8 +227,8 @@ def train_evaluate(ga_individual_solution):
         dataset = SeqDataset(x_data = X_train, y_data = y_train, seq_len = lstm_sequential_length, batch = batch_size)
         datasetv = SeqDataset(x_data = X_cv, y_data = y_cv, seq_len = lstm_sequential_length, batch = batch_size)
         # intitialize the model based on the new hyperparameters
-
-        model = ParametricCNNLSTM(num_layers_conv= cnn_layers, kernel_sizes = cnn_kernel_size, stride_sizes = cnn_stride, padding_sizes = cnn_padding, output_channels = cnn_output_size, hidden_neurons_dense = hidden_neurons_dense, num_layers_lstm = lstm_layers, hidden_size_lstm = lstm_neurons, seq = lstm_sequential_length).double()
+        input_lstm = X_train.shape[2]
+        model = ParametricCNNLSTM(num_layers_conv= cnn_layers, kernel_sizes = cnn_kernel_size, stride_sizes = cnn_stride, padding_sizes = cnn_padding, output_channels = cnn_output_size, hidden_neurons_dense = hidden_neurons_dense, num_layers_lstm = lstm_layers, hidden_size_lstm = lstm_neurons, seq = lstm_sequential_length, inputlstm=input_lstm).double()
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         model.to(device)
 
@@ -227,18 +241,16 @@ def train_evaluate(ga_individual_solution):
         train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch = num_epochs, lf = criterion, optimizer = optimizer, verbose = True)
         model.eval()
         predictions = model(X_test).to('cpu').detach().numpy() 
-        # y_test = y_test * std_ttd + mean_ttd
-        # print(f'mean is {mean_ttd} std is {std_ttd}')
-        plot = False
+        plot = True
         if plot != False:
             predictions_mod = model(X_test).to('cpu').detach().numpy() * std_ttd + mean_ttd
             y_test_mod = y_test * std_ttd + mean_ttd
-            print(f"data type of predictions = {type(predictions_mod)}")
-            print(f' size of predictions = {predictions_mod.shape}')
+            # print(f"data type of predictions = {type(predictions_mod)}")
+            # print(f' size of predictions = {predictions_mod.shape}')
             # print(f'predictions = {predictions}')
             epoch = np.linspace(1, num_epochs+1, num_epochs)
             plt.plot(predictions_mod.squeeze(2), label='Predictions')
-            plt.plot(y_test_mod.squeeze().to('cpu').detach().numpy(), label='Actual')
+            plt.plot(y_test_mod.squeeze(2).to('cpu').detach().numpy(), label='Actual')
             plt.ylabel("Time to Discharge (seconds)")
             plt.xlabel("Instance (-)")
             plt.legend()
