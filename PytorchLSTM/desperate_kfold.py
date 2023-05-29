@@ -155,15 +155,15 @@ def run_model_cv(hyperparams, which_model, k_fold):
     
     
     # UNCOMMENT IF YOU WANT TO SAVE THE LOSSES
-    # if loss < 0.3:
-    #     print('Loss is less than 0.3')
+    if loss < 0.5:
+        print('Loss is less than 0.5')
         
-    #     with open('PytorchLSTM/Random_optimizer/final_runs_run1.txt', 'a') as f:
-    #         print('Writing to file')
-    #         f.write(str(hyperparams))
-    #         f.write('\t')
-    #         f.write(str(loss))
-    #         f.write('\n')
+        with open('PytorchLSTM/Random_optimizer/ga_runs1.txt', 'a') as f:
+            print('Writing to file')
+            f.write(str(hyperparams))
+            f.write('\t')
+            f.write(str(loss))
+            f.write('\n')
 
     return loss
 
@@ -175,8 +175,5 @@ Define the hyperparameters to be tested
 """
 
 
-testing_hyperparameters = [120, 2, 30, 8, 800, 1, 7, 1, 2, 1, 50, 7, 1]
-
-
-# CHOOSE 'LSTM-CNN' OR 'hybrid' AS THE MODEL
-print(run_model_cv(testing_hyperparameters, 'LSTM-CNN', 4))
+# testing_hyperparameters = [120, 2, 30, 8, 800, 1, 7, 1, 2, 1, 50, 7, 1]
+# print(run_model_cv(testing_hyperparameters, 'LSTM-CNN', 4))

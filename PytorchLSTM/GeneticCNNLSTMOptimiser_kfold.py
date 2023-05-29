@@ -87,20 +87,26 @@ def train_evaluate(ga_individual_solution):
     print(f"hidden neurons =  {hidden_neurons_dense}")
     print(f"batch size =  {batch_size}")
 
-    hyperparams_for_kfold = [120, 60, learning_rate, lstm_sequential_length, batch_size, cnn_layers, cnn_output_size, cnn_kernel_size, cnn_stride, cnn_padding, lstm_neurons, lstm_layers, hidden_neurons_dense]
 
-    print('Current hyperparameters:', hyperparams_for_kfold)
 
     # Return 100 fitness if any hyperparameter == 0
     if batch_size == 0 or lstm_layers == 0 or lstm_sequential_length == 0 or lstm_neurons == 0 or learning_rate == 0 or batch_size == 0 or cnn_layers == 0 or cnn_kernel_size == 0 or cnn_stride == 0 or cnn_padding == 0 or hidden_neurons_dense == 0:
         print("One of the hyperparameters is 0 - try again haha")
         return 100
     
+    hyperparams_for_kfold = [120, 60, learning_rate, lstm_sequential_length, batch_size, cnn_layers, cnn_output_size[0], cnn_kernel_size[0], cnn_stride[0], cnn_padding[0], lstm_neurons, lstm_layers, hidden_neurons_dense[1]]
+
+    print('Current hyperparameters:', hyperparams_for_kfold)
     
+    try:
         
-    loss_model = run_model_cv(hyperparams_for_kfold, 'hybrid', 7)
+        loss_model = run_model_cv(hyperparams_for_kfold, 'hybrid', 7)
 
     #    print(f"loss of model at  = {loss_model}")
+
+    except TypeError or RuntimeError:
+        print('Something went wrong, probably invalid set of hyper paremeters')
+        loss_model = 100
     return [loss_model]
 
 if __name__ == '__main__':  
