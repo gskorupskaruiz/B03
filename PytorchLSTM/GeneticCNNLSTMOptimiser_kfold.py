@@ -94,7 +94,7 @@ def train_evaluate(ga_individual_solution):
         print("One of the hyperparameters is 0 - try again haha")
         return 100
     
-    hyperparams_for_kfold = [120, 60, learning_rate, lstm_sequential_length, batch_size, cnn_layers, cnn_output_size[0], cnn_kernel_size[0], cnn_stride[0], cnn_padding[0], lstm_neurons, lstm_layers, hidden_neurons_dense[1]]
+    hyperparams_for_kfold = [120, 60, learning_rate*1000, lstm_sequential_length, batch_size, cnn_layers, cnn_output_size[0], cnn_kernel_size[0], cnn_stride[0], cnn_padding[0], lstm_neurons, lstm_layers, hidden_neurons_dense[1]]
 
     print('Current hyperparameters:', hyperparams_for_kfold)
     
