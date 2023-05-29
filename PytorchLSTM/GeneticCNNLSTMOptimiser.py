@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics import mean_squared_error as mse
 from sklearn.model_selection import train_test_split
-
+from desperate_kfold import *
 from main import *
 
 import torch
@@ -234,37 +234,43 @@ def train_evaluate(ga_individual_solution):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         model.to(device)
 
-        # train model
-        model.train()
-        criterion = torch.nn.MSELoss(reduction='mean')
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-        num_epochs = 5
-        
-        train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch = num_epochs, lf = criterion, optimizer = optimizer, verbose = True)
-        model.eval()
-        predictions = model(X_test).to('cpu').detach().numpy() 
-        plot = True
-        if plot != False:
-            predictions_mod = model(X_test).to('cpu').detach().numpy() * std_ttd + mean_ttd
-            y_test_mod = y_test * std_ttd + mean_ttd
-            # print(f"data type of predictions = {type(predictions_mod)}")
-            # print(f' size of predictions = {predictions_mod.shape}')
-            # print(f'predictions = {predictions}')
-            epoch = np.linspace(1, num_epochs+1, num_epochs)
-            plt.plot(predictions_mod.squeeze(2), label='Predictions')
-            plt.plot(y_test_mod.squeeze(2).to('cpu').detach().numpy(), label='Actual')
-            plt.ylabel("Time to Discharge (seconds)")
-            plt.xlabel("Instance (-)")
-            plt.legend()
-            plt.show()
+        kfoldmethod = True
+        if not kfoldmethod:
+            # train model
+            model.train()
+            criterion = torch.nn.MSELoss(reduction='mean')
+            optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+            num_epochs = 5
+            
+            train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch = num_epochs, lf = criterion, optimizer = optimizer, verbose = True)
+            model.eval()
+            predictions = model(X_test).to('cpu').detach().numpy() 
+            plot = True
+            if plot != False:
+                predictions_mod = model(X_test).to('cpu').detach().numpy() * std_ttd + mean_ttd
+                y_test_mod = y_test * std_ttd + mean_ttd
+                # print(f"data type of predictions = {type(predictions_mod)}")
+                # print(f' size of predictions = {predictions_mod.shape}')
+                # print(f'predictions = {predictions}')
+                epoch = np.linspace(1, num_epochs+1, num_epochs)
+                plt.plot(predictions_mod.squeeze(2), label='Predictions')
+                plt.plot(y_test_mod.squeeze(2).to('cpu').detach().numpy(), label='Actual')
+                plt.ylabel("Time to Discharge (seconds)")
+                plt.xlabel("Instance (-)")
+                plt.legend()
+                plt.show()
 
-            plt.plot(epoch, train_hist, label='training loss')
-            plt.plot(epoch, val_hist, label='validation loss')
-            plt.legend()
-            plt.show()
+                plt.plot(epoch, train_hist, label='training loss')
+                plt.plot(epoch, val_hist, label='validation loss')
+                plt.legend()
+                plt.show()
 
-            # evaluate model
-        loss_model = ((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
+                # evaluate model
+
+            loss_model = ((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
+
+        if kfoldmethod:
+            run_model_cv(model, dataset, datasetv, n_epoch = 5, lf = criterion, optimizer = optimizer, verbose = True)
 
 
         print(f"loss of model = {loss_model}")
