@@ -177,6 +177,7 @@ def train_evaluate(ga_individual_solution):
     batch_size = batch_size * 100
     lstm_neurons *= 10 
 
+
     # get rid of possibility of Kernel size being bigger than input size
     if cnn_kernel_size > cnn_output_size + 2* cnn_padding:
         cnn_kernel_size = cnn_output_size + 2* cnn_padding 
@@ -215,6 +216,7 @@ def train_evaluate(ga_individual_solution):
     print(f"hidden neurons =  {hidden_neurons_dense}")
     print(f"batch size =  {batch_size}")
 
+    hyperparams_for_kfold = [120, 60, learning_rate, lstm_sequential_length, batch_size, cnn_layers, cnn_output_size, cnn_kernel_size, cnn_stride, cnn_padding, lstm_neurons, lstm_layers, hidden_neurons_dense]
 
     # Return 100 fitness if any hyperparameter == 0
     if batch_size == 0 or lstm_layers == 0 or lstm_sequential_length == 0 or lstm_neurons == 0 or learning_rate == 0 or batch_size == 0 or cnn_layers == 0 or cnn_kernel_size == 0 or cnn_stride == 0 or cnn_padding == 0 or hidden_neurons_dense == 0:
