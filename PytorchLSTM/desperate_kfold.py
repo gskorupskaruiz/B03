@@ -58,7 +58,7 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
 
 
 
-def run_model_cv(hyperparams, hyperparams_form, which_model, k_fold):
+def run_model_cv(hyperparams, which_model, k_fold):
     
     all_losses = []
     

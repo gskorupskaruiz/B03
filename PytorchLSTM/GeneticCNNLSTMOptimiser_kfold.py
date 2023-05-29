@@ -13,125 +13,6 @@ from scipy.stats import bernoulli
 from bitstring import BitArray
 from desperate_kfold import *
 
-data_fields = {
-        'Voltage_measured', 'Current_measured', 'Temperature_measured',
-        'Current_charge', 'Voltage_charge', 'Time', 'Capacity', 'SOC'}
-
-def train_test_validation_split(X, y, test_size, cv_size):
-    "Splits data into train, test and cross validation sets"
-    X_train, X_test_cv, y_train, y_test_cv = train_test_split(
-        X, y, test_size=test_size+cv_size, shuffle=False, random_state=0)
-
-    test_size = test_size/(test_size+cv_size)
-
-    X_cv, X_test, y_cv, y_test = train_test_split(
-        X_test_cv, y_test_cv, test_size=test_size, shuffle=False, random_state=0)
-
-    # return split data
-    return [X_train, y_train, X_test, y_test, X_cv, y_cv]
-
-def load_data_hybrid(battery, test_size, cv_size):
-    data = [pd.read_csv("data/" + i + "_TTD - with SOC.csv") for i in battery] 
-    data = pd.concat(data)
-    y = data["TTD"]
-    X = data.drop(["TTD"], axis=1).drop(['Voltage_measured'], axis=1) 
-
-    # normalize the data
-    X = (X-X.mean(axis=0))/X.std(axis=0)
-    mean_ttd, std_ttd = y.mean(axis=0), y.std(axis=0)
-    y = (y-y.mean(axis=0))/y.std(axis=0)
-    
-    
-    # split data
-    X_train, y_train, X_test, y_test, X_cv, y_cv = train_test_validation_split(X, y, test_size, cv_size)
-
-    return X_train, y_train, X_test, y_test, X_cv, y_cv, mean_ttd, std_ttd
-
-def load_data(battery, test_size, cv_size):
-    data = [pd.read_csv("data/" + i + "_TTD.csv") for i in battery] 
-    data = pd.concat(data)
-    y = data["TTD"]
-    X = data.drop(["TTD"], axis=1)
-    # normalize the data
-    X = (X-X.mean(axis=0))/X.std(axis=0)
-    mean_ttd, std_ttd = y.mean(axis=0), y.std(axis=0)
-    y = (y-y.mean(axis=0))/y.std(axis=0)
-    # split data
-    X_train, y_train, X_test, y_test, X_cv, y_cv = train_test_validation_split(X, y, test_size, cv_size)
-
-    return X_train, y_train, X_test, y_test, X_cv, y_cv, mean_ttd, std_ttd
-
-# Prepare data (reshape) (CHECK WHICH SHAPE NEEDED)
-def prepare_dataset(seq_length, X_train, y_train, X_test, y_test, X_cv, y_cv):
-    "Process data into the correct shape for the model for given hyper parameters"
-    #print(type(X_cv_raw))
-    # reshape data (Gowri's code from load gpu data with batches func in data_processing.py)
-    x_tr = []
-    y_tr = []
-    for i in range(seq_length, len(X_train)):
-        x_tr.append(X_train.values[i-seq_length:i])
-        y_tr.append(y_train.values[i])
-        x_tr.append(X_train.values[i-seq_length:i])
-        y_tr.append(y_train.values[i])
-        
-    # Convert to numpy arrays
-    x_tr = torch.tensor(np.array(x_tr))
-    y_tr = torch.tensor(y_tr).unsqueeze(1).unsqueeze(2)
-    #print(y_tr.shape)
-
-    x_v = []
-    y_v = []
-    for i in range(seq_length, len(X_cv)):
-        x_v.append(X_cv.values[i-seq_length:i])
-        y_v.append(y_cv.values[i])
-        x_v.append(X_cv.values[i-seq_length:i])
-        y_v.append(y_cv.values[i])
-
-    # Convert to numpy arrays
-    x_v = torch.tensor(np.array(x_v))
-    y_v = torch.tensor(y_v).unsqueeze(1).unsqueeze(2)
-
-    x_t = []
-    y_t = []
-    for i in range(seq_length, len(X_test)):
-        x_t.append(X_test.values[i-seq_length:i])
-        y_t.append(y_test.values[i])
-
-    # Convert to numpy arrays
-    x_t = torch.tensor(np.array(x_t))
-    y_t = torch.tensor(y_t).unsqueeze(1).unsqueeze(2)
-
-    print(f'shape of x_t is {x_t.shape},  and shape of yt is {y_t.shape}')
-
-    # gpu the data
-    print(f"GPU available: {torch.cuda.is_available()}")
-
-    if torch.cuda.is_available() == True:
-        print('Running on GPU')
-        X_train = x_tr.to('cuda').double()
-        y_train = y_tr.to('cuda').double()
-        X_test = x_t.to('cuda').double()
-        y_test = y_t.to('cuda').double()
-        X_cv = x_v.to('cuda').double()
-        y_cv = y_v.to('cuda').double()
-        # print("X_train and y_train are on GPU: ", X_train.is_cuda, y_train.is_cuda)
-        # print("X_test and y_test are on GPU: ", X_test.is_cuda, y_test.is_cuda)
-        # print("X_cv and y_cv are on GPU: ", X_cv.is_cuda, y_cv.is_cuda)
-        # print(f"size of X_train: {X_train.size()} and y_train: {y_train.size()}")
-                
-
-    # if torch.cuda.is_available() == True:
-    #     print("Running on GPU")
-    #     X_train = torch.tensor(x_tr.values).to('cuda')
-    #     y_train = torch.tensor(y_tr.values).to('cuda')
-    #     X_test = torch.tensor(x_t.values).to('cuda')
-    #     y_test = torch.tensor(y_t.values).to('cuda')
-    #     X_cv = torch.tensor(x_v.values).to('cuda')
-    #     y_cv = torch.tensor(y_v.values).to('cuda')
-    else:
-        print("THIS GA WILL TAKE A LONG TIME TO RUN ESPECIALLY WITHOUT THE GPU!!!")
-    return X_train, y_train, X_test, y_test, X_cv, y_cv
-    return X_train, y_train, X_test, y_test, X_cv, y_cv
 
 # train evaluate (GA individuals)
 def train_evaluate(ga_individual_solution):
@@ -194,17 +75,6 @@ def train_evaluate(ga_individual_solution):
     hidden_neurons_dense.append(1)
     hidden_neurons_dense[0] = lstm_sequential_length
 
-    # just some test stuff   
-    # cnn_layers = 4
-    # cnn_output_size = [1, 1, 1, 1]
-    # cnn_kernel_size = [3, 3, 3, 3]
-    # cnn_stride = [4, 4, 4, 4]
-    # cnn_padding = [4, 4, 4, 4]
-    # lstm_neurons = 10
-    # lstm_layers = 2
-    # hidden_neurons_dense = [10, 10, 10, 10, 10]
-
-
     print(f"lstm Layers =  {lstm_layers}")
     print(f"lstm Sequential Length =  {lstm_sequential_length}")
     print(f"lstm Neurons =  {lstm_neurons}")
@@ -219,33 +89,31 @@ def train_evaluate(ga_individual_solution):
 
     hyperparams_for_kfold = [120, 60, learning_rate, lstm_sequential_length, batch_size, cnn_layers, cnn_output_size, cnn_kernel_size, cnn_stride, cnn_padding, lstm_neurons, lstm_layers, hidden_neurons_dense]
 
+    print('Current hyperparameters:', hyperparams_for_kfold)
+
     # Return 100 fitness if any hyperparameter == 0
     if batch_size == 0 or lstm_layers == 0 or lstm_sequential_length == 0 or lstm_neurons == 0 or learning_rate == 0 or batch_size == 0 or cnn_layers == 0 or cnn_kernel_size == 0 or cnn_stride == 0 or cnn_padding == 0 or hidden_neurons_dense == 0:
         print("One of the hyperparameters is 0 - try again haha")
         return 100
     
     try:
-        # change data so that seq len and batch size is changed (use prepare_dataset func
-        loss_model = run_model_cv(hyperparams_for_kfold, )
+        
+        loss_model = run_model_cv(hyperparams_for_kfold, 'hybrid', 7)
 
-
-        print(f"loss of model = {loss_model}")
+    #    print(f"loss of model at  = {loss_model}")
 
     except TypeError or RuntimeError:
         print('Something went wrong, probably invalid set of hyper paremeters')
         loss_model = 100
-    print(f'data type loss model {type(loss_model)}')
     return [loss_model]
 
 if __name__ == '__main__':  
 
     # init variables and implementation of Ga using DEAP 
-    battery = ["B0005"]
+    
     population_size = 10
     num_generations = 10
     entire_bit_array_length = 19 * 3 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
-    X_train_raw, y_train_raw, X_test_raw, y_test_raw, X_cv_raw, y_cv_raw, mean_ttd, std_ttd = load_data(battery, test_size=0.2, cv_size=0.2)
-    input_size = len(data_fields) - 1
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
