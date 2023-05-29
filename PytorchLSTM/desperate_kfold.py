@@ -91,6 +91,7 @@ def run_model_cv(hyperparams, which_model, k_fold):
         cv_size = 0.1
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        torch.cuda.empty_cache()
 
         #data initialization
         X_train, y_train, input_lstm = load_gpu_data_with_batches_cv(data, seq_length=seq, which_model=which_model)          

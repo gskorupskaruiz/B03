@@ -96,15 +96,11 @@ def train_evaluate(ga_individual_solution):
         print("One of the hyperparameters is 0 - try again haha")
         return 100
     
-    try:
+    
         
-        loss_model = run_model_cv(hyperparams_for_kfold, 'hybrid', 7)
+    loss_model = run_model_cv(hyperparams_for_kfold, 'hybrid', 7)
 
     #    print(f"loss of model at  = {loss_model}")
-
-    except TypeError or RuntimeError:
-        print('Something went wrong, probably invalid set of hyper paremeters')
-        loss_model = 100
     return [loss_model]
 
 if __name__ == '__main__':  
