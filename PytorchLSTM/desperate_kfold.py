@@ -95,11 +95,11 @@ def run_model_cv(hyperparams, which_model, k_fold):
         #data initialization
         X_train, y_train, input_lstm = load_gpu_data_with_batches_cv(data, seq_length=seq, which_model=which_model)          
         
-        X_train, y_train = X_train.to(device), y_train.to(device)
+        #X_train, y_train = X_train.to(device), y_train.to(device)
         
         X_test, y_test, _ = load_gpu_data_with_batches_cv(test_battery, seq_length=seq, which_model=which_model)
 
-        X_test, y_test = X_test.to(device), y_test.to(device)
+        #X_test, y_test = X_test.to(device), y_test.to(device)
         
         dataset = SeqDataset(x_data=X_train, y_data=y_train, seq_len=seq, batch=batch_size)
         datasetv = SeqDataset(x_data=X_test, y_data=y_test, seq_len=seq, batch=batch_size)
@@ -113,6 +113,10 @@ def run_model_cv(hyperparams, which_model, k_fold):
         
         model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
         model.train()
+        
+        criterion = torch.nn.MSELoss() 
+        optimizer = torch.optim.Adam(model.parameters(), lr = lr)
+        train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch, criterion, optimizer, verbose = True)
         model.to(device)
 
         # training and evaltuation
