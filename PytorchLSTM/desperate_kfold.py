@@ -175,5 +175,9 @@ Define the hyperparameters to be tested
 """
 
 
+<<<<<<< Updated upstream
 testing_hyperparameters = [120, 60, 10.0, 6, 200, 3, 8, 3, 7, 6, 70, 2, 8]
+=======
+testing_hyperparameters = [120, 60, 100, 6, 200, 3, 8, 3, 7, 6, 70, 2, 8]
+>>>>>>> Stashed changes
 print(run_model_cv(testing_hyperparameters, 'hybrid', 7))
