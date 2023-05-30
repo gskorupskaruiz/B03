@@ -210,5 +210,5 @@ Define the hyperparameters to be tested
 # """
 
 
-testing_hyperparameters = [120, 60, 10.0, 6, 200, 3, 8, 3, 7, 6, 70, 2, 8]
-print(run_model_cv(testing_hyperparameters, 'hybrid', 7))
+# testing_hyperparameters = [120, 60, 10.0, 6, 200, 3, 8, 3, 7, 6, 70, 2, 8]
+# print(run_model_cv(testing_hyperparameters, 'hybrid', 7))
