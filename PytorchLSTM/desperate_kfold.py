@@ -173,9 +173,6 @@ def run_model_cv(hyperparams, which_model, k_fold):
     loss = np.mean(all_losses)
     
     epoch = np.linspace(1, n_epoch+1, n_epoch)
-    
-
-
 
     if loss != 'nan':
     #    print(f'no wayy sooo cooool the model predicts! :)')

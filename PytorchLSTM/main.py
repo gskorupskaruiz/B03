@@ -209,7 +209,7 @@ if __name__ == '__main__':
     hidden_size_lstm = 10
     num_layers_lstm = 1
     hidden_neurons_dense = [28, 41,  1]
-    ga = True
+    ga = False
     if ga:
         print('running ga individual')
         gene_length = 3
@@ -256,7 +256,7 @@ if __name__ == '__main__':
         learning_rate = learning_rate/100
         batch_size = batch_size * 100
         lstm_neurons *= 10 
-
+        lstm_sequential_length = 20
         # get rid of possibility of Kernel size being bigger than input size
         if cnn_kernel_size > cnn_output_size + 2* cnn_padding:
             cnn_kernel_size = cnn_output_size + 2* cnn_padding 

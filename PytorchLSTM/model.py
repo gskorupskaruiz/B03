@@ -197,13 +197,13 @@ class ParametricCNNLSTM(nn.Module):
         self.output_shape = []
         for i in range(self.num_layers_conv):
             if i == 0:
-                if self.kernel_sizes[i] > self.hidden_neurons_dense[i] + 2 * self.padding_sizes[i]:
+                if self.kernel_sizes[i] > self.inputlstm + 2 * self.padding_sizes[i]:
                     print('changed kernel size')
-                    self.kernel_sizes[i] = self.hidden_neurons_dense[i] + 2 * self.padding_sizes[i] - 1
-                    output_shape_1 = (self.hidden_neurons_dense[i] - self.kernel_sizes[i] + 2* self.padding_sizes[i])/self.stride_sizes[i] + 1
+                    self.kernel_sizes[i] = self.inputlstm + 2 * self.padding_sizes[i] - 1
+                    output_shape_1 = (inputlstm - self.kernel_sizes[i] + 2* self.padding_sizes[i])/self.stride_sizes[i] + 1
                     self.output_shape.append(output_shape_1)
                 else:
-                    output_shape_1 = (self.hidden_neurons_dense[i] - self.kernel_sizes[i] + 2* self.padding_sizes[i])/self.stride_sizes[i] + 1
+                    output_shape_1 = (self.inputlstm - self.kernel_sizes[i] + 2* self.padding_sizes[i])/self.stride_sizes[i] + 1
                     self.output_shape.append(output_shape_1)
             else:
                 if self.kernel_sizes[i] > self.output_shape[i-1] + 2 * self.padding_sizes[i-1]:
@@ -213,17 +213,19 @@ class ParametricCNNLSTM(nn.Module):
                     self.output_shape.append(output_shape)
                 else:
                     output_shape = (self.output_shape[i-1] - self.kernel_sizes[i] + 2* self.padding_sizes[i])/self.stride_sizes[i] + 1
-                    self.output_shape.append(output_shape)
+                    self.output_shape.append(output_shape) 
 
-       # print(self.output_shape)
+        print(f'output shapes {self.output_shape}')
+        print(f'output channels {self.output_channels}')
         if self.output_shape[-1] <=0:
             print('change inputs')
+        
         
         else:
             self.lstm = nn.LSTM(int(self.output_shape[-1]), self.hidden_size_lstm, num_layers=self.num_layer_lstm, batch_first=True, dropout=0.2) # changed the input becasue the data from physical model is different
 
             self.denseafterlstm = nn.Linear(self.hidden_size_lstm, self.hidden_neurons_dense[0])
-            
+            print(f'last output channel {self.output_channels[-1]}')
             # set the conv and batchnorm layers 
             for i in range(1, self.num_layers_conv+1):
                 if i == 1:
@@ -235,8 +237,8 @@ class ParametricCNNLSTM(nn.Module):
                         self.conv1 = nn.Conv1d(in_channels = self.seq, out_channels= self.output_channels[i-1], kernel_size= self.kernel_sizes[i-1], stride = self.stride_sizes[i-1], padding= self.padding_sizes[i-1])
                         self.batch1 = nn.BatchNorm1d(self.output_channels[i-1])
                 elif i == self.num_layers_conv:
-                    setattr(self, 'conv'+str(i), nn.Conv1d(in_channels = self.output_channels[i-2], out_channels=1, kernel_size= int(self.kernel_sizes[i-1]), stride = self.stride_sizes[i-1], padding= self.padding_sizes[i-1]))
-                    setattr(self, 'batch'+str(i), nn.BatchNorm1d(1))
+                    setattr(self, 'conv'+str(i), nn.Conv1d(in_channels = self.output_channels[i-2], out_channels=self.output_channels[-1], kernel_size= int(self.kernel_sizes[i-1]), stride = self.stride_sizes[i-1], padding= self.padding_sizes[i-1]))
+                    setattr(self, 'batch'+str(i), nn.BatchNorm1d(self.output_channels[-1]))
                 else:
                     setattr(self, 'conv'+str(i), nn.Conv1d(in_channels = int(self.output_channels[i-2]), out_channels = self.output_channels[i-1], kernel_size= int(self.kernel_sizes[i-1]), stride = self.stride_sizes[i-1], padding= self.padding_sizes[i-1]))
                     setattr(self, 'batch'+str(i), nn.BatchNorm1d(self.output_channels[i-1]))
