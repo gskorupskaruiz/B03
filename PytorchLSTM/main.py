@@ -209,11 +209,11 @@ if __name__ == '__main__':
     hidden_size_lstm = 10
     num_layers_lstm = 1
     hidden_neurons_dense = [28, 41,  1]
-    ga = True
+    ga = False
     if ga:
         print('running ga individual')
         gene_length = 3
-        ga_individual_solution =  [1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1]
+        ga_individual_solution =    [1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1] #[1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1]
         
         lstm_layers_bit = BitArray(ga_individual_solution[0:gene_length]) # don't understand the bitarray stuff yet or the length given per hyperparameter
         lstm_neurons_bit = BitArray(ga_individual_solution[gene_length:2*gene_length])
@@ -255,7 +255,7 @@ if __name__ == '__main__':
         learning_rate = learning_rate/100
         batch_size = batch_size * 100
         lstm_neurons *= 10 
-
+        lstm_sequential_length = 20
         # get rid of possibility of Kernel size being bigger than input size
         if cnn_kernel_size > cnn_output_size + 2* cnn_padding:
             cnn_kernel_size = cnn_output_size + 2* cnn_padding 
@@ -285,7 +285,7 @@ if __name__ == '__main__':
         
         # print('Gretas sketchy parameters:', [120, 2, learning_rate*1000, lstm_sequential_length, batch_size, cnn_layers, cnn_output_size[0], cnn_kernel_size[0], cnn_stride[0], cnn_padding[0], lstm_neurons, lstm_layers, hidden_neurons_dense[1] ])
 
-    model = ParametricCNNLSTMnew(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
+    model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
     model.to(device)
 
     criterion = torch.nn.MSELoss() 
