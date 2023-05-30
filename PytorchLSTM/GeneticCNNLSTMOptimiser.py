@@ -135,6 +135,7 @@ def prepare_dataset(seq_length, X_train, y_train, X_test, y_test, X_cv, y_cv):
 # train evaluate (GA individuals)
 def train_evaluate(ga_individual_solution):
     gene_length = 3
+    ga_individual_solution = [0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1]
     # decode GA solution to get hyperparamteres
     lstm_layers_bit = BitArray(ga_individual_solution[0:gene_length]) # don't understand the bitarray stuff yet or the length given per hyperparameter
     lstm_neurons_bit = BitArray(ga_individual_solution[gene_length:2*gene_length])
@@ -147,6 +148,9 @@ def train_evaluate(ga_individual_solution):
     cnn_output_size_bit = BitArray(ga_individual_solution[8*gene_length:9*gene_length])
     hidden_neurons_dense_bit = BitArray(ga_individual_solution[9*gene_length:10*gene_length])
     batch_size_bit = BitArray(ga_individual_solution[10*gene_length:11*gene_length])
+
+    
+
 
     lstm_layers = lstm_layers_bit.uint
     lstm_sequential_length = lstm_sequential_length_bit.uint
@@ -218,6 +222,8 @@ def train_evaluate(ga_individual_solution):
 
     hyperparams_for_kfold = [120, 60, learning_rate, lstm_sequential_length, batch_size, cnn_layers, cnn_output_size, cnn_kernel_size, cnn_stride, cnn_padding, lstm_neurons, lstm_layers, hidden_neurons_dense]
 
+    print('THIS IS IT', hyperparams_for_kfold)
+    
     # Return 100 fitness if any hyperparameter == 0
     if batch_size == 0 or lstm_layers == 0 or lstm_sequential_length == 0 or lstm_neurons == 0 or learning_rate == 0 or batch_size == 0 or cnn_layers == 0 or cnn_kernel_size == 0 or cnn_stride == 0 or cnn_padding == 0 or hidden_neurons_dense == 0:
         print("One of the hyperparameters is 0 - try again haha")

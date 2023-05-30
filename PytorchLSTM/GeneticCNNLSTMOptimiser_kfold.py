@@ -14,11 +14,20 @@ from bitstring import BitArray
 from desperate_kfold import *
 
 
+def basis_func(scaling_factor, hidden_layers):
+    
+    basis = np.cos(np.linspace(-np.pi/2, np.pi/2, hidden_layers)) * scaling_factor
+    basis = (basis).astype(int)
+    for i in range(hidden_layers): 
+        if basis[i] == 0: basis[i] = 1
+    return basis
+
+
 # train evaluate (GA individuals)
 def train_evaluate(ga_individual_solution):
     gene_length = 3
     # decode GA solution to get hyperparamteres
-     
+ #   ga_individual_solution = [0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1] 
     lstm_layers_bit = BitArray(ga_individual_solution[0:gene_length]) # don't understand the bitarray stuff yet or the length given per hyperparameter
     lstm_neurons_bit = BitArray(ga_individual_solution[gene_length:2*gene_length])
     lstm_sequential_length_bit = BitArray(ga_individual_solution[2*gene_length:3*gene_length])
@@ -30,6 +39,8 @@ def train_evaluate(ga_individual_solution):
     cnn_output_size_bit = BitArray(ga_individual_solution[8*gene_length:9*gene_length])
     hidden_neurons_dense_bit = BitArray(ga_individual_solution[9*gene_length:10*gene_length])
     batch_size_bit = BitArray(ga_individual_solution[10*gene_length:11*gene_length])
+
+
 
     lstm_layers = lstm_layers_bit.uint
     lstm_sequential_length = lstm_sequential_length_bit.uint
@@ -68,11 +79,21 @@ def train_evaluate(ga_individual_solution):
 
 
     # ensure lists are the correct length
-    cnn_output_size = [cnn_output_size] * cnn_layers
-    cnn_kernel_size = [cnn_kernel_size] * cnn_layers
-    cnn_stride = [cnn_stride] * cnn_layers
-    cnn_padding = [cnn_padding] * cnn_layers
-    hidden_neurons_dense = [hidden_neurons_dense] * (cnn_layers)
+    # cnn_output_size = [cnn_output_size] * cnn_layers
+    # cnn_kernel_size = [cnn_kernel_size] * cnn_layers
+    # cnn_stride = [cnn_stride] * cnn_layers
+    # cnn_padding = [cnn_padding] * cnn_layers
+    # hidden_neurons_dense = [hidden_neurons_dense] * (cnn_layers)
+    
+    #I AM USING THE PREVIOUS VALUE USED FOR ALL LAYERS (LIKE 8 IN [8, 8, 8, 8] AS INPUT FOR BASIS FUNCTION)
+    
+    cnn_output_size = basis_func(cnn_output_size, cnn_layers)
+    cnn_kernel_size = basis_func(cnn_kernel_size, cnn_layers)
+    cnn_stride = basis_func(cnn_stride, cnn_layers)
+    cnn_padding =  basis_func(cnn_padding, cnn_layers)
+    hidden_neurons_dense = basis_func(hidden_neurons_dense, cnn_layers)
+    
+    
     hidden_neurons_dense.append(1)
     hidden_neurons_dense[0] = lstm_sequential_length
 
@@ -114,8 +135,8 @@ if __name__ == '__main__':
 
     # init variables and implementation of Ga using DEAP 
     
-    population_size = 3
-    num_generations = 5
+    population_size = 5
+    num_generations = 10
     entire_bit_array_length = 19 * 3 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
