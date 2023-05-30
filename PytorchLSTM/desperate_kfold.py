@@ -64,7 +64,7 @@ def basis_func(scaling_factor, hidden_layers):
         if basis[i] == 0: basis[i] = 1
     return basis
 
-def run_model_cv(hyperparams, which_model, k_fold):
+def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
     
     all_losses = []
     
@@ -74,7 +74,11 @@ def run_model_cv(hyperparams, which_model, k_fold):
    
     kfold_test = []
     kfold_train = []
-    
+    if save_for_plots:
+        # init variables for plots
+        kthlostperIndivudual = np.zeros(k_fold)
+        kth_predictions = []
+        kth_actual = []
     for i in range(k_fold):
         kfold_test.append([k_fold_batteries[i]])
         other_batteries = k_fold_batteries.copy()
@@ -152,7 +156,9 @@ def run_model_cv(hyperparams, which_model, k_fold):
         model.eval()
         
         predictions = model(X_test).to('cpu').detach().numpy()
-    
+        if save_for_plots:
+            kth_predictions.append(predictions)
+            kth_actual.append(y_test.squeeze(2).to('cpu').detach().numpy())
         loss = ((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
 
         # if loss > 0.5:
@@ -161,15 +167,19 @@ def run_model_cv(hyperparams, which_model, k_fold):
         
         print(f'Loss at {i+1}th cross validation', loss)
         all_losses.append(loss)
-        
+        if save_for_plots:
+            kthlostperIndivudual[i] += loss
         # PLOT THE PREDICTIONS FOR EACH FOLD
         
-        plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
-        plt.plot(y_test.squeeze(2).to('cpu').detach().numpy()) 
+        # plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
+        # plt.plot(y_kfold.squeeze(2).to('cpu').detach().numpy()) 
+        # plt.legend()
+        # plt.show()
+    if save_for_plots:
+        plt.plot(kthlostperIndivudual, label= 'kth loss per individual')
         plt.legend()
         plt.show()
-    
-    
+
     loss = np.mean(all_losses)
     
     epoch = np.linspace(1, n_epoch+1, n_epoch)
@@ -200,5 +210,5 @@ Define the hyperparameters to be tested
 # """
 
 
-testing_hyperparameters = [120, 60, 10, 6, 200, 3, 8, 3, 7, 6, 70, 2, 8]
+testing_hyperparameters = [120, 60, 10.0, 6, 200, 3, 8, 3, 7, 6, 70, 2, 8]
 print(run_model_cv(testing_hyperparameters, 'hybrid', 7))
