@@ -56,7 +56,13 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
 
     return X, y, input_lstm
 
-
+def basis_func(scaling_factor, hidden_layers):
+    
+    basis = np.cos(np.linspace(-np.pi/2, np.pi/2, hidden_layers)) * scaling_factor
+    basis = (basis).astype(int)
+    for i in range(hidden_layers): 
+        if basis[i] == 0: basis[i] = 1
+    return basis
 
 def run_model_cv(hyperparams, which_model, k_fold):
     
@@ -85,7 +91,7 @@ def run_model_cv(hyperparams, which_model, k_fold):
         n_hidden, n_layer, lr, seq, batch_size, num_layers_conv, output_channels_val, kernel_sizes_val, stride_sizes_val, padding_sizes_val, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense_val = hyperparams
 
         lr = lr/1000
-        n_epoch = 5
+        n_epoch = 3
 
         test_size = 0.1
         cv_size = 0.1
@@ -112,6 +118,28 @@ def run_model_cv(hyperparams, which_model, k_fold):
         padding_sizes = [padding_sizes_val] * num_layers_conv
         hidden_neurons_dense = [seq, hidden_neurons_dense_val, 1]
         
+        
+        output_channels = basis_func(output_channels_val, num_layers_conv)
+        kernel_sizes = basis_func(kernel_sizes_val, num_layers_conv)
+        stride_sizes = basis_func(stride_sizes_val, num_layers_conv)
+        padding_sizes =  basis_func(padding_sizes_val, num_layers_conv)
+        hidden_neurons_dense = basis_func(hidden_neurons_dense, num_layers_conv)
+        hidden_neurons_dense[0] = seq
+        hidden_neurons_dense[-1] = 1
+        
+        print(f"lstm Layers =  {num_layers_lstm}")
+        print(f"lstm Sequential Length =  {seq}")
+        print(f"lstm Neurons =  {hidden_size_lstm}")
+        print(f"learning rate =  {lr}")
+        print(f"cnn layers =  {num_layers_conv}")
+        print(f"cnn kernel size =  {kernel_sizes}")
+        print(f"cnn stride =  {stride_sizes}")
+        print(f"cnn padding =  {padding_sizes}")
+        print(f"cnn neurons =  {output_channels}")
+        print(f"hidden neurons =  {hidden_neurons_dense}")
+        print(f"batch size =  {batch_size}")
+        
+        
         model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
         model.train()
         
@@ -136,10 +164,10 @@ def run_model_cv(hyperparams, which_model, k_fold):
         
         # PLOT THE PREDICTIONS FOR EACH FOLD
         
-        # plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
-        # plt.plot(y_kfold.squeeze(2).to('cpu').detach().numpy()) 
-        # plt.legend()
-        # plt.show()
+        plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
+        plt.plot(y_test.squeeze(2).to('cpu').detach().numpy()) 
+        plt.legend()
+        plt.show()
     
     
     loss = np.mean(all_losses)
@@ -172,12 +200,8 @@ Define the hyperparameters to be tested
 
 (comment this out if you're optimising the hyperparameters)
 
-"""
+# """
 
 
-<<<<<<< Updated upstream
-testing_hyperparameters = [120, 60, 10.0, 6, 200, 3, 8, 3, 7, 6, 70, 2, 8]
-=======
-testing_hyperparameters = [120, 60, 100, 6, 200, 3, 8, 3, 7, 6, 70, 2, 8]
->>>>>>> Stashed changes
+testing_hyperparameters = [120, 60, 10, 6, 200, 3, 8, 3, 7, 6, 70, 2, 8]
 print(run_model_cv(testing_hyperparameters, 'hybrid', 7))
