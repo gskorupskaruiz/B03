@@ -100,7 +100,7 @@ def train_evaluate(ga_individual_solution):
     
     try:
         
-        loss_model = run_model_cv(hyperparams_for_kfold, 'hybrid', 7)
+        loss_model = run_model_cv(hyperparams_for_kfold, 'LSTM-CNN', 7)
 
     #    print(f"loss of model at  = {loss_model}")
 
@@ -113,8 +113,8 @@ if __name__ == '__main__':
 
     # init variables and implementation of Ga using DEAP 
     
-    population_size = 10
-    num_generations = 10
+    population_size = 2
+    num_generations = 5
     entire_bit_array_length = 19 * 3 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

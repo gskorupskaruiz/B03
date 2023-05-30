@@ -56,8 +56,6 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
 
     return X, y, input_lstm
 
-
-
 def run_model_cv(hyperparams, which_model, k_fold):
     
     all_losses = []
@@ -145,9 +143,6 @@ def run_model_cv(hyperparams, which_model, k_fold):
     loss = np.mean(all_losses)
     
     epoch = np.linspace(1, n_epoch+1, n_epoch)
-    
-
-
 
     if loss != 'nan':
     #    print(f'no wayy sooo cooool the model predicts! :)')
@@ -175,5 +170,5 @@ Define the hyperparameters to be tested
 """
 
 
-# testing_hyperparameters = [120, 2, 30, 8, 800, 1, 7, 1, 2, 1, 50, 7, 1]
-# print(run_model_cv(testing_hyperparameters, 'LSTM-CNN', 4))
+testing_hyperparameters =  [120, 60, 70.0, 5, 600, 4, 1, 3, 1, 1, 60, 4, 4] #[120, 2, 30, 8, 800, 1, 7, 1, 2, 1, 50, 7, 1]
+print(run_model_cv(testing_hyperparameters, 'LSTM-CNN', 4))
