@@ -92,7 +92,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         
 
         print(hyperparams)
-        n_hidden, n_layer, lr, seq, batch_size, num_layers_conv, output_channels_val, kernel_sizes_val, stride_sizes_val, padding_sizes_val, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense_val = hyperparams
+        n_hidden, n_layer, lr, seq, batch_size, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense = hyperparams
 
         lr = lr/1000
         n_epoch = 3
@@ -116,32 +116,32 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         datasetv = SeqDataset(x_data=X_test, y_data=y_test, seq_len=seq, batch=batch_size)
         # LsTM Model initialization
         
-        output_channels = [output_channels_val] * num_layers_conv
-        kernel_sizes = [kernel_sizes_val] * num_layers_conv
-        stride_sizes = [stride_sizes_val] * num_layers_conv
-        padding_sizes = [padding_sizes_val] * num_layers_conv
-        hidden_neurons_dense = [seq, hidden_neurons_dense_val, 1]
+        # output_channels = [output_channels_val] * num_layers_conv
+        # kernel_sizes = [kernel_sizes_val] * num_layers_conv
+        # stride_sizes = [stride_sizes_val] * num_layers_conv
+        # padding_sizes = [padding_sizes_val] * num_layers_conv
+        # hidden_neurons_dense = [seq, hidden_neurons_dense_val, 1]
         
         
-        output_channels = basis_func(output_channels_val, num_layers_conv)
-        kernel_sizes = basis_func(kernel_sizes_val, num_layers_conv)
-        stride_sizes = basis_func(stride_sizes_val, num_layers_conv)
-        padding_sizes =  basis_func(padding_sizes_val, num_layers_conv)
-        hidden_neurons_dense = basis_func(hidden_neurons_dense[1], num_layers_conv)
-        hidden_neurons_dense[0] = seq
-        hidden_neurons_dense[-1] = 1
+        # output_channels = basis_func(output_channels_val, num_layers_conv)
+        # kernel_sizes = basis_func(kernel_sizes_val, num_layers_conv)
+        # stride_sizes = basis_func(stride_sizes_val, num_layers_conv)
+        # padding_sizes =  basis_func(padding_sizes_val, num_layers_conv)
+        # hidden_neurons_dense = basis_func(hidden_neurons_dense[1], num_layers_conv)
+        # hidden_neurons_dense[0] = seq
+        # hidden_neurons_dense[-1] = 1
         
-        print(f"lstm Layers =  {num_layers_lstm}")
-        print(f"lstm Sequential Length =  {seq}")
-        print(f"lstm Neurons =  {hidden_size_lstm}")
-        print(f"learning rate =  {lr}")
-        print(f"cnn layers =  {num_layers_conv}")
-        print(f"cnn kernel size =  {kernel_sizes}")
-        print(f"cnn stride =  {stride_sizes}")
-        print(f"cnn padding =  {padding_sizes}")
-        print(f"cnn neurons =  {output_channels}")
-        print(f"hidden neurons =  {hidden_neurons_dense}")
-        print(f"batch size =  {batch_size}")
+        # print(f"lstm Layers =  {num_layers_lstm}")
+        # print(f"lstm Sequential Length =  {seq}")
+        # print(f"lstm Neurons =  {hidden_size_lstm}")
+        # print(f"learning rate =  {lr}")
+        # print(f"cnn layers =  {num_layers_conv}")
+        # print(f"cnn kernel size =  {kernel_sizes}")
+        # print(f"cnn stride =  {stride_sizes}")
+        # print(f"cnn padding =  {padding_sizes}")
+        # print(f"cnn neurons =  {output_channels}")
+        # print(f"hidden neurons =  {hidden_neurons_dense}")
+        # print(f"batch size =  {batch_size}")
         
         
         model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()

@@ -209,7 +209,7 @@ if __name__ == '__main__':
     hidden_size_lstm = 10
     num_layers_lstm = 1
     hidden_neurons_dense = [28, 41,  1]
-    ga = False
+    ga = True
     if ga:
         print('running ga individual')
         gene_length = 3
