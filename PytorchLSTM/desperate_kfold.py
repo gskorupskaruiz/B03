@@ -85,7 +85,7 @@ def run_model_cv(hyperparams, which_model, k_fold):
         n_hidden, n_layer, lr, seq, batch_size, num_layers_conv, output_channels_val, kernel_sizes_val, stride_sizes_val, padding_sizes_val, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense_val = hyperparams
 
         lr = lr/1000
-        n_epoch = 3
+        n_epoch = 5
 
         test_size = 0.1
         cv_size = 0.1
@@ -175,5 +175,5 @@ Define the hyperparameters to be tested
 """
 
 
-# testing_hyperparameters = [120, 2, 30, 8, 800, 1, 7, 1, 2, 1, 50, 7, 1]
-# print(run_model_cv(testing_hyperparameters, 'LSTM-CNN', 4))
+testing_hyperparameters = [120, 60, 10.0, 6, 200, 3, 8, 3, 7, 6, 70, 2, 8]
+print(run_model_cv(testing_hyperparameters, 'hybrid', 7))
