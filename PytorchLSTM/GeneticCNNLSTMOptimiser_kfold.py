@@ -16,7 +16,7 @@ from desperate_kfold import *
 
 def basis_func(scaling_factor, hidden_layers):
     
-    basis = np.cos(np.linspace(-np.pi/2, np.pi/2, hidden_layers)) * scaling_factor
+    basis = np.linspace(scaling_factor, 1, hidden_layers)
     basis = (basis).astype(int)
     for i in range(hidden_layers): 
         if basis[i] == 0: basis[i] = 1
@@ -81,23 +81,23 @@ def train_evaluate(ga_individual_solution):
 
 
     # ensure lists are the correct length
-    # cnn_output_size = [cnn_output_size] * cnn_layers
-    # cnn_kernel_size = [cnn_kernel_size] * cnn_layers
-    # cnn_stride = [cnn_stride] * cnn_layers
-    # cnn_padding = [cnn_padding] * cnn_layers
-    # hidden_neurons_dense = [hidden_neurons_dense] * (cnn_layers)
+    cnn_output_size = [cnn_output_size] * cnn_layers
+    cnn_kernel_size = [cnn_kernel_size] * cnn_layers
+    cnn_stride = [cnn_stride] * cnn_layers
+    cnn_padding = [cnn_padding] * cnn_layers
+    hidden_neurons_dense = [hidden_neurons_dense] * (cnn_layers)
     
     #I AM USING THE PREVIOUS VALUE USED FOR ALL LAYERS (LIKE 8 IN [8, 8, 8, 8] AS INPUT FOR BASIS FUNCTION)
     
-    cnn_output_size = basis_func(cnn_output_size*3, cnn_layers)
-    cnn_kernel_size = basis_func(cnn_kernel_size*3, cnn_layers)
-    cnn_stride = basis_func(cnn_stride*3, cnn_layers)
-    cnn_padding =  basis_func(cnn_padding*3, cnn_layers)
-    hidden_neurons_dense = basis_func(hidden_neurons_dense*3, cnn_layers)
+    # cnn_output_size = basis_func(cnn_output_size, cnn_layers)
+    # cnn_kernel_size = basis_func(cnn_kernel_size, cnn_layers)
+    # cnn_stride = basis_func(cnn_stride, cnn_layers)
+    # cnn_padding =  basis_func(cnn_padding, cnn_layers)
+    # hidden_neurons_dense = basis_func(hidden_neurons_dense, cnn_layers)
     
     print(f'type hidden neurson list {type(hidden_neurons_dense)}')
-    np.array(list(hidden_neurons_dense).append(1))
-    hidden_neurons_dense[0] = lstm_sequential_length
+    # np.array(list(hidden_neurons_dense).append(1))
+    hidden_neurons_dense[-1] = 1
 
     print(f"lstm Layers =  {lstm_layers}")
     print(f"lstm Sequential Length =  {lstm_sequential_length}")
@@ -163,6 +163,6 @@ if __name__ == '__main__':
 
 
     # print best solution found
-    best_individuals = tools.selBest(population, k=5)
+    best_individuals = tools.selBest(population, k=2)
     print('Best ever individual = ', best_individuals[0], '\nFitness = ', best_individuals[0].fitness.values[0])
     print(f'list of individuals = {best_individuals}')
