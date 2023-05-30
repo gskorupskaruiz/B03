@@ -210,7 +210,7 @@ class ParametricCNNLSTM(nn.Module):
             else:
                 if self.kernel_sizes[i] > self.output_shape[i-1] + 2 * self.padding_sizes[i-1]:
                     print('changed kernel size')
-                    self.kernel_sizes[i] = self.output_shape[i-1] + 2 * self.padding_sizes[i-1] - 1
+                    self.kernel_sizes[i] = self.output_shape[i-1] + 2 * self.padding_sizes[i-1] - 1-1
                     output_shape = (self.output_shape[i-1] - self.kernel_sizes[i] + 2* self.padding_sizes[i])/self.stride_sizes[i] + 1
                     self.output_shape.append(output_shape)
                 else:

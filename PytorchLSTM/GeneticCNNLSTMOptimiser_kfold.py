@@ -89,11 +89,11 @@ def train_evaluate(ga_individual_solution):
     
     #I AM USING THE PREVIOUS VALUE USED FOR ALL LAYERS (LIKE 8 IN [8, 8, 8, 8] AS INPUT FOR BASIS FUNCTION)
     
-    cnn_output_size = basis_func(cnn_output_size, cnn_layers)
-    cnn_kernel_size = basis_func(cnn_kernel_size, cnn_layers)
-    cnn_stride = basis_func(cnn_stride, cnn_layers)
-    cnn_padding =  basis_func(cnn_padding, cnn_layers)
-    hidden_neurons_dense = basis_func(hidden_neurons_dense, cnn_layers)
+    cnn_output_size = basis_func(cnn_output_size*3, cnn_layers)
+    cnn_kernel_size = basis_func(cnn_kernel_size*3, cnn_layers)
+    cnn_stride = basis_func(cnn_stride*3, cnn_layers)
+    cnn_padding =  basis_func(cnn_padding*3, cnn_layers)
+    hidden_neurons_dense = basis_func(hidden_neurons_dense*3, cnn_layers)
     
     print(f'type hidden neurson list {type(hidden_neurons_dense)}')
     np.array(list(hidden_neurons_dense).append(1))
