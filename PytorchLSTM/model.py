@@ -257,7 +257,7 @@ class ParametricCNNLSTM(nn.Module):
             self.dropout = nn.Dropout(0.2)
     
 
-    def forward(self, x, verbose = True):
+    def forward(self, x, verbose = False):
         if verbose: print(f'shape of x is {x.shape}') 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         out = self.conv1(x)
