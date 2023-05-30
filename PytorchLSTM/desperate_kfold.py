@@ -95,7 +95,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         n_hidden, n_layer, lr, seq, batch_size, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense = hyperparams
 
         lr = lr/1000
-        n_epoch = 3
+        n_epoch = 5
 
         test_size = 0.1
         cv_size = 0.1
@@ -144,7 +144,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         # print(f"batch size =  {batch_size}")
         
         
-        model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
+        model = ParametricLSTMCNN(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
         model.train()
         
         criterion = torch.nn.MSELoss() 
@@ -166,6 +166,10 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         #     break
         
         print(f'Loss at {i+1}th cross validation', loss)
+        if loss >= 1.0:
+            loss = 1000
+            i = k_fold-1
+            print(f'skip k_fold')
         all_losses.append(loss)
         if save_for_plots:
             kthlostperIndivudual[i] += loss
@@ -210,5 +214,5 @@ Define the hyperparameters to be tested
 # """
 
 
-# testing_hyperparameters = [120, 60, 10.0, 6, 200, 3, 8, 3, 7, 6, 70, 2, 8]
-# print(run_model_cv(testing_hyperparameters, 'hybrid', 7))
+testing_hyperparameters =[120, 60, 50.0, 3, 200, 2, [3, 3], [7, 7], [3, 3], [7, 7], 60, 1, [2, 1]]
+print(run_model_cv(testing_hyperparameters, 'hybrid', 7, True))
