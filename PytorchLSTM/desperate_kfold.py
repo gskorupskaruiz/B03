@@ -83,7 +83,7 @@ def run_model_cv(hyperparams, which_model, k_fold):
         n_hidden, n_layer, lr, seq, batch_size, num_layers_conv, output_channels_val, kernel_sizes_val, stride_sizes_val, padding_sizes_val, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense_val = hyperparams
 
         lr = lr/1000
-        n_epoch = 3
+        n_epoch = 5
 
         test_size = 0.1
         cv_size = 0.1
