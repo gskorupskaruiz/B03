@@ -127,7 +127,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         kernel_sizes = basis_func(kernel_sizes_val, num_layers_conv)
         stride_sizes = basis_func(stride_sizes_val, num_layers_conv)
         padding_sizes =  basis_func(padding_sizes_val, num_layers_conv)
-        hidden_neurons_dense = basis_func(hidden_neurons_dense, num_layers_conv)
+        hidden_neurons_dense = basis_func(hidden_neurons_dense[1], num_layers_conv)
         hidden_neurons_dense[0] = seq
         hidden_neurons_dense[-1] = 1
         
