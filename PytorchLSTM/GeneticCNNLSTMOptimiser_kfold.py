@@ -18,7 +18,7 @@ from desperate_kfold import *
 def train_evaluate(ga_individual_solution):
     gene_length = 3
     # decode GA solution to get hyperparamteres
-    ga_individual_solution = [0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1] 
+     
     lstm_layers_bit = BitArray(ga_individual_solution[0:gene_length]) # don't understand the bitarray stuff yet or the length given per hyperparameter
     lstm_neurons_bit = BitArray(ga_individual_solution[gene_length:2*gene_length])
     lstm_sequential_length_bit = BitArray(ga_individual_solution[2*gene_length:3*gene_length])
@@ -101,7 +101,7 @@ def train_evaluate(ga_individual_solution):
     
     try:
         
-        loss_model = run_model_cv(hyperparams_for_kfold, 'hybrid', 7)
+        loss_model = run_model_cv(hyperparams_for_kfold, 'hybrid', 7, False)
 
     #    print(f"loss of model at  = {loss_model}")
 
@@ -114,8 +114,8 @@ if __name__ == '__main__':
 
     # init variables and implementation of Ga using DEAP 
     
-    population_size = 10
-    num_generations = 10
+    population_size = 3
+    num_generations = 5
     entire_bit_array_length = 19 * 3 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
