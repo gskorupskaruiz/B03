@@ -240,7 +240,7 @@ def train_evaluate(ga_individual_solution):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         model.to(device)
 
-        kfoldmethod = True
+        kfoldmethod = False
         if not kfoldmethod:
             # train model
             model.train()
@@ -251,7 +251,7 @@ def train_evaluate(ga_individual_solution):
             train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch = num_epochs, lf = criterion, optimizer = optimizer, verbose = True)
             model.eval()
             predictions = model(X_test).to('cpu').detach().numpy() 
-            plot = True
+            plot = False
             if plot != False:
                 predictions_mod = model(X_test).to('cpu').detach().numpy() * std_ttd + mean_ttd
                 y_test_mod = y_test * std_ttd + mean_ttd

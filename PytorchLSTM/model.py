@@ -58,6 +58,8 @@ import torch.nn.functional as F
 
 
 ### my stuff
+
+
 class ParametricLSTMCNN(nn.Module):
     def __init__(self, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, inputlstm):
         super(ParametricLSTMCNN, self).__init__()
@@ -208,7 +210,7 @@ class ParametricCNNLSTM(nn.Module):
             else:
                 if self.kernel_sizes[i] > self.output_shape[i-1] + 2 * self.padding_sizes[i-1]:
                     print('changed kernel size')
-                    self.kernel_sizes[i] = self.output_shape[i-1] + 2 * self.padding_sizes[i-1] - 1
+                    self.kernel_sizes[i] = self.output_shape[i-1] + 2 * self.padding_sizes[i-1] - 1-1
                     output_shape = (self.output_shape[i-1] - self.kernel_sizes[i] + 2* self.padding_sizes[i])/self.stride_sizes[i] + 1
                     self.output_shape.append(output_shape)
                 else:
@@ -279,11 +281,22 @@ class ParametricCNNLSTM(nn.Module):
         h_0 = torch.randn(self.num_layer_lstm, out.shape[0], self.hidden_size_lstm).to(device).double()
         c_0 = torch.randn(self.num_layer_lstm, out.shape[0], self.hidden_size_lstm).to(device).double()
 
-        # output of lstm 
-        output, (hn, cn) = self.lstm(out, (h_0, c_0))  # lstm with input, hidden, and internal state
-        if verbose: print(f'shape after lstm is {output.shape}')
+        out, (hn, cn) = self.lstm(out, (h_0, c_0))  # lstm with input, hidden, and internal state
+
+        # numpy_array = hn.to('cpu').detach().numpy()
+        # essentially says return sequence is false...
+
+        hn_o = torch.Tensor(hn.to('cpu').detach().numpy()[-1, :, :])
+        hn_o = hn_o.view(-1, self.hidden_size_lstm).double().to(device)
+        hn_1 = torch.Tensor(hn.to('cpu').detach().numpy()[-1, :, :])
+        hn_1 = hn_1.view(-1, self.hidden_size_lstm).double().to(device)
+
+        out = (self.relu(hn_o + hn_1)) 
+
+        out = out.unsqueeze(1)
+        if verbose: print(f'shape after lstm is {out.shape}')
         # output of first dense layer 
-        out = self.relu(self.denseafterlstm(self.relu(output)))
+        out = self.relu(self.denseafterlstm(self.relu(out)))
         if verbose: print(f'shape after first dense layer is {out.shape}')
         
         for j in range(1, len(self.hidden_neurons_dense)-1):

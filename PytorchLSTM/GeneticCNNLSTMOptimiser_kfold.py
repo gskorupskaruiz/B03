@@ -62,6 +62,8 @@ def train_evaluate(ga_individual_solution):
     lstm_neurons += 1
     learning_rate += 1
     cnn_layers += 1
+    if cnn_layers == 1:
+        cnn_layers += 1
     cnn_kernel_size += 1
     cnn_stride += 1
     cnn_padding += 1
@@ -80,27 +82,23 @@ def train_evaluate(ga_individual_solution):
 
 
     # ensure lists are the correct length
-    # cnn_output_size = [cnn_output_size] * cnn_layers
-    # cnn_kernel_size = [cnn_kernel_size] * cnn_layers
-    # cnn_stride = [cnn_stride] * cnn_layers
-    # cnn_padding = [cnn_padding] * cnn_layers
-    # hidden_neurons_dense = [hidden_neurons_dense] * (cnn_layers)
+    cnn_output_size = [cnn_output_size] * cnn_layers
+    cnn_kernel_size = [cnn_kernel_size] * cnn_layers
+    cnn_stride = [cnn_stride] * cnn_layers
+    cnn_padding = [cnn_padding] * cnn_layers
+    hidden_neurons_dense = [hidden_neurons_dense] * (cnn_layers)
     
     #I AM USING THE PREVIOUS VALUE USED FOR ALL LAYERS (LIKE 8 IN [8, 8, 8, 8] AS INPUT FOR BASIS FUNCTION)
     
-    cnn_output_size = basis_func(cnn_output_size, cnn_layers)
-    cnn_kernel_size = basis_func(cnn_kernel_size, cnn_layers)
-    cnn_stride = basis_func(cnn_stride, cnn_layers)
-    cnn_padding =  basis_func(cnn_padding, cnn_layers)
-    hidden_neurons_dense = basis_func(hidden_neurons_dense, cnn_layers)
+    # cnn_output_size = basis_func(cnn_output_size, cnn_layers)
+    # cnn_kernel_size = basis_func(cnn_kernel_size, cnn_layers)
+    # cnn_stride = basis_func(cnn_stride, cnn_layers)
+    # cnn_padding =  basis_func(cnn_padding, cnn_layers)
+    # hidden_neurons_dense = basis_func(hidden_neurons_dense, cnn_layers)
     
-    
-    
-    print('YOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOK HEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEERE')
-    print(hidden_neurons_dense)
-    print(hidden_neurons_dense[-1])
+    print(f'type hidden neurson list {type(hidden_neurons_dense)}')
+    # np.array(list(hidden_neurons_dense).append(1))
     hidden_neurons_dense[-1] = 1
-    hidden_neurons_dense[0] = lstm_sequential_length
 
     print(f"lstm Layers =  {lstm_layers}")
     print(f"lstm Sequential Length =  {lstm_sequential_length}")
@@ -116,22 +114,18 @@ def train_evaluate(ga_individual_solution):
 
 
 
-    # Return 100 fitness if any hyperparameter == 0
-    if batch_size == 0 or lstm_layers == 0 or lstm_sequential_length == 0 or lstm_neurons == 0 or learning_rate == 0 or batch_size == 0 or cnn_layers == 0:
-        print("One of the hyperparameters is 0 - try again haha")
-        return 100
-    
-    hyperparams_for_kfold = [120, 60, learning_rate*1000, lstm_sequential_length, batch_size, cnn_layers, cnn_output_size[0], cnn_kernel_size[0], cnn_stride[0], cnn_padding[0], lstm_neurons, lstm_layers, hidden_neurons_dense[1]]
-
-    print('Current hyperparameters:', hyperparams_for_kfold)
-    
     try:
         
-        loss_model = run_model_cv(hyperparams_for_kfold, 'LSTM-CNN', 7)
+        hyperparams_for_kfold = [120, 60, learning_rate*1000, lstm_sequential_length, batch_size, cnn_layers, cnn_output_size, cnn_kernel_size, cnn_stride, cnn_padding, lstm_neurons, lstm_layers, hidden_neurons_dense]
+
+        print('Current hyperparameters:', hyperparams_for_kfold)
+        
+        
+        loss_model = run_model_cv(hyperparams_for_kfold, 'hybrid', 7, False)
 
     #    print(f"loss of model at  = {loss_model}")
 
-    except TypeError or RuntimeError:
+    except TypeError or RuntimeError or ValueError:
         print('Something went wrong, probably invalid set of hyper paremeters')
         loss_model = 100
     return [loss_model]
@@ -170,6 +164,6 @@ if __name__ == '__main__':
 
 
     # print best solution found
-    best_individuals = tools.selBest(population, k=5)
+    best_individuals = tools.selBest(population, k=2)
     print('Best ever individual = ', best_individuals[0], '\nFitness = ', best_individuals[0].fitness.values[0])
     print(f'list of individuals = {best_individuals}')

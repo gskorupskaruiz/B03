@@ -174,11 +174,11 @@ if __name__ == '__main__':
     n_hidden = 20 #input_size
     n_layer = 2
     n_epoch = 25
-    lr = 60/1000
+    lr = 0.01
     test_size = 0.1
     cv_size = 0.1
     seq = 28
-    batch_size = 393
+    batch_size = 1000
     
     # gpu?
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -208,12 +208,14 @@ if __name__ == '__main__':
     padding_sizes = [3,3]
     hidden_size_lstm = 10
     num_layers_lstm = 1
-    hidden_neurons_dense = [28, 41,  1]
-    ga = False
+    hidden_neurons_dense = [28, 41, 1]
+    ga = True
     if ga:
         print('running ga individual')
         gene_length = 3
-        ga_individual_solution =  [0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1] 
+        #ga_individual_solution =  [0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1]
+        #ga_individual_solution = [1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0]
+        ga_individual_solution = [1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1] 
 
 
         lstm_layers_bit = BitArray(ga_individual_solution[0:gene_length]) # don't understand the bitarray stuff yet or the length given per hyperparameter

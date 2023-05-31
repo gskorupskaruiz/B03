@@ -65,7 +65,7 @@ def basis_func(scaling_factor, hidden_layers):
         if basis[i] == 0: basis[i] = 1
     return basis
 
-def run_model_cv(hyperparams, which_model, k_fold):
+def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
     
     all_losses = []
     
@@ -75,7 +75,11 @@ def run_model_cv(hyperparams, which_model, k_fold):
    
     kfold_test = []
     kfold_train = []
-    
+    if save_for_plots:
+        # init variables for plots
+        kthlostperIndivudual = np.zeros(k_fold)
+        kth_predictions = []
+        kth_actual = []
     for i in range(k_fold):
         kfold_test.append([k_fold_batteries[i]])
         other_batteries = k_fold_batteries.copy()
@@ -89,10 +93,10 @@ def run_model_cv(hyperparams, which_model, k_fold):
         
 
         print(hyperparams)
-        n_hidden, n_layer, lr, seq, batch_size, num_layers_conv, output_channels_val, kernel_sizes_val, stride_sizes_val, padding_sizes_val, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense_val = hyperparams
+        n_hidden, n_layer, lr, seq, batch_size, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense = hyperparams
 
         lr = lr/1000
-        n_epoch = 3
+        n_epoch = 5
 
         test_size = 0.1
         cv_size = 0.1
@@ -113,35 +117,35 @@ def run_model_cv(hyperparams, which_model, k_fold):
         datasetv = SeqDataset(x_data=X_test, y_data=y_test, seq_len=seq, batch=batch_size)
         # LsTM Model initialization
         
-        output_channels = [output_channels_val] * num_layers_conv
-        kernel_sizes = [kernel_sizes_val] * num_layers_conv
-        stride_sizes = [stride_sizes_val] * num_layers_conv
-        padding_sizes = [padding_sizes_val] * num_layers_conv
-        hidden_neurons_dense = [seq, hidden_neurons_dense_val, 1]
+        # output_channels = [output_channels_val] * num_layers_conv
+        # kernel_sizes = [kernel_sizes_val] * num_layers_conv
+        # stride_sizes = [stride_sizes_val] * num_layers_conv
+        # padding_sizes = [padding_sizes_val] * num_layers_conv
+        # hidden_neurons_dense = [seq, hidden_neurons_dense_val, 1]
         
         
-        output_channels = basis_func(output_channels_val, num_layers_conv)
-        kernel_sizes = basis_func(kernel_sizes_val, num_layers_conv)
-        stride_sizes = basis_func(stride_sizes_val, num_layers_conv)
-        padding_sizes =  basis_func(padding_sizes_val, num_layers_conv)
-        hidden_neurons_dense = basis_func(hidden_neurons_dense, num_layers_conv)
-        hidden_neurons_dense[0] = seq
-        hidden_neurons_dense[-1] = 1
+        # output_channels = basis_func(output_channels_val, num_layers_conv)
+        # kernel_sizes = basis_func(kernel_sizes_val, num_layers_conv)
+        # stride_sizes = basis_func(stride_sizes_val, num_layers_conv)
+        # padding_sizes =  basis_func(padding_sizes_val, num_layers_conv)
+        # hidden_neurons_dense = basis_func(hidden_neurons_dense[1], num_layers_conv)
+        # hidden_neurons_dense[0] = seq
+        # hidden_neurons_dense[-1] = 1
         
-        print(f"lstm Layers =  {num_layers_lstm}")
-        print(f"lstm Sequential Length =  {seq}")
-        print(f"lstm Neurons =  {hidden_size_lstm}")
-        print(f"learning rate =  {lr}")
-        print(f"cnn layers =  {num_layers_conv}")
-        print(f"cnn kernel size =  {kernel_sizes}")
-        print(f"cnn stride =  {stride_sizes}")
-        print(f"cnn padding =  {padding_sizes}")
-        print(f"cnn neurons =  {output_channels}")
-        print(f"hidden neurons =  {hidden_neurons_dense}")
-        print(f"batch size =  {batch_size}")
+        # print(f"lstm Layers =  {num_layers_lstm}")
+        # print(f"lstm Sequential Length =  {seq}")
+        # print(f"lstm Neurons =  {hidden_size_lstm}")
+        # print(f"learning rate =  {lr}")
+        # print(f"cnn layers =  {num_layers_conv}")
+        # print(f"cnn kernel size =  {kernel_sizes}")
+        # print(f"cnn stride =  {stride_sizes}")
+        # print(f"cnn padding =  {padding_sizes}")
+        # print(f"cnn neurons =  {output_channels}")
+        # print(f"hidden neurons =  {hidden_neurons_dense}")
+        # print(f"batch size =  {batch_size}")
         
         
-        model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
+        model = ParametricLSTMCNN(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
         model.train()
         
         criterion = torch.nn.MSELoss() 
@@ -153,7 +157,9 @@ def run_model_cv(hyperparams, which_model, k_fold):
         model.eval()
         
         predictions = model(X_test).to('cpu').detach().numpy()
-    
+        if save_for_plots:
+            kth_predictions.append(predictions)
+            kth_actual.append(y_test.squeeze(2).to('cpu').detach().numpy())
         loss = ((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
 
         # if loss > 0.5:
@@ -161,8 +167,13 @@ def run_model_cv(hyperparams, which_model, k_fold):
         #     break
         
         print(f'Loss at {i+1}th cross validation', loss)
+        if loss >= 1.0:
+            loss = 1000
+            i = k_fold-1
+            print(f'skip k_fold')
         all_losses.append(loss)
-        
+        if save_for_plots:
+            kthlostperIndivudual[i] += loss
         # PLOT THE PREDICTIONS FOR EACH FOLD
         
         # plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
@@ -201,5 +212,5 @@ Define the hyperparameters to be tested
 # """
 
 
-testing_hyperparameters = [120, 60, 10, 6, 200, 3, 8, 3, 7, 6, 70, 2, 8]
-print(run_model_cv(testing_hyperparameters, 'hybrid', 7))
+testing_hyperparameters =[120, 60, 50.0, 3, 200, 2, [3, 3], [7, 7], [3, 3], [7, 7], 60, 1, [2, 1]]
+print(run_model_cv(testing_hyperparameters, 'hybrid', 7, True))
