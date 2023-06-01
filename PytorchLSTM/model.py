@@ -96,7 +96,7 @@ class ParametricLSTMCNN(nn.Module):
                     output_shape = (self.output_shape[i-1] - self.kernel_sizes[i] + 2* self.padding_sizes[i])/self.stride_sizes[i] + 1
                     self.output_shape.append(output_shape)
 
-       # print(self.output_shape)
+        print(self.output_shape)
         if self.output_shape[-1] <=0:
             print('change inputs')
         
@@ -128,7 +128,6 @@ class ParametricLSTMCNN(nn.Module):
             # dense layers after conv 
             for i in range(2, len(self.hidden_neurons_dense)+1):
                 if i == 2:
-                    
                     setattr(self, 'dense'+str(i), nn.Linear(int(self.output_shape[-1]), int(self.hidden_neurons_dense[1])))
                 elif i == len(self.hidden_neurons_dense):
                     setattr(self, 'dense'+str(i), nn.Linear(in_features=self.hidden_neurons_dense[i-2], out_features=1)) 
@@ -165,6 +164,7 @@ class ParametricLSTMCNN(nn.Module):
             if verbose: print(f'shape after batch layer {i+1} is {out.shape}')
         
         for j in range(1, len(self.hidden_neurons_dense)-1):
+            #print(F'moving on to dense')
             dense_name = f'dense{j+1}'
             dense_layer = getattr(self, dense_name)
             out = self.relu(dense_layer(out))

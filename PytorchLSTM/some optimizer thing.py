@@ -1,4 +1,4 @@
-from sketchymain import run_model_cv
+from desperate_kfold import run_model_cv
 import numpy as np
 
 import matplotlib.pyplot as plt
@@ -35,7 +35,7 @@ class NormalOptimizer:
     def compute(self, fun):
         
         particle = self.initialize_particle()
-        loss = fun(particle)
+        loss = fun(particle, 'hybrid', 4    , False)
         
         return loss, particle
         
@@ -84,11 +84,11 @@ class NormalOptimizer:
         self.run(fun, n_iter, n_init)
         
 
-lower_limit = [60, 1, 1, 5, 500, 1, 1, 1, 1, 1, 1, 1, 15]
-upper_limit = [120, 3, 100, 60, 7000, 8, 8, 8, 8, 8, 20, 3, 60]
+lower_limit = [60, 1, 1, 5, 100, 1, 1, 1, 1, 1, 1, 1, 15]
+upper_limit = [120, 3, 100, 60, 1000, 8, 8, 8, 8, 8, 20, 3, 60]
 
 opt = NormalOptimizer(lower_limit, upper_limit)
-optimized = opt.run(run_model_cv, n_iter=3, n_init=20)
+optimized = opt.run(run_model_cv, n_iter=3, n_init=3)
 
 print(optimized)
 

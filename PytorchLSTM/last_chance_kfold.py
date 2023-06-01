@@ -95,9 +95,9 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         
 
         print(hyperparams)
-        lr, seq, batch_size, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense = hyperparams
+        n_hidden, n_layer, lr, seq, batch_size, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense = hyperparams
         
-        n_epoch = 25
+        n_epoch = 5
 
         test_size = 0.1
         cv_size = 0.1
@@ -147,7 +147,6 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         
         
         model = ParametricLSTMCNN(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
-        model = ParametricLSTMCNN(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
         model.train()
         
         criterion = torch.nn.MSELoss() 
@@ -169,11 +168,12 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         #     break
         
         print(f'Loss at {i+1}th cross validation', loss)
-        if loss >= 1.0:
-            loss = 1000
-            all_losses.append(loss)
-            break
-            print(f'skip k_fold')
+        # if loss >= 1.0:
+        #     loss = 1000
+             
+        #     print(f'skip k_fold')
+        #     break 
+
         all_losses.append(loss)
         if save_for_plots:
             kthlostperIndivudual[i] += loss
@@ -183,7 +183,8 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
             predictions_plot = predictions.squeeze(2) * time_std + time_mean
             y_kfold = y_test.squeeze(2).to('cpu').detach().numpy() * time_std + time_mean
             plt.plot(predictions_plot, label='pred', linewidth=2, color='red')
-            plt.plot(y_kfold, label='actual', linewidth=2, color='blue')
+            plt.plot(y_kfold) 
+            plt.plot((y_kfold-predictions_plot), label='error', linewidth=2, color='blue')
             plt.legend()
             plt.show()
     
@@ -225,4 +226,4 @@ Define the hyperparameters to be tested
 testing_hyperparameters = [120, 60, 0.02517294117647059, 6, 509, 1, [1], [1], [1], [1], 22, 2, [1, 1]]
 #testing_hyperparameters = [120, 60, 10, 50, 600, 1, [6], [4], [2], [4], 10, 3, [4, 1]] # trained cnnlstm
 
-# print(run_model_cv(testing_hyperparameters, 'hybrid', 7, True))
+print(run_model_cv(testing_hyperparameters, 'hybrid', 4, True))

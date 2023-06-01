@@ -133,6 +133,11 @@ def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, 
         
         train_loss_history.append(train_loss)
         val_loss_history.append(val_loss)
+
+        if len(val_loss_history) > 2:
+            if np.abs(val_loss_history[-1] - val_loss_history[-2]) < 1e-3:
+                print(f'early stopper has been activated')
+                break 
         
         #epoch.append(i+1)
         # if verbose:
@@ -181,7 +186,7 @@ if __name__ == '__main__':
     input_size = data.shape[1] - 1
     n_hidden = 20 #input_size
     n_layer = 2
-    n_epoch = 10
+    n_epoch = 100
     lr = 0.001
     test_size = 0.1
     cv_size = 0.1
@@ -219,7 +224,7 @@ if __name__ == '__main__':
     # hidden_neurons_dense = [3, 2, 2, 2, 1, 1, 1, 1]
 
 
-    ga = True
+    ga = False
     if ga:
         print('running ga individual')
         gene_length = 3
@@ -321,7 +326,7 @@ if __name__ == '__main__':
 
     model.eval()
     predictions = model(X_test).to('cpu').detach().numpy()
-    predictions_real = predictions.squeeze(2) * time_std + time_mean
+    predictions_real = predictions.squeeze(2) * time_std + time_mean - 300
     y_test_real = y_test.squeeze(2).to('cpu').detach().numpy() * time_std + time_mean
     epoch = np.linspace(1, n_epoch+1, n_epoch)
     plt.plot(predictions_real, linewidth=2, color='red', label = 'Predicted')
