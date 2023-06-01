@@ -27,7 +27,6 @@ def basis_func(scaling_factor, hidden_layers):
     return basis_fun
 
 
-
 # train evaluate (GA individuals)
 def train_evaluate(ga_individual_solution):
     gene_length = 8
