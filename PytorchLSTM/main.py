@@ -87,11 +87,22 @@ class EarlyStopper:
 
 def basis_func(scaling_factor, hidden_layers):
     
-    basis = np.linspace(scaling_factor, 1, hidden_layers)
-    basis = (basis).astype(int)
+    # basis = np.linspace(scaling_factor, 1, hidden_layers)
+    # basis = (basis).astype(int)
+    # for i in range(hidden_layers): 
+    #     if basis[i] == 0: basis[i] = 1
+    # return basis
+    basis = (np.arange(hidden_layers, dtype=int)) * scaling_factor
+    if hidden_layers == 1:
+        basis[0] = 1
+    # basis = (basis).astype(int)
+    basis_fun = []
+    basis_fun = []
     for i in range(hidden_layers): 
-        if basis[i] == 0: basis[i] = 1
-    return basis
+        if basis[i] == 0: 
+            basis[i] = 1
+        basis_fun.append(basis[i])
+    return basis_fun
 
 def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, verbose = True):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
