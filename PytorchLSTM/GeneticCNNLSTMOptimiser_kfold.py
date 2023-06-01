@@ -129,7 +129,7 @@ if __name__ == '__main__':
     # init variables and implementation of Ga using DEAP 
     
     population_size = 10
-    num_generations = 5
+    num_generations = 10
     entire_bit_array_length = 11 * 8 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
