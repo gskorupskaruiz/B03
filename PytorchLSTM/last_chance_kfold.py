@@ -82,7 +82,6 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         kthlostperIndivudual = np.zeros(k_fold)
         kth_predictions = []
         kth_actual = []
-        
     for i in range(k_fold):
         kfold_test.append([k_fold_batteries[i]])
         other_batteries = k_fold_batteries.copy()
@@ -96,9 +95,9 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         
 
         print(hyperparams)
-        lr, seq, batch_size, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense = hyperparams
+        n_hidden, n_layer, lr, seq, batch_size, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense = hyperparams
         
-        n_epoch = 25
+        n_epoch = 5
 
         test_size = 0.1
         cv_size = 0.1
@@ -117,11 +116,36 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         
         dataset = SeqDataset(x_data=X_train, y_data=y_train, seq_len=seq, batch=batch_size)
         datasetv = SeqDataset(x_data=X_test, y_data=y_test, seq_len=seq, batch=batch_size)
-        
         # LsTM Model initialization
         
+        # output_channels = [output_channels_val] * num_layers_conv
+        # kernel_sizes = [kernel_sizes_val] * num_layers_conv
+        # stride_sizes = [stride_sizes_val] * num_layers_conv
+        # padding_sizes = [padding_sizes_val] * num_layers_conv
+        # hidden_neurons_dense = [seq, hidden_neurons_dense_val, 1]
         
-        model = ParametricLSTMCNN(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
+        
+        # output_channels = basis_func(output_channels_val, num_layers_conv)
+        # kernel_sizes = basis_func(kernel_sizes_val, num_layers_conv)
+        # stride_sizes = basis_func(stride_sizes_val, num_layers_conv)
+        # padding_sizes =  basis_func(padding_sizes_val, num_layers_conv)
+        # hidden_neurons_dense = basis_func(hidden_neurons_dense[1], num_layers_conv)
+        # hidden_neurons_dense[0] = seq
+        # hidden_neurons_dense[-1] = 1
+        
+        # print(f"lstm Layers =  {num_layers_lstm}")
+        # print(f"lstm Sequential Length =  {seq}")
+        # print(f"lstm Neurons =  {hidden_size_lstm}")
+        # print(f"learning rate =  {lr}")
+        # print(f"cnn layers =  {num_layers_conv}")
+        # print(f"cnn kernel size =  {kernel_sizes}")
+        # print(f"cnn stride =  {stride_sizes}")
+        # print(f"cnn padding =  {padding_sizes}")
+        # print(f"cnn neurons =  {output_channels}")
+        # print(f"hidden neurons =  {hidden_neurons_dense}")
+        # print(f"batch size =  {batch_size}")
+        
+        
         model = ParametricLSTMCNN(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
         model.train()
         
@@ -144,11 +168,12 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         #     break
         
         print(f'Loss at {i+1}th cross validation', loss)
-        if loss >= 1.0:
-            loss = 1000
-            all_losses.append(loss)
-            break
-            print(f'skip k_fold')
+        # if loss >= 1.0:
+        #     loss = 1000
+             
+        #     print(f'skip k_fold')
+        #     break 
+
         all_losses.append(loss)
         if save_for_plots:
             kthlostperIndivudual[i] += loss
@@ -158,7 +183,8 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
             predictions_plot = predictions.squeeze(2) * time_std + time_mean
             y_kfold = y_test.squeeze(2).to('cpu').detach().numpy() * time_std + time_mean
             plt.plot(predictions_plot, label='pred', linewidth=2, color='red')
-            plt.plot(y_kfold, label='actual', linewidth=2, color='blue')
+            plt.plot(y_kfold) 
+            plt.plot((y_kfold-predictions_plot), label='error', linewidth=2, color='blue')
             plt.legend()
             plt.show()
     

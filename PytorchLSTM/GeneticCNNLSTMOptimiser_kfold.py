@@ -19,9 +19,12 @@ def basis_func(scaling_factor, hidden_layers):
     scaling_factor = scaling_factor + 2
     basis = np.cos(np.linspace(-np.pi/2, np.pi/2, hidden_layers)) * scaling_factor
     basis = (basis).astype(int)
+    basis_fun = []
+    basis_fun = []
     for i in range(hidden_layers): 
         if basis[i] == 0: basis[i] = 1
-    return basis
+        basis_fun.append(basis[i])
+    return basis_fun
 
 
 # train evaluate (GA individuals)
@@ -55,14 +58,13 @@ def train_evaluate(ga_individual_solution):
     cnn_padding = cnn_padding_bit.uint
     cnn_output_size = cnn_output_size_bit.uint
     hidden_neurons_dense = hidden_neurons_dense_bit.uint
-
     batch_size = batch_size_bit.uint
 
     # resize hyperparameters
     lstm_layers = int(np.interp(lstm_layers, [0, 255], [1, 7]))
     lstm_sequential_length = int(np.interp(lstm_sequential_length, [0, 255], [1, 30]))
     lstm_neurons = int(np.interp(lstm_neurons, [0, 255], [1, 50]))
-    learning_rate = np.interp(learning_rate, [0, 255], [0.0001, 0.1])
+    learning_rate = round(np.interp(learning_rate, [0, 255], [0.0001, 0.1]), 5)
     cnn_layers =int( np.interp(cnn_layers, [0, 255], [1, 7]))
     cnn_kernel_size =int( np.interp(cnn_kernel_size, [0, 255], [1, 7]))
     cnn_stride = int(np.interp(cnn_stride, [0, 255], [1, 7]))
@@ -94,8 +96,8 @@ def train_evaluate(ga_individual_solution):
     cnn_padding =  basis_func(cnn_padding, cnn_layers)
     hidden_neurons_dense = basis_func(hidden_neurons_dense, cnn_layers)
     
-    print(f'type hidden neurson list {type(hidden_neurons_dense)}')
-    np.array(list(hidden_neurons_dense).append(1))
+    # print(f'type hidden neurson list {type(hidden_neurons_dense)}')
+    hidden_neurons_dense.append(1)
     hidden_neurons_dense[-1] = 1
 
     print(f"lstm Layers =  {lstm_layers}")
@@ -112,20 +114,18 @@ def train_evaluate(ga_individual_solution):
 
 
 
-    try:
-        
-        hyperparams_for_kfold = [learning_rate, lstm_sequential_length, batch_size, cnn_layers, cnn_output_size, cnn_kernel_size, cnn_stride, cnn_padding, lstm_neurons, lstm_layers, hidden_neurons_dense]
 
-        print('Current hyperparameters:', hyperparams_for_kfold)
         
-        
-        loss_model = run_model_cv(hyperparams_for_kfold, 'hybrid', 4, False)
+    hyperparams_for_kfold = [learning_rate, lstm_sequential_length, batch_size, cnn_layers, cnn_output_size, cnn_kernel_size, cnn_stride, cnn_padding, lstm_neurons, lstm_layers, hidden_neurons_dense]
 
-    #    print(f"loss of model at  = {loss_model}")
+    print('Current hyperparameters:', hyperparams_for_kfold)
+    
+    
+    loss_model = run_model_cv(hyperparams_for_kfold, 'hybrid', 4, False)
 
-    except TypeError or RuntimeError or ValueError:
-        print('Something went wrong, probably invalid set of hyper paremeters')
-        loss_model = 100
+#    print(f"loss of model at  = {loss_model}")
+
+
     return [loss_model]
 
 if __name__ == '__main__':  
