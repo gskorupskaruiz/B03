@@ -62,7 +62,7 @@ def train_evaluate(ga_individual_solution):
     batch_size = batch_size_bit.uint
 
     # resize hyperparameters
-    lstm_layers = int(np.interp(lstm_layers, [0, 255], [1, 7]))
+    lstm_layers = int(np.interp(lstm_layers, [0, 255], [1, 5]))
     lstm_sequential_length = int(np.interp(lstm_sequential_length, [0, 255], [1, 30]))
     lstm_neurons = int(np.interp(lstm_neurons, [0, 255], [1, 50]))
     learning_rate = round(np.interp(learning_rate, [0, 255], [0.0001, 0.1]), 5)
@@ -72,7 +72,7 @@ def train_evaluate(ga_individual_solution):
     cnn_padding = int(np.interp(cnn_padding, [0, 255], [1, 10]))
     cnn_output_size = int(np.interp(cnn_output_size, [0, 255], [1, 10]))
     hidden_neurons_dense = int(np.interp(hidden_neurons_dense, [0, 255], [1, 7]))
-    batch_size = int(np.interp(batch_size, [0, 255], [100, 2000]))
+    batch_size = int(np.interp(batch_size, [0, 255], [100, 1000]))
 
 
 
