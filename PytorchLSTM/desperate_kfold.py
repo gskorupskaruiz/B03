@@ -82,6 +82,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         kthlostperIndivudual = np.zeros(k_fold)
         kth_predictions = []
         kth_actual = []
+        
     for i in range(k_fold):
         kfold_test.append([k_fold_batteries[i]])
         other_batteries = k_fold_batteries.copy()
@@ -117,33 +118,6 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         dataset = SeqDataset(x_data=X_train, y_data=y_train, seq_len=seq, batch=batch_size)
         datasetv = SeqDataset(x_data=X_test, y_data=y_test, seq_len=seq, batch=batch_size)
         # LsTM Model initialization
-        
-        # output_channels = [output_channels_val] * num_layers_conv
-        # kernel_sizes = [kernel_sizes_val] * num_layers_conv
-        # stride_sizes = [stride_sizes_val] * num_layers_conv
-        # padding_sizes = [padding_sizes_val] * num_layers_conv
-        # hidden_neurons_dense = [seq, hidden_neurons_dense_val, 1]
-        
-        
-        # output_channels = basis_func(output_channels_val, num_layers_conv)
-        # kernel_sizes = basis_func(kernel_sizes_val, num_layers_conv)
-        # stride_sizes = basis_func(stride_sizes_val, num_layers_conv)
-        # padding_sizes =  basis_func(padding_sizes_val, num_layers_conv)
-        # hidden_neurons_dense = basis_func(hidden_neurons_dense[1], num_layers_conv)
-        # hidden_neurons_dense[0] = seq
-        # hidden_neurons_dense[-1] = 1
-        
-        # print(f"lstm Layers =  {num_layers_lstm}")
-        # print(f"lstm Sequential Length =  {seq}")
-        # print(f"lstm Neurons =  {hidden_size_lstm}")
-        # print(f"learning rate =  {lr}")
-        # print(f"cnn layers =  {num_layers_conv}")
-        # print(f"cnn kernel size =  {kernel_sizes}")
-        # print(f"cnn stride =  {stride_sizes}")
-        # print(f"cnn padding =  {padding_sizes}")
-        # print(f"cnn neurons =  {output_channels}")
-        # print(f"hidden neurons =  {hidden_neurons_dense}")
-        # print(f"batch size =  {batch_size}")
         
         
         model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
@@ -218,7 +192,7 @@ Define the hyperparameters to be tested
 
 
 #testing_hyperparameters = [120, 60, 50.0, 3, 200, 2, [3, 3], [7, 7], [3, 3], [7, 7], 60, 1, [2, 1]]
-# testing_hyperparameters = [0.05, 20, 600, 1, [8], [4], [2], [4], 10, 3, [4, 1]] # trained lstmcnn
+testing_hyperparameters = [0.05, 20, 600, 1, [8], [4], [2], [4], 10, 3, [4, 1]] # trained lstmcnn
 #testing_hyperparameters = [120, 60, 0.01, 50, 600, 1, [6], [4], [2], [4], 10, 3, [4, 1]] # trained cnnlstm
 
-# print(run_model_cv(testing_hyperparameters, 'hybrid', 7, True))
+print(run_model_cv(testing_hyperparameters, 'hybrid', 4, True))
