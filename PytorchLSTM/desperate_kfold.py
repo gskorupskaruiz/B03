@@ -85,7 +85,7 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
 #     return basis
 
 def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
-    save_for_plots = False
+
     all_losses = []
     data_for_plots1 = []
     data_for_plots2 = []
@@ -116,7 +116,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         print(f'hyperparameters = {hyperparams}')
         lr, seq, batch_size, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense = hyperparams
         
-        n_epoch = 50
+        n_epoch = 1
         test_size = 0.1
         cv_size = 0.1
 
@@ -260,4 +260,4 @@ Define the hyperparameters to be tested
 testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [1, 6, 12, 18, 24, 1]] # 0.06 kfold loss 
 
 
-print(run_model_cv(testing_hyperparameters, 'hybrid', 4, True))
+print(run_model_cv(testing_hyperparameters, 'hybrid', 4, save_for_plots = False))
