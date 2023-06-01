@@ -85,7 +85,7 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
 #     return basis
 
 def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
-    
+    save_for_plots = False
     all_losses = []
     
     all_batteries = ['B0005', 'B0006', 'B0007', 'B0018', 'B0029', 'B0031', 'B0032']

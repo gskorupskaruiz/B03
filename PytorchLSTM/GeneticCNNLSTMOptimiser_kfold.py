@@ -128,7 +128,7 @@ if __name__ == '__main__':
 
     # init variables and implementation of Ga using DEAP 
     
-    population_size = 10
+    population_size = 15
     num_generations = 10
     entire_bit_array_length = 11 * 8 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
 
