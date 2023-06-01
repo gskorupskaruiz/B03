@@ -85,8 +85,10 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
 #     return basis
 
 def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
-    
+    save_for_plots = False
     all_losses = []
+    data_for_plots1 = []
+    data_for_plots2 = []
     
     all_batteries = ['B0005', 'B0006', 'B0007', 'B0018', 'B0029', 'B0031', 'B0032']
     
@@ -202,14 +204,25 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         # # PLOT THE PREDICTIONS FOR EACH FOLD
 
 
-        #     predictions_plot = predictions.squeeze(2) * time_std + time_mean
-        #     y_kfold = y_test.squeeze(2).to('cpu').detach().numpy() * time_std + time_mean
-        #     plt.plot(predictions_plot, label='pred', linewidth=2, color='red')
-        #     plt.plot(y_kfold, label='actual', linewidth=2, color='blue')
-        #     plt.legend()
-        #     plt.show()
+            predictions_plot = predictions.squeeze(2) * time_std + time_mean
+            y_kfold = y_test.squeeze(2).to('cpu').detach().numpy() * time_std + time_mean
+            plt.plot(predictions_plot, label='pred', linewidth=2, color='red')
+            plt.plot(y_kfold, label='actual', linewidth=2, color='blue')
+            plt.legend()
+            plt.show()
+            data_for_plots1.append(predictions_plot)
+            data_for_plots2.append(y_kfold)
     
-    
+    # ONLY IMPLEMENTED FOR 4-FOLD CROSS VALIDATION
+    if save_for_plots:
+        for i in range(4):
+            plt.subplot(2, 2, i+1)
+            plt.plot(data_for_plots1[i], label='pred', linewidth=2, color='red')
+            plt.subplot(2, 2, i+1)
+            plt.plot(data_for_plots2[i], label='actual', linewidth=2, color='blue')
+            plt.legend()
+            plt.title(f'kth fold = {i+1}')
+        plt.show()
     
     loss = np.mean(all_losses)
     
