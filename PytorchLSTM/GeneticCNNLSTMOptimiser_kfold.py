@@ -15,7 +15,7 @@ from desperate_kfold import *
 
 
 def basis_func(scaling_factor, hidden_layers):
-    basis = (np.arange(hidden_layers, dtype=int)) * scaling_factor
+    basis = np.linspace(1, scaling_factor, num = hidden_layers,  dtype=int)
     if hidden_layers == 1:
         basis[0] = 1
     # basis = (basis).astype(int)
@@ -128,8 +128,8 @@ if __name__ == '__main__':
 
     # init variables and implementation of Ga using DEAP 
     
-    population_size = 10
-    num_generations = 5
+    population_size = 15
+    num_generations = 10
     entire_bit_array_length = 11 * 8 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

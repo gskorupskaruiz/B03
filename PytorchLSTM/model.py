@@ -58,8 +58,6 @@ import torch.nn.functional as F
 
 
 ### my stuff
-
-
 class ParametricLSTMCNN(nn.Module):
     def __init__(self, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, inputlstm):
         super(ParametricLSTMCNN, self).__init__()
@@ -147,8 +145,6 @@ class ParametricLSTMCNN(nn.Module):
             return True
         else:
             return False
-
-
 
     def forward(self, x, verbose = False):
         if verbose: print(f'shape of x is {x.shape}') 
