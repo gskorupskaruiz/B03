@@ -25,8 +25,7 @@ def basis_func(scaling_factor, hidden_layers):
         if basis[i] == 0: basis[i] = 1
         basis_fun.append(basis[i])
     return basis_fun
-        basis_fun.append(basis[i])
-    return basis_fun
+
 
 
 # train evaluate (GA individuals)
@@ -68,10 +67,10 @@ def train_evaluate(ga_individual_solution):
     lstm_neurons = int(np.interp(lstm_neurons, [0, 255], [1, 50]))
     learning_rate = round(np.interp(learning_rate, [0, 255], [0.0001, 0.1]), 5)
     cnn_layers =int( np.interp(cnn_layers, [0, 255], [1, 7]))
-    cnn_kernel_size =int( np.interp(cnn_kernel_size, [0, 255], [1, 7]))
-    cnn_stride = int(np.interp(cnn_stride, [0, 255], [1, 7]))
-    cnn_padding = int(np.interp(cnn_padding, [0, 255], [1, 7]))
-    cnn_output_size = int(np.interp(cnn_output_size, [0, 255], [1, 7]))
+    cnn_kernel_size =int( np.interp(cnn_kernel_size, [0, 255], [1, 10]))
+    cnn_stride = int(np.interp(cnn_stride, [0, 255], [1, 10]))
+    cnn_padding = int(np.interp(cnn_padding, [0, 255], [1, 10]))
+    cnn_output_size = int(np.interp(cnn_output_size, [0, 255], [1, 10]))
     hidden_neurons_dense = int(np.interp(hidden_neurons_dense, [0, 255], [1, 7]))
     batch_size = int(np.interp(batch_size, [0, 255], [100, 2000]))
 
@@ -120,7 +119,7 @@ def train_evaluate(ga_individual_solution):
         
     hyperparams_for_kfold = [learning_rate, lstm_sequential_length, batch_size, cnn_layers, cnn_output_size, cnn_kernel_size, cnn_stride, cnn_padding, lstm_neurons, lstm_layers, hidden_neurons_dense]
 
-    print('Current hyperparameters:', hyperparams_for_kfold)
+    # print('Current hyperparameters:', hyperparams_for_kfold)
     
     
     loss_model = run_model_cv(hyperparams_for_kfold, 'hybrid', 4, False)
@@ -134,8 +133,8 @@ if __name__ == '__main__':
 
     # init variables and implementation of Ga using DEAP 
     
-    population_size = 5
-    num_generations = 10
+    population_size = 10
+    num_generations = 5
     entire_bit_array_length = 11 * 8 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

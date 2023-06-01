@@ -138,6 +138,17 @@ class ParametricLSTMCNN(nn.Module):
             self.relu = nn.ReLU()
             self.dropout = nn.Dropout(0.2)
     
+    def hyperparameter_check(self):
+        x = 0
+        for i in self.output_shape:
+            if i == int(i):
+                x += 1
+        if x == len(self.output_shape):
+            return True
+        else:
+            return False
+
+
 
     def forward(self, x, verbose = False):
         if verbose: print(f'shape of x is {x.shape}') 

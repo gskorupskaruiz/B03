@@ -48,7 +48,7 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
     y_tr = torch.tensor(y_tr).unsqueeze(1).unsqueeze(2)
 
     if torch.cuda.is_available() == True:
-        print('Running on GPU')
+        # print('Running on GPU')
         X = x_tr.to('cuda').double()
         y = y_tr.to('cuda').double()
 
@@ -94,7 +94,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         print('Test battery:', kfold_test[i])
         
 
-        print(hyperparams)
+        print(f'hyperparameteres {hyperparams}')
         lr, seq, batch_size, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense = hyperparams
         
         n_epoch = 25
@@ -147,8 +147,12 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         
         
         model = ParametricLSTMCNN(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
-        model = ParametricLSTMCNN(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
-        model.train()
+        if not model.hyperparameter_check():
+            loss = 10000
+            all_losses.append(loss)
+            print(f'skip k_fold becasue bad set of hyperparameters')
+            break
+        model.to(device)
         
         criterion = torch.nn.MSELoss() 
         optimizer = torch.optim.Adam(model.parameters(), lr = lr)
@@ -172,8 +176,9 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         if loss >= 1.0:
             loss = 1000
             all_losses.append(loss)
-            break
             print(f'skip k_fold')
+            break
+            
         all_losses.append(loss)
         if save_for_plots:
             kthlostperIndivudual[i] += loss

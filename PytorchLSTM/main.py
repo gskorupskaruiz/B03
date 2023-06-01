@@ -134,8 +134,10 @@ def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, 
         train_loss_history.append(train_loss)
         val_loss_history.append(val_loss)
 
+        val_loss_history_arr = np.array(val_loss_history)
+
         if len(val_loss_history) > 2:
-            if np.abs(val_loss_history[-1] - val_loss_history[-2]) < 1e-3:
+            if (val_loss_history[-1] - val_loss_history[-2] > 1e-3) or val_loss_history_arr[val_loss_history_arr > 1].size > 4:
                 print(f'early stopper has been activated')
                 break 
         
