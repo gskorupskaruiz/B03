@@ -85,6 +85,14 @@ class EarlyStopper:
             else:
                 return False          
 
+def basis_func(scaling_factor, hidden_layers):
+    
+    basis = np.linspace(scaling_factor, 1, hidden_layers)
+    basis = (basis).astype(int)
+    for i in range(hidden_layers): 
+        if basis[i] == 0: basis[i] = 1
+    return basis
+
 def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, verbose = True):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
@@ -173,12 +181,12 @@ if __name__ == '__main__':
     input_size = data.shape[1] - 1
     n_hidden = 20 #input_size
     n_layer = 2
-    n_epoch = 25
-    lr = 0.01
+    n_epoch = 10
+    lr = 0.001
     test_size = 0.1
     cv_size = 0.1
-    seq = 28
-    batch_size = 1000
+    seq = 50
+    batch_size = 600
     
     # gpu?
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -191,31 +199,35 @@ if __name__ == '__main__':
     datasetv = SeqDataset(x_data=X_val, y_data=y_val, seq_len=seq, batch=batch_size)
 
     # LsTM Model initialization
-    # num_layers_conv = 3
-    # output_channels = [32, 10, 1]
-    # kernel_sizes = [2, 1, 2]
-    # stride_sizes = [1, 1, 1]
-    # padding_sizes = [0, 2, 2]
-    # hidden_size_lstm = 40
-    # num_layers_lstm = 2
-    # hidden_neurons_dense = [30, 10, 1]
+    num_layers_conv = 1
+    output_channels = [6]
+    kernel_sizes = [4]
+    stride_sizes = [2]
+    padding_sizes = [4]
+    hidden_size_lstm = 10
+    num_layers_lstm = 3
+    hidden_neurons_dense = [4, 1]
 
     input_lstm = X_train.shape[2]
-    num_layers_conv = 2
-    output_channels = [5, 5]
-    kernel_sizes = [6, 6]
-    stride_sizes = [5, 5]
-    padding_sizes = [3,3]
-    hidden_size_lstm = 10
-    num_layers_lstm = 1
-    hidden_neurons_dense = [28, 41, 1]
+    # num_layers_conv = 8
+    # output_channels = [3, 2, 2, 2, 1, 1, 1, 1]
+    # kernel_sizes = [8, 7, 6, 5, 4, 3, 2, 1]
+    # stride_sizes = [6, 5, 4, 3, 3, 2, 1, 1]
+    # padding_sizes = [3, 2, 2, 2, 1, 1, 1, 1]
+    # hidden_size_lstm = 50
+    # num_layers_lstm = 6
+    # hidden_neurons_dense = [3, 2, 2, 2, 1, 1, 1, 1]
+
+
     ga = True
     if ga:
         print('running ga individual')
         gene_length = 3
         #ga_individual_solution =  [0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1]
         #ga_individual_solution = [1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0]
-        ga_individual_solution = [1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1] 
+        #ga_individual_solution = [1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1] 
+        #ga_individual_solution = [1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0] 
+        ga_individual_solution = [0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0] 
 
 
         lstm_layers_bit = BitArray(ga_individual_solution[0:gene_length]) # don't understand the bitarray stuff yet or the length given per hyperparameter
@@ -266,29 +278,37 @@ if __name__ == '__main__':
 
 
         # ensure lists are the correct length
-        cnn_output_size = [cnn_output_size] * cnn_layers
-        cnn_kernel_size = [cnn_kernel_size] * cnn_layers
-        cnn_stride = [cnn_stride] * cnn_layers
-        cnn_padding = [cnn_padding] * cnn_layers
-        hidden_neurons_dense = [hidden_neurons_dense] * (cnn_layers)
-        hidden_neurons_dense.append(1)
-        hidden_neurons_dense[0] = lstm_sequential_length
+        # cnn_output_size = [cnn_output_size] * cnn_layers
+        # cnn_kernel_size = [cnn_kernel_size] * cnn_layers
+        # cnn_stride = [cnn_stride] * cnn_layers
+        # cnn_padding = [cnn_padding] * cnn_layers
+        # hidden_neurons_dense = [hidden_neurons_dense] * (cnn_layers)
+        # hidden_neurons_dense.append(1)
+        # hidden_neurons_dense[0] = lstm_sequential_length
 
-        # print(f"lstm Layers =  {lstm_layers}")
-        # print(f"lstm Sequential Length =  {lstm_sequential_length}")
-        # print(f"lstm Neurons =  {lstm_neurons}")
-        # print(f"learning rate =  {learning_rate}")
-        # print(f"cnn layers =  {cnn_layers}")
-        # print(f"cnn kernel size =  {cnn_kernel_size}")
-        # print(f"cnn stride =  {cnn_stride}")
-        # print(f"cnn padding =  {cnn_padding}")
-        # print(f"cnn neurons =  {cnn_output_size}")
-        # print(f"hidden neurons =  {hidden_neurons_dense}")
-        # print(f"batch size =  {batch_size}")
+          
+        cnn_output_size = basis_func(cnn_output_size, cnn_layers)
+        cnn_kernel_size = basis_func(cnn_kernel_size, cnn_layers)
+        cnn_stride = basis_func(cnn_stride, cnn_layers)
+        cnn_padding =  basis_func(cnn_padding, cnn_layers)
+        hidden_neurons_dense = basis_func(hidden_neurons_dense, cnn_layers)
+
+        print(f"lstm Layers =  {lstm_layers}")
+        print(f"lstm Sequential Length =  {lstm_sequential_length}")
+        print(f"lstm Neurons =  {lstm_neurons}")
+        print(f"learning rate =  {learning_rate}")
+        print(f"cnn layers =  {cnn_layers}")
+        print(f"cnn kernel size =  {cnn_kernel_size}")
+        print(f"cnn stride =  {cnn_stride}")
+        print(f"cnn padding =  {cnn_padding}")
+        print(f"cnn neurons =  {cnn_output_size}")
+        print(f"hidden neurons =  {hidden_neurons_dense}")
+        print(f"batch size =  {batch_size}")
         
-        # print('Gretas sketchy parameters:', [120, 2, learning_rate*1000, lstm_sequential_length, batch_size, cnn_layers, cnn_output_size[0], cnn_kernel_size[0], cnn_stride[0], cnn_padding[0], lstm_neurons, lstm_layers, hidden_neurons_dense[1] ])
+    #     # print('Gretas sketchy parameters:', [120, 2, learning_rate*1000, lstm_sequential_length, batch_size, cnn_layers, cnn_output_size[0], cnn_kernel_size[0], cnn_stride[0], cnn_padding[0], lstm_neurons, lstm_layers, hidden_neurons_dense[1] ])
 
-    model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
+    model = ParametricLSTMCNN(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
+    
     model.to(device)
 
     criterion = torch.nn.MSELoss() 
@@ -296,6 +316,7 @@ if __name__ == '__main__':
 
     # training and evaltuation
     train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch, criterion, optimizer, verbose = True)
+
     model.eval()
     predictions = model(X_test).to('cpu').detach().numpy()
     predictions_real = predictions.squeeze(2) * time_std + time_mean

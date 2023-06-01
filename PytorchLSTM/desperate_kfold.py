@@ -22,10 +22,12 @@ def load_data_normalise_cv(battery, which_model):
         for i in battery:
             data.append(pd.read_csv("data/" + i + "_TTD - with SOC.csv"))
             
-    data = pd.concat(data)   
+    data = pd.concat(data)  
+    time_mean, time_std = data["TTD"].mean(axis=0), data["TTD"].std(axis=0)
     # normalize the data
     normalized_data = (data-data.mean(axis=0))/data.std(axis=0)
-    return normalized_data
+
+    return normalized_data, time_mean, time_std
 
 def load_gpu_data_with_batches_cv(data, seq_length, which_model):
     
@@ -86,16 +88,16 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         kfold_train.append(other_batteries)
                 
         battery = kfold_train[i]
-        test_battery = load_data_normalise_cv(kfold_test[i], which_model)
-        data = load_data_normalise_cv(battery, which_model)
+        test_battery, time_mean, time_std = load_data_normalise_cv(kfold_test[i], which_model)
+        data, time_mean_d, time_std_m = load_data_normalise_cv(battery, which_model)
         print('Test battery:', kfold_test[i])
         
 
         print(hyperparams)
         n_hidden, n_layer, lr, seq, batch_size, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense = hyperparams
-
+        
         lr = lr/1000
-        n_epoch = 5
+        n_epoch = 150
 
         test_size = 0.1
         cv_size = 0.1
@@ -144,7 +146,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         # print(f"batch size =  {batch_size}")
         
         
-        model = ParametricLSTMCNN(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
+        model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
         model.train()
         
         criterion = torch.nn.MSELoss() 
@@ -174,11 +176,15 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         if save_for_plots:
             kthlostperIndivudual[i] += loss
         # PLOT THE PREDICTIONS FOR EACH FOLD
-        
-        # plt.plot(predictions.squeeze(2), label='pred', linewidth=2, color='red')
-        # plt.plot(y_kfold.squeeze(2).to('cpu').detach().numpy()) 
-        # plt.legend()
-        # plt.show()
+
+
+            predictions_plot = predictions.squeeze(2) * time_std + time_mean
+            y_kfold = y_test.squeeze(2).to('cpu').detach().numpy() * time_std + time_mean
+            plt.plot(predictions_plot, label='pred', linewidth=2, color='red')
+            plt.plot(y_kfold) 
+            plt.legend()
+            plt.show()
+    
     if save_for_plots:
         plt.plot(kthlostperIndivudual, label= 'kth loss per individual')
         plt.legend()
@@ -214,5 +220,8 @@ Define the hyperparameters to be tested
 # """
 
 
-testing_hyperparameters =[120, 60, 50.0, 3, 200, 2, [3, 3], [7, 7], [3, 3], [7, 7], 60, 1, [2, 1]]
+#testing_hyperparameters = [120, 60, 50.0, 3, 200, 2, [3, 3], [7, 7], [3, 3], [7, 7], 60, 1, [2, 1]]
+testing_hyperparameters = [120, 10, 0.05, 20, 600, 1, [8], [4], [2], [4], 10, 3, [4, 1]] # trained lstmcnn
+#testing_hyperparameters = [120, 60, 0.01, 50, 600, 1, [6], [4], [2], [4], 10, 3, [4, 1]] # trained cnnlstm
+
 print(run_model_cv(testing_hyperparameters, 'hybrid', 7, True))

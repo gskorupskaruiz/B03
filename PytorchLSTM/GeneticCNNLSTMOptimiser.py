@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics import mean_squared_error as mse
 from sklearn.model_selection import train_test_split
-from desperate_kfold import *
+#from desperate_kfold import *
 from main import *
 
 import torch
@@ -132,10 +132,19 @@ def prepare_dataset(seq_length, X_train, y_train, X_test, y_test, X_cv, y_cv):
     return X_train, y_train, X_test, y_test, X_cv, y_cv
     return X_train, y_train, X_test, y_test, X_cv, y_cv
 
+def basis_func(scaling_factor, hidden_layers):
+    
+    basis = np.linspace(scaling_factor, 1, hidden_layers)
+    basis = (basis).astype(int)
+    for i in range(hidden_layers): 
+        if basis[i] == 0: basis[i] = 1
+    return basis
+
 # train evaluate (GA individuals)
 def train_evaluate(ga_individual_solution):
+ 
     gene_length = 3
-    ga_individual_solution = [0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1]
+    #ga_individual_solution = [0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0]
     # decode GA solution to get hyperparamteres
     lstm_layers_bit = BitArray(ga_individual_solution[0:gene_length]) # don't understand the bitarray stuff yet or the length given per hyperparameter
     lstm_neurons_bit = BitArray(ga_individual_solution[gene_length:2*gene_length])
@@ -150,8 +159,6 @@ def train_evaluate(ga_individual_solution):
     batch_size_bit = BitArray(ga_individual_solution[10*gene_length:11*gene_length])
 
     
-
-
     lstm_layers = lstm_layers_bit.uint
     lstm_sequential_length = lstm_sequential_length_bit.uint
     lstm_neurons = lstm_neurons_bit.uint
@@ -182,6 +189,7 @@ def train_evaluate(ga_individual_solution):
     lstm_neurons *= 10 
 
 
+    print(f'all resizing of hyperparams are now done')
     # get rid of possibility of Kernel size being bigger than input size
     if cnn_kernel_size > cnn_output_size + 2* cnn_padding:
         cnn_kernel_size = cnn_output_size + 2* cnn_padding 
@@ -196,6 +204,13 @@ def train_evaluate(ga_individual_solution):
     hidden_neurons_dense = [hidden_neurons_dense] * (cnn_layers)
     hidden_neurons_dense.append(1)
     hidden_neurons_dense[0] = lstm_sequential_length
+
+    # cnn_output_size = basis_func(cnn_output_size, cnn_layers)
+    # cnn_kernel_size = basis_func(cnn_kernel_size, cnn_layers)
+    # cnn_stride = basis_func(cnn_stride, cnn_layers)
+    # cnn_padding =  basis_func(cnn_padding, cnn_layers)
+    # hidden_neurons_dense = basis_func(hidden_neurons_dense, cnn_layers)
+    hidden_neurons_dense[-1] = 1
 
     # just some test stuff   
     # cnn_layers = 4
@@ -222,14 +237,15 @@ def train_evaluate(ga_individual_solution):
 
     hyperparams_for_kfold = [120, 60, learning_rate, lstm_sequential_length, batch_size, cnn_layers, cnn_output_size, cnn_kernel_size, cnn_stride, cnn_padding, lstm_neurons, lstm_layers, hidden_neurons_dense]
 
-    print('THIS IS IT', hyperparams_for_kfold)
+    # print('THIS IS IT', hyperparams_for_kfold)
     
     # Return 100 fitness if any hyperparameter == 0
-    if batch_size == 0 or lstm_layers == 0 or lstm_sequential_length == 0 or lstm_neurons == 0 or learning_rate == 0 or batch_size == 0 or cnn_layers == 0 or cnn_kernel_size == 0 or cnn_stride == 0 or cnn_padding == 0 or hidden_neurons_dense == 0:
-        print("One of the hyperparameters is 0 - try again haha")
-        return 100
+    # if batch_size == 0 or lstm_layers == 0 or lstm_sequential_length == 0 or lstm_neurons == 0 or learning_rate == 0 or batch_size == 0 or cnn_layers == 0 or cnn_kernel_size == 0 or cnn_stride == 0 or cnn_padding == 0 or hidden_neurons_dense == 0:
+    #     print("One of the hyperparameters is 0 - try again haha")
+    #     return 100
     
     try:
+     
         # change data so that seq len and batch size is changed (use prepare_dataset func
         X_train, y_train, X_test, y_test, X_cv, y_cv = prepare_dataset(lstm_sequential_length, X_train_raw, y_train_raw, X_test_raw, y_test_raw, X_cv_raw, y_cv_raw)
         dataset = SeqDataset(x_data = X_train, y_data = y_train, seq_len = lstm_sequential_length, batch = batch_size)
@@ -239,9 +255,11 @@ def train_evaluate(ga_individual_solution):
         model = ParametricCNNLSTM(num_layers_conv= cnn_layers, kernel_sizes = cnn_kernel_size, stride_sizes = cnn_stride, padding_sizes = cnn_padding, output_channels = cnn_output_size, hidden_neurons_dense = hidden_neurons_dense, num_layers_lstm = lstm_layers, hidden_size_lstm = lstm_neurons, seq = lstm_sequential_length, inputlstm=input_lstm).double()
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         model.to(device)
+   
 
         kfoldmethod = False
-        if not kfoldmethod:
+        if kfoldmethod == False:
+      
             # train model
             model.train()
             criterion = torch.nn.MSELoss(reduction='mean')
@@ -251,6 +269,7 @@ def train_evaluate(ga_individual_solution):
             train_hist, val_hist = trainbatch(model, dataset, datasetv, n_epoch = num_epochs, lf = criterion, optimizer = optimizer, verbose = True)
             model.eval()
             predictions = model(X_test).to('cpu').detach().numpy() 
+            
             plot = False
             if plot != False:
                 predictions_mod = model(X_test).to('cpu').detach().numpy() * std_ttd + mean_ttd
@@ -275,8 +294,9 @@ def train_evaluate(ga_individual_solution):
 
             loss_model = ((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
 
-        if kfoldmethod:
-            run_model_cv(model, dataset, datasetv, n_epoch = 5, lf = criterion, optimizer = optimizer, verbose = True)
+        # if kfoldmethod:
+        #     print(f'apparently kfold is still happening?')
+        #     run_model_cv(model, dataset, datasetv, n_epoch = 5, lf = criterion, optimizer = optimizer, verbose = True)
 
 
         print(f"loss of model = {loss_model}")
@@ -291,8 +311,8 @@ if __name__ == '__main__':
 
     # init variables and implementation of Ga using DEAP 
     battery = ["B0005"]
-    population_size = 10
-    num_generations = 10
+    population_size = 5
+    num_generations = 5
     entire_bit_array_length = 19 * 3 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
     X_train_raw, y_train_raw, X_test_raw, y_test_raw, X_cv_raw, y_cv_raw, mean_ttd, std_ttd = load_data(battery, test_size=0.2, cv_size=0.2)
     input_size = len(data_fields) - 1
