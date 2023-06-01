@@ -97,7 +97,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         print(hyperparams)
         lr, seq, batch_size, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense = hyperparams
         
-        n_epoch = 100
+        n_epoch = 25
 
         test_size = 0.1
         cv_size = 0.1
@@ -146,7 +146,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         # print(f"batch size =  {batch_size}")
         
         
-        model = ParametricCNNLSTM(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
+        model = ParametricLSTMCNN(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
         model.train()
         
         criterion = torch.nn.MSELoss() 
@@ -170,7 +170,8 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         print(f'Loss at {i+1}th cross validation', loss)
         if loss >= 1.0:
             loss = 1000
-            i = k_fold-1
+            all_losses.append(loss)
+            break
             print(f'skip k_fold')
         all_losses.append(loss)
         if save_for_plots:
