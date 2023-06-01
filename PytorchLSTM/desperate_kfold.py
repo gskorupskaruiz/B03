@@ -188,12 +188,12 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         # if loss > 0.5:
         #     print(f'Loss is greater than 0.5 at {i+1}th cross validation, stopping iteration')
         #     break
-        
+        all_losses_arr = np.array(all_losses)
         print(f'Loss at {i+1}th cross validation', loss)
-        if loss >= 1.0:
+        if all_losses_arr[all_losses_arr > 1].size > 2:
             loss = 1000
             all_losses.append(loss)
-            print(f'skip k_fold')
+            print(f'skip k_fold due to bad loss')
             break
             
         all_losses.append(loss)
