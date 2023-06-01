@@ -26,7 +26,7 @@ def basis_func(scaling_factor, hidden_layers):
 
 # train evaluate (GA individuals)
 def train_evaluate(ga_individual_solution):
-    gene_length = 3
+    gene_length = 8
     # decode GA solution to get hyperparamteres
     #ga_individual_solution = [0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1] 
     #ga_individual_solution = [0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0] 
@@ -59,22 +59,18 @@ def train_evaluate(ga_individual_solution):
     batch_size = batch_size_bit.uint
 
     # resize hyperparameters
-    lstm_layers += 1
-    lstm_sequential_length += 1
-    lstm_neurons += 1
-    learning_rate += 1
-    cnn_layers += 1
-    if cnn_layers == 1:
-        cnn_layers += 1
-    cnn_kernel_size += 1
-    cnn_stride += 1
-    cnn_padding += 1
-    cnn_output_size += 1
-    hidden_neurons_dense += 1
-    batch_size += 1
-    learning_rate = learning_rate/100
-    batch_size = batch_size * 100
-    lstm_neurons *= 10 
+    lstm_layers = int(np.interp(lstm_layers, [0, 255], [1, 7]))
+    lstm_sequential_length = int(np.interp(lstm_sequential_length, [0, 255], [1, 30]))
+    lstm_neurons = int(np.interp(lstm_neurons, [0, 255], [1, 50]))
+    learning_rate = np.interp(learning_rate, [0, 255], [0.0001, 0.1])
+    cnn_layers =int( np.interp(cnn_layers, [0, 255], [1, 7]))
+    cnn_kernel_size =int( np.interp(cnn_kernel_size, [0, 255], [1, 7]))
+    cnn_stride = int(np.interp(cnn_stride, [0, 255], [1, 7]))
+    cnn_padding = int(np.interp(cnn_padding, [0, 255], [1, 7]))
+    cnn_output_size = int(np.interp(cnn_output_size, [0, 255], [1, 7]))
+    hidden_neurons_dense = int(np.interp(hidden_neurons_dense, [0, 255], [1, 7]))
+    batch_size = int(np.interp(batch_size, [0, 255], [100, 2000]))
+
 
 
     # get rid of possibility of Kernel size being bigger than input size
@@ -118,12 +114,12 @@ def train_evaluate(ga_individual_solution):
 
     try:
         
-        hyperparams_for_kfold = [120, 60, learning_rate*1000, lstm_sequential_length, batch_size, cnn_layers, cnn_output_size, cnn_kernel_size, cnn_stride, cnn_padding, lstm_neurons, lstm_layers, hidden_neurons_dense]
+        hyperparams_for_kfold = [learning_rate, lstm_sequential_length, batch_size, cnn_layers, cnn_output_size, cnn_kernel_size, cnn_stride, cnn_padding, lstm_neurons, lstm_layers, hidden_neurons_dense]
 
         print('Current hyperparameters:', hyperparams_for_kfold)
         
         
-        loss_model = run_model_cv(hyperparams_for_kfold, 'hybrid', 7, False)
+        loss_model = run_model_cv(hyperparams_for_kfold, 'hybrid', 4, False)
 
     #    print(f"loss of model at  = {loss_model}")
 
@@ -136,9 +132,9 @@ if __name__ == '__main__':
 
     # init variables and implementation of Ga using DEAP 
     
-    population_size = 2
-    num_generations = 3
-    entire_bit_array_length = 19 * 3 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
+    population_size = 5
+    num_generations = 10
+    entire_bit_array_length = 11 * 8 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
