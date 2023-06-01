@@ -17,7 +17,7 @@ from desperate_kfold import *
 def basis_func(scaling_factor, hidden_layers):
     
     scaling_factor = scaling_factor + 2
-    basis = np.cos(np.linspace(-np.pi/2, np.pi/2, hidden_layers)) * scaling_factor
+    basis = np.arctan(np.linspace(0, 10, hidden_layers)) * scaling_factor
     basis = (basis).astype(int)
     basis_fun = []
     basis_fun = []
