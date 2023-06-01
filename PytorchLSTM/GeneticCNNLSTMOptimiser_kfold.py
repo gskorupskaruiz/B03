@@ -62,7 +62,7 @@ def train_evaluate(ga_individual_solution):
     batch_size = batch_size_bit.uint
 
     # resize hyperparameters
-    lstm_layers = int(np.interp(lstm_layers, [0, 255], [1, 7]))
+    lstm_layers = int(np.interp(lstm_layers, [0, 255], [1, 5]))
     lstm_sequential_length = int(np.interp(lstm_sequential_length, [0, 255], [1, 30]))
     lstm_neurons = int(np.interp(lstm_neurons, [0, 255], [1, 50]))
     learning_rate = round(np.interp(learning_rate, [0, 255], [0.0001, 0.1]), 5)
