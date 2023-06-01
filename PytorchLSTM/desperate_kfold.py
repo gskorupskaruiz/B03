@@ -87,8 +87,6 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
 def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
     save_for_plots = False
     all_losses = []
-    data_for_plots1 = []
-    data_for_plots2 = []
     
     all_batteries = ['B0005', 'B0006', 'B0007', 'B0018', 'B0029', 'B0031', 'B0032']
     
@@ -199,9 +197,9 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
             break
             
         all_losses.append(loss)
-        # if save_for_plots:
-        #     kthlostperIndivudual[i] += loss
-        # # PLOT THE PREDICTIONS FOR EACH FOLD
+        if save_for_plots:
+            kthlostperIndivudual[i] += loss
+        # PLOT THE PREDICTIONS FOR EACH FOLD
 
 
             predictions_plot = predictions.squeeze(2) * time_std + time_mean
@@ -210,19 +208,8 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
             plt.plot(y_kfold, label='actual', linewidth=2, color='blue')
             plt.legend()
             plt.show()
-            data_for_plots1.append(predictions_plot)
-            data_for_plots2.append(y_kfold)
     
-    # ONLY IMPLEMENTED FOR 4-FOLD CROSS VALIDATION
-    if save_for_plots:
-        for i in range(4):
-            plt.subplot(2, 2, i+1)
-            plt.plot(data_for_plots1[i], label='pred', linewidth=2, color='red')
-            plt.subplot(2, 2, i+1)
-            plt.plot(data_for_plots2[i], label='actual', linewidth=2, color='blue')
-            plt.legend()
-            plt.title(f'kth fold = {i+1}')
-        plt.show()
+    
     
     loss = np.mean(all_losses)
     
@@ -257,7 +244,7 @@ Define the hyperparameters to be tested
 #testing_hyperparameters = [120, 60, 50.0, 3, 200, 2, [3, 3], [7, 7], [3, 3], [7, 7], 60, 1, [2, 1]]
 # testing_hyperparameters = [0.050, 20, 600, 1, [8], [4], [2], [4], 10, 3, [4, 1]] # trained lstmcnn (overnight run)
 # testing_hyperparameters = [0.02282, 13, 1120, 1, [1], [1], [1], [1],14,1,[1, 1]] #alexis best ones yet 0.09 cross validation 
-# testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [1, 6, 12, 18, 24, 1]] # 0.06 kfold loss 
+testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [1, 6, 12, 18, 24, 1]] # 0.06 kfold loss 
 
 
-# print(run_model_cv(testing_hyperparameters, 'hybrid', 4, True))
+print(run_model_cv(testing_hyperparameters, 'hybrid', 4, True))
