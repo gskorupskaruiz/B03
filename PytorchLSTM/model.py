@@ -139,7 +139,7 @@ class ParametricLSTMCNN(nn.Module):
             self.dropout = nn.Dropout(0.2)
     
 
-    def forward(self, x, verbose = False):
+    def forward(self, x, verbose = True):
         if verbose: print(f'shape of x is {x.shape}') 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
