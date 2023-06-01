@@ -95,7 +95,7 @@ def train_evaluate(ga_individual_solution):
     hidden_neurons_dense = basis_func(hidden_neurons_dense, cnn_layers)
     
     print(f'type hidden neurson list {type(hidden_neurons_dense)}')
-    # np.array(list(hidden_neurons_dense).append(1))
+    np.array(list(hidden_neurons_dense).append(1))
     hidden_neurons_dense[-1] = 1
 
     print(f"lstm Layers =  {lstm_layers}")
