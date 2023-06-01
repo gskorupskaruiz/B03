@@ -292,6 +292,7 @@ if __name__ == '__main__':
         cnn_stride = basis_func(cnn_stride, cnn_layers)
         cnn_padding =  basis_func(cnn_padding, cnn_layers)
         hidden_neurons_dense = basis_func(hidden_neurons_dense, cnn_layers)
+        hidden_neurons_dense[-1] = 1
 
         print(f"lstm Layers =  {lstm_layers}")
         print(f"lstm Sequential Length =  {lstm_sequential_length}")
@@ -304,6 +305,7 @@ if __name__ == '__main__':
         print(f"cnn neurons =  {cnn_output_size}")
         print(f"hidden neurons =  {hidden_neurons_dense}")
         print(f"batch size =  {batch_size}")
+
         
     #     # print('Gretas sketchy parameters:', [120, 2, learning_rate*1000, lstm_sequential_length, batch_size, cnn_layers, cnn_output_size[0], cnn_kernel_size[0], cnn_stride[0], cnn_padding[0], lstm_neurons, lstm_layers, hidden_neurons_dense[1] ])
 
