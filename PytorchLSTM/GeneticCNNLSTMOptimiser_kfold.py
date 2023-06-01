@@ -72,7 +72,7 @@ def train_evaluate(ga_individual_solution):
     cnn_padding = int(np.interp(cnn_padding, [0, 255], [1, 10]))
     cnn_output_size = int(np.interp(cnn_output_size, [0, 255], [1, 10]))
     hidden_neurons_dense = int(np.interp(hidden_neurons_dense, [0, 255], [1, 7]))
-    batch_size = int(np.interp(batch_size, [0, 255], [100, 2000]))
+    batch_size = int(np.interp(batch_size, [0, 255], [100, 1000]))
 
 
 
