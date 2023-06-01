@@ -2,7 +2,7 @@
 import pandas as pd
 from model import *
 import numpy as np
-
+from sklearn.model_selection import train_test_split
 import torch
 from torch.utils.data import Dataset
 import math 
@@ -38,25 +38,42 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
     elif which_model == "hybrid":
         X = data.drop(["TTD"], axis=1).drop(["Voltage_measured"], axis=1)
         input_lstm = 8
+    
+    x_train, x_val, y_train, y_val = train_test_split(X, y, test_size=0.1, shuffle=False)
+    
     x_tr = []
     y_tr = []
-    for i in range(seq_length, len(X)):
-        x_tr.append(X.values[i-seq_length:i])
-        y_tr.append(y.values[i])
+    for i in range(seq_length, len(x_train)):
+        x_tr.append(x_train.values[i-seq_length:i])
+        y_tr.append(y_train.values[i])
 		
     x_tr = torch.tensor(np.array(x_tr))
     y_tr = torch.tensor(y_tr).unsqueeze(1).unsqueeze(2)
 
+    x_v = []
+    y_v = []
+    for i in range(seq_length, len(x_val)):
+        x_v.append(x_val.values[i-seq_length:i])
+        y_v.append(y_val.values[i])
+
+    x_v = torch.tensor(np.array(x_v))
+    y_v = torch.tensor(y_v).unsqueeze(1).unsqueeze(2)
+
     if torch.cuda.is_available() == True:
         # print('Running on GPU')
-        X = x_tr.to('cuda').double()
-        y = y_tr.to('cuda').double()
+        x_training = x_tr.to('cuda').double()
+        y_training = y_tr.to('cuda').double()
+        x_validation = x_v.to('cuda').double()
+        y_validation = y_v.to('cuda').double()
 
     else:
-        X = x_tr.clone().detach().double()
-        y = y_tr.clone().detach().double()
+        x_training = x_tr.clone().detach().double()
+        y_training = y_tr.clone().detach().double()
+        x_validation = x_v.clone().detach().double()
+        y_validation = y_v.clone().detach().double()
+    
 
-    return X, y, input_lstm
+    return x_training, y_training, x_validation, y_validation, input_lstm
 
 def basis_func(scaling_factor, hidden_layers):
     
@@ -106,16 +123,16 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         torch.cuda.empty_cache()
 
         #data initialization
-        X_train, y_train, input_lstm = load_gpu_data_with_batches_cv(data, seq_length=seq, which_model=which_model)          
+        X_train, y_train, X_val, y_val, input_lstm = load_gpu_data_with_batches_cv(data, seq_length=seq, which_model=which_model)          
         
         #X_train, y_train = X_train.to(device), y_train.to(device)
         
-        X_test, y_test, _ = load_gpu_data_with_batches_cv(test_battery, seq_length=seq, which_model=which_model)
+        X_test, y_test, _, _, _ = load_gpu_data_with_batches_cv(test_battery, seq_length=seq, which_model=which_model)
 
         #X_test, y_test = X_test.to(device), y_test.to(device)
         
         dataset = SeqDataset(x_data=X_train, y_data=y_train, seq_len=seq, batch=batch_size)
-        datasetv = SeqDataset(x_data=X_test, y_data=y_test, seq_len=seq, batch=batch_size)
+        datasetv = SeqDataset(x_data=X_val, y_data=y_val, seq_len=seq, batch=batch_size)
         # LsTM Model initialization
         
         # output_channels = [output_channels_val] * num_layers_conv
@@ -225,9 +242,9 @@ Define the hyperparameters to be tested
 
 
 #testing_hyperparameters = [120, 60, 50.0, 3, 200, 2, [3, 3], [7, 7], [3, 3], [7, 7], 60, 1, [2, 1]]
-#testing_hyperparameters = [120, 10, 50, 20, 600, 1, [8], [4], [2], [4], 10, 3, [4, 1]] # trained lstmcnn
+testing_hyperparameters = [0.050, 20, 600, 1, [8], [4], [2], [4], 10, 3, [4, 1]] # trained lstmcnn
 
 # testing_hyperparameters = [120, 60, 0.02517294117647059, 6, 509, 1, [1], [1], [1], [1], 22, 2, [1, 1]]
 #testing_hyperparameters = [120, 60, 10, 50, 600, 1, [6], [4], [2], [4], 10, 3, [4, 1]] # trained cnnlstm
 
-# print(run_model_cv(testing_hyperparameters, 'hybrid', 7, True))
+print(run_model_cv(testing_hyperparameters, 'hybrid', 7, True))
