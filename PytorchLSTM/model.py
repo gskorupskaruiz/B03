@@ -96,7 +96,7 @@ class ParametricLSTMCNN(nn.Module):
                     output_shape = (self.output_shape[i-1] - self.kernel_sizes[i] + 2* self.padding_sizes[i])/self.stride_sizes[i] + 1
                     self.output_shape.append(output_shape)
 
-        print(self.output_shape)
+        # print(self.output_shape)
         if self.output_shape[-1] <=0:
             print('change inputs')
         

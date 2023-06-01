@@ -48,7 +48,7 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
     y_tr = torch.tensor(y_tr).unsqueeze(1).unsqueeze(2)
 
     if torch.cuda.is_available() == True:
-        print('Running on GPU')
+        # print('Running on GPU')
         X = x_tr.to('cuda').double()
         y = y_tr.to('cuda').double()
 
@@ -200,7 +200,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
 
     if loss != 'nan':
     #    print(f'no wayy sooo cooool the model predicts! :)')
-        print(f'btw the current loss is {loss.round(5)}')
+        print(f'btw the mean of all losses is {loss.round(5)}')
     
     
     # UNCOMMENT IF YOU WANT TO SAVE THE LOSSES

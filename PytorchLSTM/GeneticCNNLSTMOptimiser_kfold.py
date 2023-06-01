@@ -67,7 +67,7 @@ def train_evaluate(ga_individual_solution):
     learning_rate = round(np.interp(learning_rate, [0, 255], [0.0001, 0.1]), 5)
     cnn_layers =int( np.interp(cnn_layers, [0, 255], [1, 7]))
     cnn_kernel_size =int( np.interp(cnn_kernel_size, [0, 255], [1, 10]))
-    cnn_stride = int(np.interp(cnn_stride, [0, 255], [1, 10]))
+    cnn_stride = int(np.interp(cnn_stride, [0, 255], [1, 1]))
     cnn_padding = int(np.interp(cnn_padding, [0, 255], [1, 10]))
     cnn_output_size = int(np.interp(cnn_output_size, [0, 255], [1, 10]))
     hidden_neurons_dense = int(np.interp(hidden_neurons_dense, [0, 255], [1, 7]))
@@ -75,11 +75,7 @@ def train_evaluate(ga_individual_solution):
 
 
 
-    # get rid of possibility of Kernel size being bigger than input size
-    if cnn_kernel_size > cnn_output_size + 2* cnn_padding:
-        cnn_kernel_size = cnn_output_size + 2* cnn_padding 
-        print(f'cnn kernel size changed to {cnn_kernel_size} as it was bigger than the input size')
-
+ 
 
     # ensure lists are the correct length
     # cnn_output_size = [cnn_output_size] * cnn_layers
@@ -92,25 +88,24 @@ def train_evaluate(ga_individual_solution):
     
     cnn_output_size = basis_func(cnn_output_size, cnn_layers)
     cnn_kernel_size = basis_func(cnn_kernel_size, cnn_layers)
-    cnn_stride = basis_func(cnn_stride, cnn_layers)
+    cnn_stride = [cnn_stride]* cnn_layers
     cnn_padding =  basis_func(cnn_padding, cnn_layers)
     hidden_neurons_dense = basis_func(hidden_neurons_dense, cnn_layers)
-    
     # print(f'type hidden neurson list {type(hidden_neurons_dense)}')
     hidden_neurons_dense.append(1)
     hidden_neurons_dense[-1] = 1
 
-    print(f"lstm Layers =  {lstm_layers}")
-    print(f"lstm Sequential Length =  {lstm_sequential_length}")
-    print(f"lstm Neurons =  {lstm_neurons}")
-    print(f"learning rate =  {learning_rate}")
-    print(f"cnn layers =  {cnn_layers}")
-    print(f"cnn kernel size =  {cnn_kernel_size}")
-    print(f"cnn stride =  {cnn_stride}")
-    print(f"cnn padding =  {cnn_padding}")
-    print(f"cnn neurons =  {cnn_output_size}")
-    print(f"hidden neurons =  {hidden_neurons_dense}")
-    print(f"batch size =  {batch_size}")
+    # print(f"lstm Layers =  {lstm_layers}")
+    # print(f"lstm Sequential Length =  {lstm_sequential_length}")
+    # print(f"lstm Neurons =  {lstm_neurons}")
+    # print(f"learning rate =  {learning_rate}")
+    # print(f"cnn layers =  {cnn_layers}")
+    # print(f"cnn kernel size =  {cnn_kernel_size}")
+    # print(f"cnn stride =  {cnn_stride}")
+    # print(f"cnn padding =  {cnn_padding}")
+    # print(f"cnn neurons =  {cnn_output_size}")
+    # print(f"hidden neurons =  {hidden_neurons_dense}")
+    # print(f"batch size =  {batch_size}")
 
 
 
