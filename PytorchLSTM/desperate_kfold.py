@@ -114,8 +114,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         print(f'hyperparameters = {hyperparams}')
         lr, seq, batch_size, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense = hyperparams
         
-        n_epoch = 25
-
+        n_epoch = 50
         test_size = 0.1
         cv_size = 0.1
 
@@ -183,7 +182,8 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         if save_for_plots:
             kth_predictions.append(predictions)
             kth_actual.append(y_test.squeeze(2).to('cpu').detach().numpy())
-        loss = ((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean()
+        
+        loss = np.sqrt(((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean())
 
         # if loss > 0.5:
         #     print(f'Loss is greater than 0.5 at {i+1}th cross validation, stopping iteration')
@@ -242,9 +242,9 @@ Define the hyperparameters to be tested
 
 
 #testing_hyperparameters = [120, 60, 50.0, 3, 200, 2, [3, 3], [7, 7], [3, 3], [7, 7], 60, 1, [2, 1]]
-testing_hyperparameters = [0.050, 20, 600, 1, [8], [4], [2], [4], 10, 3, [4, 1]] # trained lstmcnn
+# testing_hyperparameters = [0.050, 20, 600, 1, [8], [4], [2], [4], 10, 3, [4, 1]] # trained lstmcnn (overnight run)
+# testing_hyperparameters = [0.02282, 13, 1120, 1, [1], [1], [1], [1],14,1,[1, 1]] #alexis best ones yet 0.09 cross validation 
+testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [1, 6, 12, 18, 24, 1]] # 0.06 kfold loss 
 
-# testing_hyperparameters = [120, 60, 0.02517294117647059, 6, 509, 1, [1], [1], [1], [1], 22, 2, [1, 1]]
-#testing_hyperparameters = [120, 60, 10, 50, 600, 1, [6], [4], [2], [4], 10, 3, [4, 1]] # trained cnnlstm
 
-print(run_model_cv(testing_hyperparameters, 'hybrid', 7, True))
+print(run_model_cv(testing_hyperparameters, 'hybrid', 4, True))
