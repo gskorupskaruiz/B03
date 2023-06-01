@@ -15,14 +15,15 @@ from desperate_kfold import *
 
 
 def basis_func(scaling_factor, hidden_layers):
-    
-    scaling_factor = scaling_factor + 2
-    basis = np.arctan(np.linspace(0, 10, hidden_layers)) * scaling_factor
-    basis = (basis).astype(int)
+    basis = np.linspace(1, scaling_factor, num = hidden_layers,  dtype=int)
+    if hidden_layers == 1:
+        basis[0] = 1
+    # basis = (basis).astype(int)
     basis_fun = []
     basis_fun = []
     for i in range(hidden_layers): 
-        if basis[i] == 0: basis[i] = 1
+        if basis[i] == 0: 
+            basis[i] = 1
         basis_fun.append(basis[i])
     return basis_fun
 
@@ -116,7 +117,7 @@ def train_evaluate(ga_individual_solution):
     # print('Current hyperparameters:', hyperparams_for_kfold)
     
     
-    loss_model = run_model_cv(hyperparams_for_kfold, 'hybrid', 4, False)
+    loss_model = run_model_cv(hyperparams_for_kfold, "LSTM-CNN", 4, False)
 
 #    print(f"loss of model at  = {loss_model}")
 
@@ -128,7 +129,7 @@ if __name__ == '__main__':
     # init variables and implementation of Ga using DEAP 
     
     population_size = 10
-    num_generations = 5
+    num_generations = 10
     entire_bit_array_length = 11 * 8 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

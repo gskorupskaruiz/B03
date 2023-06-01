@@ -8,7 +8,7 @@ from torch.utils.data import Dataset
 import math 
 from main import trainbatch, SeqDataset
 import matplotlib.pyplot as plt
-
+from GeneticCNNLSTMOptimiser_kfold import basis_func
 
 def load_data_normalise_cv(battery, which_model):
     data = []
@@ -75,14 +75,14 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
 
     return x_training, y_training, x_validation, y_validation, input_lstm
 
-def basis_func(scaling_factor, hidden_layers):
+# def basis_func(scaling_factor, hidden_layers):
     
-    scaling_factor = scaling_factor + 2
-    basis = np.cos(np.linspace(-np.pi/2, np.pi/2, hidden_layers)) * scaling_factor
-    basis = (basis).astype(int)
-    for i in range(hidden_layers): 
-        if basis[i] == 0: basis[i] = 1
-    return basis
+#     scaling_factor = scaling_factor + 2
+#     basis = np.cos(np.linspace(-np.pi/2, np.pi/2, hidden_layers)) * scaling_factor
+#     basis = (basis).astype(int)
+#     for i in range(hidden_layers): 
+#         if basis[i] == 0: basis[i] = 1
+#     return basis
 
 def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
     
@@ -190,7 +190,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         #     break
         all_losses_arr = np.array(all_losses)
         print(f'Loss at {i+1}th cross validation', loss)
-        if all_losses_arr[all_losses_arr > 1].size > 2:
+        if all_losses_arr[all_losses_arr >= 1].size >= 2:
             loss = 1000
             all_losses.append(loss)
             print(f'skip k_fold due to bad loss')
