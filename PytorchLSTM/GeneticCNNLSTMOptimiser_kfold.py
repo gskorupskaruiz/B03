@@ -16,7 +16,8 @@ from desperate_kfold import *
 
 def basis_func(scaling_factor, hidden_layers):
     
-    basis = np.linspace(scaling_factor, 1, hidden_layers)
+    scaling_factor = scaling_factor + 2
+    basis = np.cos(np.linspace(-np.pi/2, np.pi/2, hidden_layers)) * scaling_factor
     basis = (basis).astype(int)
     for i in range(hidden_layers): 
         if basis[i] == 0: basis[i] = 1

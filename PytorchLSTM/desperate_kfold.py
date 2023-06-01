@@ -60,6 +60,7 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
 
 def basis_func(scaling_factor, hidden_layers):
     
+    scaling_factor = scaling_factor + 2
     basis = np.cos(np.linspace(-np.pi/2, np.pi/2, hidden_layers)) * scaling_factor
     basis = (basis).astype(int)
     for i in range(hidden_layers): 
@@ -181,15 +182,12 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
             predictions_plot = predictions.squeeze(2) * time_std + time_mean
             y_kfold = y_test.squeeze(2).to('cpu').detach().numpy() * time_std + time_mean
             plt.plot(predictions_plot, label='pred', linewidth=2, color='red')
-            plt.plot(y_kfold) 
+            plt.plot(y_test) 
             plt.legend()
             plt.show()
     
-    if save_for_plots:
-        plt.plot(kthlostperIndivudual, label= 'kth loss per individual')
-        plt.legend()
-        plt.show()
-
+    
+    
     loss = np.mean(all_losses)
     
     epoch = np.linspace(1, n_epoch+1, n_epoch)
