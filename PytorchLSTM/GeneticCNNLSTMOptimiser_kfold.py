@@ -117,7 +117,7 @@ def train_evaluate(ga_individual_solution):
     # print('Current hyperparameters:', hyperparams_for_kfold)
     
     
-    loss_model = run_model_cv(hyperparams_for_kfold, "LSTM-CNN", 4, False)
+    loss_model = run_model_cv(hyperparams_for_kfold, "LSTM-CNN", 4, save_for_plots = False)
 
 #    print(f"loss of model at  = {loss_model}")
 
