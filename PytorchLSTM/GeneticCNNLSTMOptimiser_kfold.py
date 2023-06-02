@@ -35,6 +35,8 @@ def train_evaluate(ga_individual_solution):
     #ga_individual_solution = [0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1] 
     #ga_individual_solution = [0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0] 
     
+    ga_individual_solution = [0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1] 
+
     lstm_layers_bit = BitArray(ga_individual_solution[0:gene_length]) # don't understand the bitarray stuff yet or the length given per hyperparameter
     lstm_neurons_bit = BitArray(ga_individual_solution[gene_length:2*gene_length])
     lstm_sequential_length_bit = BitArray(ga_individual_solution[2*gene_length:3*gene_length])
@@ -73,10 +75,6 @@ def train_evaluate(ga_individual_solution):
     cnn_output_size = int(np.interp(cnn_output_size, [0, 255], [1, 10]))
     hidden_neurons_dense = int(np.interp(hidden_neurons_dense, [0, 255], [1, 7]))
     batch_size = int(np.interp(batch_size, [0, 255], [100, 1000]))
-
-
-
- 
 
     # ensure lists are the correct length
     # cnn_output_size = [cnn_output_size] * cnn_layers
@@ -117,7 +115,7 @@ def train_evaluate(ga_individual_solution):
     # print('Current hyperparameters:', hyperparams_for_kfold)
     
     
-    loss_model = run_model_cv(hyperparams_for_kfold, "LSTM-CNN", 4, save_for_plots = False)
+    loss_model = run_model_cv(hyperparams_for_kfold, "hybrid", 4, save_for_plots = False)
 
 #    print(f"loss of model at  = {loss_model}")
 
