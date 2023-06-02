@@ -34,7 +34,7 @@ def train_evaluate(ga_individual_solution):
     # decode GA solution to get hyperparamteres
     #ga_individual_solution = [0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1] 
     #ga_individual_solution = [0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0] 
-    
+
     lstm_layers_bit = BitArray(ga_individual_solution[0:gene_length]) # don't understand the bitarray stuff yet or the length given per hyperparameter
     lstm_neurons_bit = BitArray(ga_individual_solution[gene_length:2*gene_length])
     lstm_sequential_length_bit = BitArray(ga_individual_solution[2*gene_length:3*gene_length])
@@ -72,7 +72,7 @@ def train_evaluate(ga_individual_solution):
     cnn_padding = int(np.interp(cnn_padding, [0, 255], [1, 10]))
     cnn_output_size = int(np.interp(cnn_output_size, [0, 255], [1, 10]))
     hidden_neurons_dense = int(np.interp(hidden_neurons_dense, [0, 255], [1, 7]))
-    batch_size = int(np.interp(batch_size, [0, 255], [100, 1000]))
+    batch_size = int(np.interp(batch_size, [0, 255], [100, 2000]))
 
 
 
