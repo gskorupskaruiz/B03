@@ -85,7 +85,7 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
 #     return basis
 
 def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
-    save_for_plots = False
+    save_for_plots = True
     all_losses = []
     
     all_batteries = ['B0005', 'B0006', 'B0007', 'B0018', 'B0029', 'B0031', 'B0032']
@@ -161,7 +161,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         # print(f"hidden neurons =  {hidden_neurons_dense}")
         # print(f"batch size =  {batch_size}")
         
-        
+        torch.manual_seed(124)
         model = ParametricLSTMCNN(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
         if not model.hyperparameter_check():
             loss = 100
@@ -242,7 +242,7 @@ Define the hyperparameters to be tested
 #testing_hyperparameters = [120, 60, 50.0, 3, 200, 2, [3, 3], [7, 7], [3, 3], [7, 7], 60, 1, [2, 1]]
 # testing_hyperparameters = [0.050, 20, 600, 1, [8], [4], [2], [4], 10, 3, [4, 1]] # trained lstmcnn (overnight run)
 # testing_hyperparameters = [0.02282, 13, 1120, 1, [1], [1], [1], [1],14,1,[1, 1]] #alexis best ones yet 0.09 cross validation 
-# testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [1, 6, 12, 18, 24, 1]] # 0.06 kfold loss 
-
+#testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [1, 6, 12, 18, 24, 1]] # 0.06 kfold loss 
+testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [1, 6, 12, 18, 24, 1]]
 
 # print(run_model_cv(testing_hyperparameters, 'hybrid', 4, True))
