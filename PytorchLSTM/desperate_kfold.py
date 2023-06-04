@@ -164,13 +164,14 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         # print(f"hidden neurons =  {hidden_neurons_dense}")
         # print(f"batch size =  {batch_size}")
         
-        
+        torch.manual_seed(124)
         model = ParametricLSTMCNN(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
         if not model.hyperparameter_check():
             loss = 100
             all_losses.append(loss)
             print(f'skip k_fold becasue bad set of hyperparameters')
             break
+        
         model.to(device)
         
         criterion = torch.nn.MSELoss() 
