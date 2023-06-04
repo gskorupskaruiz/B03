@@ -85,8 +85,11 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
 #     return basis
 
 def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
-    save_for_plots = False
+    
+    torch.manual_seed(124)
+    
     all_losses = []
+    print('STARTING')
     
     all_batteries = ['B0005', 'B0006', 'B0007', 'B0018', 'B0029', 'B0031', 'B0032']
     
@@ -204,9 +207,17 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
             y_kfold = y_test.squeeze(2).to('cpu').detach().numpy() * time_std + time_mean
             plt.plot(predictions_plot, label='pred', linewidth=2, color='red')
             plt.plot(y_kfold, label='actual', linewidth=2, color='blue')
+            
             plt.legend()
             plt.show()
     
+    # for i in range(4):
+    #     plt.subplot(2, 2, i+1)
+    #     plt.plot(kth_predictions[i].squeeze(2) * time_std + time_mean, label='pred', linewidth=2, color='red')
+    #     plt.plot(kth_actual[i].squeeze(2) * time_std + time_mean, label='actual', linewidth=2, color='blue')
+    #     plt.legend()
+    #     plt.title(f'kth fold {i+1}')
+    # plt.show()
     
     
     loss = np.mean(all_losses)
@@ -222,7 +233,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
     if loss < 0.5:
         print('Loss is less than 0.5')
         
-        with open('PytorchLSTM/Random_optimizer/ga_runs1.txt', 'a') as f:
+        with open('PytorchLSTM/Random_optimizer/ga_runs_greta.txt', 'a') as f:
             print('Writing to file')
             f.write(str(hyperparams))
             f.write('\t')
@@ -242,7 +253,6 @@ Define the hyperparameters to be tested
 #testing_hyperparameters = [120, 60, 50.0, 3, 200, 2, [3, 3], [7, 7], [3, 3], [7, 7], 60, 1, [2, 1]]
 # testing_hyperparameters = [0.050, 20, 600, 1, [8], [4], [2], [4], 10, 3, [4, 1]] # trained lstmcnn (overnight run)
 # testing_hyperparameters = [0.02282, 13, 1120, 1, [1], [1], [1], [1],14,1,[1, 1]] #alexis best ones yet 0.09 cross validation 
-testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [1, 6, 12, 18, 24, 1]] # 0.06 kfold loss 
-
-
-print(run_model_cv(testing_hyperparameters, 'hybrid', 4, True))
+#testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [1, 6, 12, 18, 24, 1]] # 0.06 kfold loss 
+testing_hyperparameters = [0.00441, 24, 509, 5, [1, 2, 4, 5, 7], [1, 3, 5, 7, 4.0], [1, 1, 1, 1, 1], [1, 1, 2, 2, 3], 47, 2, [1, 1, 2, 3, 4, 1]]
+run_model_cv(testing_hyperparameters, 'hybrid', 4, save_for_plots = False)
