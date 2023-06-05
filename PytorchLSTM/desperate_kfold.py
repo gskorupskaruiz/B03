@@ -87,6 +87,7 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
 def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
     save_for_plots = True
     all_losses = []
+    print('STARTING')
     
     all_batteries = ['B0005', 'B0006', 'B0007', 'B0018', 'B0029', 'B0031', 'B0032']
     
@@ -205,9 +206,17 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
             y_kfold = y_test.squeeze(2).to('cpu').detach().numpy() * time_std + time_mean
             plt.plot(predictions_plot, label='pred', linewidth=2, color='red')
             plt.plot(y_kfold, label='actual', linewidth=2, color='blue')
+            
             plt.legend()
             plt.show()
     
+    # for i in range(4):
+    #     plt.subplot(2, 2, i+1)
+    #     plt.plot(kth_predictions[i].squeeze(2) * time_std + time_mean, label='pred', linewidth=2, color='red')
+    #     plt.plot(kth_actual[i].squeeze(2) * time_std + time_mean, label='actual', linewidth=2, color='blue')
+    #     plt.legend()
+    #     plt.title(f'kth fold {i+1}')
+    # plt.show()
     
     
     loss = np.mean(all_losses)
@@ -223,7 +232,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
     if loss < 0.5:
         print('Loss is less than 0.5')
         
-        with open('PytorchLSTM/Random_optimizer/ga_runs1.txt', 'a') as f:
+        with open('PytorchLSTM/Random_optimizer/ga_runs_greta.txt', 'a') as f:
             print('Writing to file')
             f.write(str(hyperparams))
             f.write('\t')
