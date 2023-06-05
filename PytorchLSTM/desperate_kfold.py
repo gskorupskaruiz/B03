@@ -86,6 +86,8 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
 
 def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
     save_for_plots = True
+    torch.manual_seed(124)
+    
     all_losses = []
     print('STARTING')
     
@@ -185,7 +187,6 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
             kth_predictions.append(predictions)
             kth_actual.append(y_test.squeeze(2).to('cpu').detach().numpy())
         
-        # loss = np.sqrt(((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean())
         loss = criterion(model(X_test), y_test).item()
         # if loss > 0.5:
         #     print(f'Loss is greater than 0.5 at {i+1}th cross validation, stopping iteration')
@@ -226,7 +227,11 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
     if loss != 'nan':
     #    print(f'no wayy sooo cooool the model predicts! :)')
         print(f'btw the mean of all losses is {loss.round(5)}')
-    
+    save_model = True
+    if save_model:
+        torch.save(model.state_dict(), f'{which_model}model.pt')
+        print('Model saved')
+
     
     # UNCOMMENT IF YOU WANT TO SAVE THE LOSSES
     if loss < 0.5:
