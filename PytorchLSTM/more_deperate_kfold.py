@@ -46,7 +46,7 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
     y_tr = []
     for i in range(seq_length, len(x_train)):
         x_tr.append(x_train.values[i-seq_length:i])
-        y_tr.append(y_train.values[i])
+        y_tr.append(y_train.values[i-seq_length:i])
 		
     x_tr = torch.tensor(np.array(x_tr))
     y_tr = torch.tensor(y_tr).unsqueeze(1).unsqueeze(2)
@@ -55,7 +55,7 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
     y_v = []
     for i in range(seq_length, len(x_val)):
         x_v.append(x_val.values[i-seq_length:i])
-        y_v.append(y_val.values[i])
+        y_v.append(y_val.values[i-seq_length:i])
 
     x_v = torch.tensor(np.array(x_v))
     y_v = torch.tensor(y_v).unsqueeze(1).unsqueeze(2)
@@ -76,7 +76,7 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
 
     return x_training, y_training, x_validation, y_validation, input_lstm
 
-def load_gpu_data_by_cycle(data, which_model):
+def load_gpu_data_by_cycle(data, which_model, len_seq):
     
     y = data["TTD"]
     if which_model == "LSTM-CNN":
@@ -87,45 +87,38 @@ def load_gpu_data_by_cycle(data, which_model):
         input_lstm = 8
     
     x_train, x_val, y_train, y_val = train_test_split(X, y, test_size=0.1, shuffle=False)
-    
+
     x_tr = []
     y_tr = []
     
-    indices = [0]
+    indices = [0, 0, 0]
     for i in range(1, len(y_train)):
         
-        if y_train.values[i] > y_train.values[i-1]:
-            
-        
-            x_tr.append(x_train.values[indices[-1]:i-1][:175])
-            y_tr.append(y_train.values[indices[-1]:i-1][:175])
+        if y_train.values[i] > y_train.values[i-1] and i-1-indices[-1] > len_seq-1:
+          
+            x_tr.append(x_train.values[indices[-1-2]:i-1-2][:len_seq])
+            y_tr.append(y_train.values[indices[-1-2]:i-1-2][:len_seq])
             indices.append(i-1)
-		
-    x_tr
     
     x_tr = np.array(x_tr)
     x_tr = torch.tensor(x_tr)
-    y_tr = np.array(y_tr)
-    y_tr = torch.tensor(y_tr).unsqueeze(1).unsqueeze(2)
+    y_tr = torch.tensor(np.array(y_tr)).unsqueeze(1)
 
     x_v = []
     y_v = []
     
-    indices = [0]
-    for i in range(len(x_val)):
+    indices = [0, 0, 0]
+    for i in range(1, len(x_val)):
         
-        if y_val.values[i] > y_val.values[i-1]:
+        if y_val.values[i] > y_val.values[i-1] and i-1-indices[-1] > len_seq-1:
+            x_v.append(x_val.values[indices[-1-2]:i-1-2][:len_seq])
+            y_v.append(y_val.values[indices[-1-2]:i-1-2][:len_seq])
+
+            indices.append(i-1)
             
-            if len(x_val.values[indices[-1]:i-1]) > 200:
-                   
-                x_v.append(x_val.values[indices[-1]:i-1][:200])
-                y_v.append(y_val.values[indices[-1]:i-1][:200])
-                print(x_v)
-                indices.append(i-1)
-    
     x_v = torch.tensor(np.array(x_v))
     
-    y_v = torch.tensor(y_v).unsqueeze(1).unsqueeze(2)
+    y_v = torch.tensor(np.array(y_v)).unsqueeze(1)
 
     if torch.cuda.is_available() == True:
         # print('Running on GPU')
@@ -143,14 +136,6 @@ def load_gpu_data_by_cycle(data, which_model):
 
     return x_training, y_training, x_validation, y_validation, input_lstm
 
-# def basis_func(scaling_factor, hidden_layers):
-    
-#     scaling_factor = scaling_factor + 2
-#     basis = np.cos(np.linspace(-np.pi/2, np.pi/2, hidden_layers)) * scaling_factor
-#     basis = (basis).astype(int)
-#     for i in range(hidden_layers): 
-#         if basis[i] == 0: basis[i] = 1
-#     return basis
 
 def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
     
@@ -185,7 +170,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         print(f'hyperparameters = {hyperparams}')
         lr, seq, batch_size, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense = hyperparams
         
-        n_epoch = 15
+        n_epoch = 8
         test_size = 0.1
         cv_size = 0.1
 
@@ -202,45 +187,18 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
 
         #data initialization
        # X_train, y_train, X_val, y_val, input_lstm = load_gpu_data_with_batches_cv(data, seq_length=seq, which_model=which_model)          
-        X_train, y_train, X_val, y_val, input_lstm = load_gpu_data_with_batches_cv(data, which_model=which_model)          
+        X_train, y_train, X_val, y_val, input_lstm = load_gpu_data_by_cycle(data, which_model=which_model, len_seq=seq)          
 
         
         #X_train, y_train = X_train.to(device), y_train.to(device)
         
-       # X_test, y_test, _, _, _ = load_gpu_data_with_batches_cv(test_battery, seq_length=seq, which_model=which_model)
+        X_test, y_test, _, _, _ = load_gpu_data_with_batches_cv(test_battery, seq_length=seq, which_model=which_model)
 
         #X_test, y_test = X_test.to(device), y_test.to(device)
         
-        dataset = SeqDataset(x_data=X_train, y_data=y_train, seq_len=1, batch=1)
-        datasetv = SeqDataset(x_data=X_val, y_data=y_val, seq_len=1, batch=1)
+        dataset = SeqDataset(x_data=X_train, y_data=y_train, seq_len=seq, batch=1)
+        datasetv = SeqDataset(x_data=X_val, y_data=y_val, seq_len=seq, batch=1)
         # LsTM Model initialization
-        
-        # output_channels = [output_channels_val] * num_layers_conv
-        # kernel_sizes = [kernel_sizes_val] * num_layers_conv
-        # stride_sizes = [stride_sizes_val] * num_layers_conv
-        # padding_sizes = [padding_sizes_val] * num_layers_conv
-        # hidden_neurons_dense = [seq, hidden_neurons_dense_val, 1]
-        
-        
-        # output_channels = basis_func(output_channels_val, num_layers_conv)
-        # kernel_sizes = basis_func(kernel_sizes_val, num_layers_conv)
-        # stride_sizes = basis_func(stride_sizes_val, num_layers_conv)
-        # padding_sizes =  basis_func(padding_sizes_val, num_layers_conv)
-        # hidden_neurons_dense = basis_func(hidden_neurons_dense[1], num_layers_conv)
-        # hidden_neurons_dense[0] = seq
-        # hidden_neurons_dense[-1] = 1
-        
-        # print(f"lstm Layers =  {num_layers_lstm}")
-        # print(f"lstm Sequential Length =  {seq}")
-        # print(f"lstm Neurons =  {hidden_size_lstm}")
-        # print(f"learning rate =  {lr}")
-        # print(f"cnn layers =  {num_layers_conv}")
-        # print(f"cnn kernel size =  {kernel_sizes}")
-        # print(f"cnn stride =  {stride_sizes}")
-        # print(f"cnn padding =  {padding_sizes}")
-        # print(f"cnn neurons =  {output_channels}")
-        # print(f"hidden neurons =  {hidden_neurons_dense}")
-        # print(f"batch size =  {batch_size}")
         
         torch.manual_seed(124)
         model = ParametricLSTMCNN(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
@@ -265,7 +223,12 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
             kth_predictions.append(predictions)
             kth_actual.append(y_test.squeeze(2).to('cpu').detach().numpy())
         
-        loss = np.sqrt(((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean())
+        predictions = np.array(predictions)
+
+        y_test = np.array(y_test)
+
+
+        loss = np.sqrt(((predictions - y_test)) ** 2).mean()
 
         # if loss > 0.5:
         #     print(f'Loss is greater than 0.5 at {i+1}th cross validation, stopping iteration')
@@ -282,8 +245,10 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         if save_for_plots:
             kthlostperIndivudual[i] += loss
              # PLOT THE PREDICTIONS FOR EACH FOLD
-            predictions_plot = predictions.squeeze(2) * time_std + time_mean
-            y_kfold = y_test.squeeze(2).to('cpu').detach().numpy() * time_std + time_mean
+            predictions_plot = predictions * time_std + time_mean
+            predictions_plot = predictions_plot.reshape(predictions_plot.shape[0]*predictions_plot.shape[2], 1)
+            y_kfold = y_test * time_std + time_mean
+            y_kfold = y_kfold.reshape(y_kfold.shape[0]*y_kfold.shape[2], 1)
             plt.plot(predictions_plot, label='pred', linewidth=2, color='red')
             plt.plot(y_kfold, label='actual', linewidth=2, color='blue')
             
@@ -308,16 +273,16 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         print(f'btw the mean of all losses is {loss.round(5)}')
     
     
-    # UNCOMMENT IF YOU WANT TO SAVE THE LOSSES
-    if loss < 0.5:
-        print('Loss is less than 0.5')
+    # # UNCOMMENT IF YOU WANT TO SAVE THE LOSSES
+    # if loss < 0.5:
+    #     print('Loss is less than 0.5')
         
-        with open('PytorchLSTM/Random_optimizer/ga_runs_greta.txt', 'a') as f:
-            print('Writing to file')
-            f.write(str(hyperparams))
-            f.write('\t')
-            f.write(str(loss))
-            f.write('\n')
+    #     with open('PytorchLSTM/Random_optimizer/ga_runs_greta.txt', 'a') as f:
+    #         print('Writing to file')
+    #         f.write(str(hyperparams))
+    #         f.write('\t')
+    #         f.write(str(loss))
+    #         f.write('\n')
 
     return loss
 
@@ -332,7 +297,30 @@ Define the hyperparameters to be tested
 #testing_hyperparameters = [120, 60, 50.0, 3, 200, 2, [3, 3], [7, 7], [3, 3], [7, 7], 60, 1, [2, 1]]
 # testing_hyperparameters = [0.050, 20, 600, 1, [8], [4], [2], [4], 10, 3, [4, 1]] # trained lstmcnn (overnight run)
 # testing_hyperparameters = [0.02282, 13, 1120, 1, [1], [1], [1], [1],14,1,[1, 1]] #alexis best ones yet 0.09 cross validation 
-#testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [1, 6, 12, 18, 24, 1]] # 0.06 kfold loss 
-# testing_hyperparameters = [0.00441, 24, 509, 5, [1, 2, 4, 5, 7], [1, 3, 5, 7, 4.0], [1, 1, 1, 1, 1], [1, 1, 2, 2, 3], 47, 2, [1, 1, 2, 3, 4, 1]]
-# run_model_cv(testing_hyperparameters, 'hybrid', 4, save_for_plots = False)
-# hyperparameters = [0.0001, 15, 500, 3, [1, 3, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], 40, 2, [1, 8, 8, 1]]
+# testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [1, 6, 12, 18, 24, 1]] # 0.06 kfold loss 
+
+hs = [[0.0003, 40 , 1, 3, [3, 3, 3], [1, 1, 1], [1, 1, 1], [1, 1, 1], 45, 2, [120, 20, 8, 1]], 
+      [0.0002, 121 , 1, 3, [3, 3, 3], [1, 1, 1], [1, 1, 1], [1, 1, 1], 45, 2, [120, 20, 8, 1]], 
+      [0.0004, 121 , 1, 3, [3, 3, 3], [1, 1, 1], [1, 1, 1], [1, 1, 1], 45, 2, [120, 20, 8, 1]]]
+
+
+#testing_hyperparameters = [0.0002, 141 , 1, 3, [3, 3, 3], [1, 1, 1], [1, 1, 1], [1, 1, 1], 45, 3, [140, 50, 20, 8, 1]]#
+
+
+
+
+
+#lr, seq, batch_size, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dens
+# losses = []
+# for testing_hyperparameters in hs:
+    
+#     loss = run_model_cv(testing_hyperparameters, 'hybrid', 4, save_for_plots = True)
+#     losses.append(loss)
+#     with open('PytorchLSTM/Random_optimizer/ga_runs_greta.txt', 'a') as f:
+#         f.write(str(testing_hyperparameters))
+#         f.write('\t')
+#         f.write(str(loss))
+#         f.write('\n')
+    
+# print(losses)
+# # hyperparameters = [0.0001, 15, 500, 3, [1, 3, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], 40, 2, [1, 8, 8, 1]]
