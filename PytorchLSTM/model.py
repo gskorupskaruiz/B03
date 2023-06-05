@@ -145,6 +145,15 @@ class ParametricLSTMCNN(nn.Module):
             return True
         else:
             return False
+        
+    def weights_init(self):
+        nn.init.xavier_normal_(self.lstm.weight)
+
+        for i in range(self.num_layers_conv):
+            conv_name = f'conv{i+1}' 
+            conv_layer = getattr(self, conv_name)
+            nn.init.xavier_normal_(conv_layer.weight)
+
 
     def forward(self, x, verbose = False):
         if verbose: print(f'shape of x is {x.shape}') 
@@ -246,8 +255,8 @@ class ParametricCNNLSTM(nn.Module):
                         self.conv1 = nn.Conv1d(in_channels = self.seq, out_channels= self.output_channels[i-1], kernel_size= self.kernel_sizes[i-1], stride = self.stride_sizes[i-1], padding= self.padding_sizes[i-1])
                         self.batch1 = nn.BatchNorm1d(self.output_channels[i-1])
                 elif i == self.num_layers_conv:
-                    setattr(self, 'conv'+str(i), nn.Conv1d(in_channels = self.output_channels[i-2], out_channels=1, kernel_size= int(self.kernel_sizes[i-1]), stride = self.stride_sizes[i-1], padding= self.padding_sizes[i-1]))
-                    setattr(self, 'batch'+str(i), nn.BatchNorm1d(1))
+                    setattr(self, 'conv'+str(i), nn.Conv1d(in_channels = self.output_channels[i-2], out_channels=self.output_channels[-1], kernel_size= int(self.kernel_sizes[i-1]), stride = self.stride_sizes[i-1], padding= self.padding_sizes[i-1]))
+                    setattr(self, 'batch'+str(i), nn.BatchNorm1d(self.output_channels[-1]))
                 else:
                     setattr(self, 'conv'+str(i), nn.Conv1d(in_channels = int(self.output_channels[i-2]), out_channels = self.output_channels[i-1], kernel_size= int(self.kernel_sizes[i-1]), stride = self.stride_sizes[i-1], padding= self.padding_sizes[i-1]))
                     setattr(self, 'batch'+str(i), nn.BatchNorm1d(self.output_channels[i-1]))
@@ -288,20 +297,20 @@ class ParametricCNNLSTM(nn.Module):
         h_0 = torch.randn(self.num_layer_lstm, out.shape[0], self.hidden_size_lstm).to(device).double()
         c_0 = torch.randn(self.num_layer_lstm, out.shape[0], self.hidden_size_lstm).to(device).double()
 
-        out, (hn, cn) = self.lstm(out, (h_0, c_0))  # lstm with input, hidden, and internal state
+        outI, (hn, cn) = self.lstm(out, (h_0, c_0))  # lstm with input, hidden, and internal state
 
-        # # numpy_array = hn.to('cpu').detach().numpy()
-        # # essentially says return sequence is false...
+        # numpy_array = hn.to('cpu').detach().numpy()
+        # essentially says return sequence is false...
 
-        # hn_o = torch.Tensor(hn.to('cpu').detach().numpy()[-1, :, :])
-        # hn_o = hn_o.view(-1, self.hidden_size_lstm).double().to(device)
-        # hn_1 = torch.Tensor(hn.to('cpu').detach().numpy()[-1, :, :])
-        # hn_1 = hn_1.view(-1, self.hidden_size_lstm).double().to(device)
+        hn_o = torch.Tensor(hn.to('cpu').detach().numpy()[-1, :, :])
+        hn_o = hn_o.view(-1, self.hidden_size_lstm).double().to(device)
+        hn_1 = torch.Tensor(hn.to('cpu').detach().numpy()[-1, :, :])
+        hn_1 = hn_1.view(-1, self.hidden_size_lstm).double().to(device)
 
-        # out = (self.relu(hn_o + hn_1)) 
+        out = (self.relu(hn_o + hn_1)) 
 
-        # out = out.unsqueeze(1)
-        # if verbose: print(f'shape after lstm is {out.shape}')
+        out = out.unsqueeze(1)
+        if verbose: print(f'shape after lstm is {out.shape}')
 
         # output of first dense layer 
         out = self.relu(self.denseafterlstm(self.relu(out)))

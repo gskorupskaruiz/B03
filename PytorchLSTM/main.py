@@ -148,7 +148,7 @@ def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, 
         val_loss_history_arr = np.array(val_loss_history)
         print(f"Epoch {i+1}: train loss = {train_loss:.10f}, val loss = {val_loss:.10f}")
         if len(val_loss_history) > 5:
-            if ((val_loss_history[-1] > val_loss_history[-2] ) and (val_loss_history[-2] > val_loss_history[-3])) or (np.abs(val_loss_history[-1] - val_loss_history[-2]) < 1e-3) or (val_loss_history_arr[val_loss_history_arr > 1].size > 4):
+            if ((val_loss_history[-1] > val_loss_history[-2] ) and (val_loss_history[-2] > val_loss_history[-3])) or (np.abs(val_loss_history[-1] - val_loss_history[-2]) < 1e-3) or (val_loss_history_arr[val_loss_history_arr > 0.8].size > 4):
                 print(f'early stopper has been activated')
                 break 
        
