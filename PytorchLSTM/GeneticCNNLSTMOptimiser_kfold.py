@@ -9,7 +9,7 @@ import torch
 from model import *
 
 from deap import base, creator, tools, algorithms
-from scipy.stats import bernoulli
+from scipy.stats import bernoulli, poisson
 from bitstring import BitArray
 from desperate_kfold import *
 
@@ -30,14 +30,14 @@ def basis_func(scaling_factor, hidden_layers):
 
 # train evaluate (GA individuals)
 def train_evaluate(ga_individual_solution):
-    gene_length = 8
+    gene_length = 6
     # decode GA solution to get hyperparamteres
     #ga_individual_solution = [0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1] 
     #ga_individual_solution = [0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0] 
     
     #ga_individual_solution = [0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1] 
     #ga_individual_solution = [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1] 
-
+    # ga_individual_solution = [0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0]
 
     lstm_layers_bit = BitArray(ga_individual_solution[0:gene_length]) # don't understand the bitarray stuff yet or the length given per hyperparameter
     lstm_neurons_bit = BitArray(ga_individual_solution[gene_length:2*gene_length])
@@ -50,6 +50,7 @@ def train_evaluate(ga_individual_solution):
     cnn_output_size_bit = BitArray(ga_individual_solution[8*gene_length:9*gene_length])
     hidden_neurons_dense_bit = BitArray(ga_individual_solution[9*gene_length:10*gene_length])
     batch_size_bit = BitArray(ga_individual_solution[10*gene_length:11*gene_length])
+    # seed_bit = BitArray(ga_individual_solution[11*gene_length:12*gene_length])
 
 
 
@@ -64,20 +65,22 @@ def train_evaluate(ga_individual_solution):
     cnn_output_size = cnn_output_size_bit.uint
     hidden_neurons_dense = hidden_neurons_dense_bit.uint
     batch_size = batch_size_bit.uint
+    # seed = seed_bit.uint
 
     # resize hyperparameters
     lstm_layers = int(np.interp(lstm_layers, [0, 255], [1, 5]))
     lstm_sequential_length = int(np.interp(lstm_sequential_length, [0, 255], [1, 30]))
-    lstm_neurons = int(np.interp(lstm_neurons, [0, 255], [1, 50]))
+    lstm_neurons = int(np.interp(lstm_neurons, [0, 255], [1, 30]))
     learning_rate = round(np.interp(learning_rate, [0, 255], [0.0001, 0.1]), 5)
-    cnn_layers =int( np.interp(cnn_layers, [0, 255], [1, 7]))
+    cnn_layers =int( np.interp(cnn_layers, [0, 255], [1, 5]))
     cnn_kernel_size =int( np.interp(cnn_kernel_size, [0, 255], [1, 10]))
     cnn_stride = int(np.interp(cnn_stride, [0, 255], [1, 1]))
     cnn_padding = int(np.interp(cnn_padding, [0, 255], [1, 10]))
     cnn_output_size = int(np.interp(cnn_output_size, [0, 255], [1, 10]))
     hidden_neurons_dense = int(np.interp(hidden_neurons_dense, [0, 255], [1, 7]))
-    batch_size = int(np.interp(batch_size, [0, 255], [100, 2000]))
-
+    batch_size = int(np.interp(batch_size, [0, 255], [150, 2000]))
+    # seed = int(np.interp(seed, [0, 255], [10, 100]))
+    
     # ensure lists are the correct length
     # cnn_output_size = [cnn_output_size] * cnn_layers
     # cnn_kernel_size = [cnn_kernel_size] * cnn_layers
@@ -92,6 +95,8 @@ def train_evaluate(ga_individual_solution):
     cnn_stride = [cnn_stride]* cnn_layers
     cnn_padding =  basis_func(cnn_padding, cnn_layers)
     hidden_neurons_dense = basis_func(hidden_neurons_dense, cnn_layers)
+    hidden_neurons_dense_arr = np.flip(np.array(hidden_neurons_dense))
+    hidden_neurons_dense = list(hidden_neurons_dense_arr)
     # print(f'type hidden neurson list {type(hidden_neurons_dense)}')
     hidden_neurons_dense.append(1)
     hidden_neurons_dense[-1] = 1
@@ -108,16 +113,12 @@ def train_evaluate(ga_individual_solution):
     # print(f"hidden neurons =  {hidden_neurons_dense}")
     # print(f"batch size =  {batch_size}")
 
-
-
-
-        
     hyperparams_for_kfold = [learning_rate, lstm_sequential_length, batch_size, cnn_layers, cnn_output_size, cnn_kernel_size, cnn_stride, cnn_padding, lstm_neurons, lstm_layers, hidden_neurons_dense]
 
     # print('Current hyperparameters:', hyperparams_for_kfold)
     
     
-    loss_model = run_model_cv(hyperparams_for_kfold, "hybrid", 4, save_for_plots = False)
+    loss_model = run_model_cv(hyperparams_for_kfold, "LSTM-CNN", 4, 100, save_for_plots = False)
 
 #    print(f"loss of model at  = {loss_model}")
 
@@ -130,7 +131,7 @@ if __name__ == '__main__':
     
     population_size = 15
     num_generations = 10
-    entire_bit_array_length = 11 * 8 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
+    entire_bit_array_length = 11 * 6 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -140,7 +141,7 @@ if __name__ == '__main__':
 
     # create toolbox & initialize population (bernoulli random variables)
     toolbox = base.Toolbox()
-    toolbox.register("binary", bernoulli.rvs, 0.5) 
+    toolbox.register("binary", poisson.rvs, 0.5) 
     toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.binary, n=entire_bit_array_length)
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 

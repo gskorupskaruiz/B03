@@ -85,7 +85,7 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
 #     return basis
 
 def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
-    
+    save_for_plots = True
     torch.manual_seed(124)
     
     all_losses = []
@@ -187,8 +187,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
             kth_predictions.append(predictions)
             kth_actual.append(y_test.squeeze(2).to('cpu').detach().numpy())
         
-        loss = np.sqrt(((predictions.squeeze(2) - y_test.squeeze(2).to('cpu').detach().numpy()) ** 2).mean())
-
+        loss = criterion(model(X_test), y_test).item()
         # if loss > 0.5:
         #     print(f'Loss is greater than 0.5 at {i+1}th cross validation, stopping iteration')
         #     break
@@ -228,7 +227,11 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
     if loss != 'nan':
     #    print(f'no wayy sooo cooool the model predicts! :)')
         print(f'btw the mean of all losses is {loss.round(5)}')
-    
+    save_model = True
+    if save_model:
+        torch.save(model.state_dict(), f'{which_model}model.pt')
+        print('Model saved')
+
     
     # UNCOMMENT IF YOU WANT TO SAVE THE LOSSES
     if loss < 0.5:
@@ -254,6 +257,7 @@ Define the hyperparameters to be tested
 #testing_hyperparameters = [120, 60, 50.0, 3, 200, 2, [3, 3], [7, 7], [3, 3], [7, 7], 60, 1, [2, 1]]
 # testing_hyperparameters = [0.050, 20, 600, 1, [8], [4], [2], [4], 10, 3, [4, 1]] # trained lstmcnn (overnight run)
 # testing_hyperparameters = [0.02282, 13, 1120, 1, [1], [1], [1], [1],14,1,[1, 1]] #alexis best ones yet 0.09 cross validation 
-#testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [1, 6, 12, 18, 24, 1]] # 0.06 kfold loss 
-testing_hyperparameters = [0.00441, 24, 509, 5, [1, 2, 4, 5, 7], [1, 3, 5, 7, 4.0], [1, 1, 1, 1, 1], [1, 1, 2, 2, 3], 47, 2, [1, 1, 2, 3, 4, 1]]
-run_model_cv(testing_hyperparameters, 'hybrid', 4, save_for_plots = False)
+testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [1, 6, 12, 18, 24, 1]] # 0.06 kfold loss 
+testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [24, 18, 12, 6, 1]] # 0.06 kfold loss 
+# testing_hyperparameters = [0.024, 14, 1612, 4, [1, 1, 2, 3], [1, 2, 3, 4], [1, 1, 1, 1], [1, 2, 3, 4], 22, 1, [1, 2, 4, 6, 1]]
+print(run_model_cv(testing_hyperparameters, 'hybrid', 4, True))

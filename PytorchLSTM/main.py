@@ -148,7 +148,7 @@ def trainbatch(model, train_dataloader, val_dataloader, n_epoch, lf, optimizer, 
         val_loss_history_arr = np.array(val_loss_history)
         print(f"Epoch {i+1}: train loss = {train_loss:.10f}, val loss = {val_loss:.10f}")
         if len(val_loss_history) > 5:
-            if ((val_loss_history[-1] > val_loss_history[-2] ) and (val_loss_history[-2] > val_loss_history[-3])) or (np.abs(val_loss_history[-1] - val_loss_history[-2]) < 1e-3) or (val_loss_history_arr[val_loss_history_arr > 1].size > 4):
+            if (val_loss_history[-1] > val_loss_history[-2] ) or (np.abs(val_loss_history[-1] - val_loss_history[-2]) < 1e-3) or (val_loss_history_arr[val_loss_history_arr > 1].size > 4):
                 print(f'early stopper has been activated')
                 break 
        
@@ -237,14 +237,14 @@ if __name__ == '__main__':
     ga = False
     if ga:
         print('running ga individual')
-        gene_length = 3
+        gene_length = 8
         #ga_individual_solution =  [0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1]
         #ga_individual_solution = [1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0]
         #ga_individual_solution = [1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1] 
         #ga_individual_solution = [1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0] 
         #ga_individual_solution = [0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0] 
         #ga_individual_solution = [0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1] 
-
+       
 
         lstm_layers_bit = BitArray(ga_individual_solution[0:gene_length]) # don't understand the bitarray stuff yet or the length given per hyperparameter
         lstm_neurons_bit = BitArray(ga_individual_solution[gene_length:2*gene_length])
@@ -269,46 +269,46 @@ if __name__ == '__main__':
         cnn_output_size = cnn_output_size_bit.uint
         hidden_neurons_dense = hidden_neurons_dense_bit.uint
 
-        batch_size = batch_size_bit.uint
+        # batch_size = batch_size_bit.uint
 
-        # resize hyperparameters
-        lstm_layers += 1
-        lstm_sequential_length += 1
-        lstm_neurons += 1
-        learning_rate += 1
-        cnn_layers += 1
-        cnn_kernel_size += 1
-        cnn_stride += 1
-        cnn_padding += 1
-        cnn_output_size += 1
-        hidden_neurons_dense += 1
-        batch_size += 1
-        learning_rate = learning_rate/100
-        batch_size = batch_size * 100
-        lstm_neurons *= 10 
-        lstm_sequential_length = 20
-        # get rid of possibility of Kernel size being bigger than input size
-        if cnn_kernel_size > cnn_output_size + 2* cnn_padding:
-            cnn_kernel_size = cnn_output_size + 2* cnn_padding 
-            print(f'cnn kernel size changed to {cnn_kernel_size} as it was bigger than the input size')
+        # # resize hyperparameters
+        # lstm_layers += 1
+        # lstm_sequential_length += 1
+        # lstm_neurons += 1
+        # learning_rate += 1
+        # cnn_layers += 1
+        # cnn_kernel_size += 1
+        # cnn_stride += 1
+        # cnn_padding += 1
+        # cnn_output_size += 1
+        # hidden_neurons_dense += 1
+        # batch_size += 1
+        # learning_rate = learning_rate/100
+        # batch_size = batch_size * 100
+        # lstm_neurons *= 10 
+        # lstm_sequential_length = 20
+        # # get rid of possibility of Kernel size being bigger than input size
+        # if cnn_kernel_size > cnn_output_size + 2* cnn_padding:
+        #     cnn_kernel_size = cnn_output_size + 2* cnn_padding 
+        #     print(f'cnn kernel size changed to {cnn_kernel_size} as it was bigger than the input size')
 
 
-        # ensure lists are the correct length
-        # cnn_output_size = [cnn_output_size] * cnn_layers
-        # cnn_kernel_size = [cnn_kernel_size] * cnn_layers
-        # cnn_stride = [cnn_stride] * cnn_layers
-        # cnn_padding = [cnn_padding] * cnn_layers
-        # hidden_neurons_dense = [hidden_neurons_dense] * (cnn_layers)
-        # hidden_neurons_dense.append(1)
-        # hidden_neurons_dense[0] = lstm_sequential_length
+        # # ensure lists are the correct length
+        # # cnn_output_size = [cnn_output_size] * cnn_layers
+        # # cnn_kernel_size = [cnn_kernel_size] * cnn_layers
+        # # cnn_stride = [cnn_stride] * cnn_layers
+        # # cnn_padding = [cnn_padding] * cnn_layers
+        # # hidden_neurons_dense = [hidden_neurons_dense] * (cnn_layers)
+        # # hidden_neurons_dense.append(1)
+        # # hidden_neurons_dense[0] = lstm_sequential_length
 
           
-        cnn_output_size = basis_func(cnn_output_size, cnn_layers)
-        cnn_kernel_size = basis_func(cnn_kernel_size, cnn_layers)
-        cnn_stride = basis_func(cnn_stride, cnn_layers)
-        cnn_padding =  basis_func(cnn_padding, cnn_layers)
-        hidden_neurons_dense = basis_func(hidden_neurons_dense, cnn_layers)
-        hidden_neurons_dense[-1] = 1
+        # cnn_output_size = basis_func(cnn_output_size, cnn_layers)
+        # cnn_kernel_size = basis_func(cnn_kernel_size, cnn_layers)
+        # cnn_stride = basis_func(cnn_stride, cnn_layers)
+        # cnn_padding =  basis_func(cnn_padding, cnn_layers)
+        # hidden_neurons_dense = basis_func(hidden_neurons_dense, cnn_layers)
+        # hidden_neurons_dense[-1] = 1
 
         print(f"lstm Layers =  {lstm_layers}")
         print(f"lstm Sequential Length =  {lstm_sequential_length}")
