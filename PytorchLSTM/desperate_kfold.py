@@ -166,6 +166,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         # print(f"batch size =  {batch_size}")
         
         torch.manual_seed(100)
+        torch.manual_seed(100)
         model = ParametricLSTMCNN(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
         if not model.hyperparameter_check():
             loss = 100
@@ -195,7 +196,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         #     break
         all_losses_arr = np.array(all_losses)
         print(f'Loss at {i+1}th cross validation', loss)
-        if all_losses_arr[all_losses_arr >= 1].size >= 2:
+        if all_losses_arr[all_losses_arr >= 1].size >= 1:
             loss = 1000
             all_losses.append(loss)
             print(f'skip k_fold due to bad loss')

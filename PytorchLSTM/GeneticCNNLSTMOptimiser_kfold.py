@@ -31,6 +31,7 @@ def basis_func(scaling_factor, hidden_layers):
 # train evaluate (GA individuals)
 def train_evaluate(ga_individual_solution):
     gene_length = 8
+    gene_length = 8
     # decode GA solution to get hyperparamteres
     #ga_individual_solution = [0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1] 
     #ga_individual_solution = [0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0] 
@@ -155,7 +156,7 @@ if __name__ == '__main__':
     toolbox.register("evaluate", train_evaluate) # this train evaluate might not be allowed to have gene)length as input
 
     population = toolbox.population(n=population_size)
-    r = algorithms.eaSimple(population, toolbox, cxpb=0.4, mutpb=0.1, ngen=num_generations, verbose=True)
+    r = algorithms.eaSimple(population, toolbox, cxpb=0.4, mutpb=0.3, ngen=num_generations, verbose=True)
 
 
     # print best solution found
