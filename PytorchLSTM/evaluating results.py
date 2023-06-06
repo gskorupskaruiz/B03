@@ -3,6 +3,7 @@ import desperate_kfold as d
 import matplotlib.pyplot as plt
 import seaborn as sns
 import torch
+import csv 
 
 hyperparam_hybrid = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [24, 18, 12, 6, 1]] # best hybrid
 hyperparam_lstmcnn = [0.01264, 12, 425, 1, [1], [1], [1], [1], 22, 1, [1, 1]] 
@@ -28,6 +29,7 @@ test_truth_h = test_truth_h.squeeze(2).to('cpu').detach().numpy() * time_std_h +
 predictions_lstmcnn = model_data(test_data_).to('cpu').detach().numpy()
 predict_lstmcnn = predictions_lstmcnn.squeeze(2) * time_std_ + time_mean_
 
+
 plt.figure()
 plt.plot(predict_hybrid, label='Hybrid model predictions', linewidth=1, color='red')
 plt.plot(test_truth_h, label='Ground truth', linewidth=1, color='black')
@@ -38,6 +40,10 @@ plt.legend()
 plt.style.use('seaborn-darkgrid')
 plt.show()
 
+with open('data_alambda_plots.csv', 'w') as f:
+    csv_writer = csv.writer(f)
+    csv_writer.writerow(['Predict Hybrid', 'Predict Data Driven', 'Test Truth'])
+    csv_writer.writerows([predict_hybrid, predict_lstmcnn, test_truth_h])
 
 ### error plot for k fold 
 b_0005 = ['B0005']
