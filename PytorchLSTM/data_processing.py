@@ -19,13 +19,24 @@ def find_TTD(battery): #read csv as pandas dataframe
 
 	time_diff = data["Time"].diff() # make column of change in time
 	discharge_time_index = time_diff[time_diff < 0].index -1
+ 
 	discharge_time_index = list(discharge_time_index) + [len(data["Time"]) - 1] #find index + the last one
 
 	for i1, i2 in zip([-1]+discharge_time_index, discharge_time_index):
 		data["TTD"][i1+1:i2+1] = data["Time"][i2] - data["Time"][i1+1:i2+1] # calculate TTD for each row
-	data.to_csv("data/" + battery + "_TTD.csv", index=False) # save to csv
-	#return data
+  
+	# discharge_time_index = [0] + discharge_time_index # add 0 to the beginning
+	# print(discharge_time_index)
+	# data["Start_time"] = 0
+ 
+	# for i in range(1, len(discharge_time_index)):
+	# 	data["Start_time"][discharge_time_index[i-1]+1:discharge_time_index[i]] = data["TTD"][discharge_time_index[i-1]+1]
+	# print(data["Start_time"])
+	data.to_csv("data/" + battery + "_TTD1.csv", index=False) # save to csv
+	# #return data
 
+
+    
 
 def load_data(battery):
 	data = pd.read_csv("data/" + battery + "_TTD.csv")
