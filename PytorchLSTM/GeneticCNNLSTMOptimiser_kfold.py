@@ -30,7 +30,7 @@ def basis_func(scaling_factor, hidden_layers):
 
 # train evaluate (GA individuals)
 def train_evaluate(ga_individual_solution):
-    gene_length = 6
+    gene_length = 8
     # decode GA solution to get hyperparamteres
     #ga_individual_solution = [0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1] 
     #ga_individual_solution = [0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0] 
@@ -118,7 +118,7 @@ def train_evaluate(ga_individual_solution):
     # print('Current hyperparameters:', hyperparams_for_kfold)
     
     
-    loss_model = run_model_cv(hyperparams_for_kfold, "LSTM-CNN", 4, 100, save_for_plots = False)
+    loss_model = run_model_cv(hyperparams_for_kfold, "LSTM-CNN", 4, save_for_plots = False)
 
 #    print(f"loss of model at  = {loss_model}")
 
@@ -129,9 +129,9 @@ if __name__ == '__main__':
 
     # init variables and implementation of Ga using DEAP 
     
-    population_size = 15
-    num_generations = 10
-    entire_bit_array_length = 11 * 6 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
+    population_size = 10
+    num_generations = 5
+    entire_bit_array_length = 11 * 8 # 10 hyperparameters * 6 bits each  # make sure you change this in train_evaluate func too
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -155,7 +155,7 @@ if __name__ == '__main__':
     toolbox.register("evaluate", train_evaluate) # this train evaluate might not be allowed to have gene)length as input
 
     population = toolbox.population(n=population_size)
-    r = algorithms.eaSimple(population, toolbox, cxpb=0.4, mutpb=0.1, ngen=num_generations, verbose=True)
+    r = algorithms.eaSimple(population, toolbox, cxpb=0.4, mutpb=0.3, ngen=num_generations, verbose=True)
 
 
     # print best solution found

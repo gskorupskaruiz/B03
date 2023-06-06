@@ -85,7 +85,7 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
 #     return basis
 
 def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
-    save_for_plots = True
+    save_for_plots = False
     torch.manual_seed(124)
     
     all_losses = []
@@ -164,7 +164,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         # print(f"hidden neurons =  {hidden_neurons_dense}")
         # print(f"batch size =  {batch_size}")
         
-        torch.manual_seed(124)
+        torch.manual_seed(100)
         model = ParametricLSTMCNN(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
         if not model.hyperparameter_check():
             loss = 100
@@ -193,7 +193,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         #     break
         all_losses_arr = np.array(all_losses)
         print(f'Loss at {i+1}th cross validation', loss)
-        if all_losses_arr[all_losses_arr >= 1].size >= 2:
+        if all_losses_arr[all_losses_arr >= 1].size >= 1:
             loss = 1000
             all_losses.append(loss)
             print(f'skip k_fold due to bad loss')
@@ -227,10 +227,10 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
     if loss != 'nan':
     #    print(f'no wayy sooo cooool the model predicts! :)')
         print(f'btw the mean of all losses is {loss.round(5)}')
-    save_model = True
+    save_model = False
     if save_model:
-        torch.save(model.state_dict(), f'{which_model}model.pt')
-        print('Model saved')
+        torch.save(model.state_dict(), f'{which_model}{i}model.pt')
+        print(f'Model {i} saved')
 
     
     # UNCOMMENT IF YOU WANT TO SAVE THE LOSSES
@@ -257,7 +257,7 @@ Define the hyperparameters to be tested
 #testing_hyperparameters = [120, 60, 50.0, 3, 200, 2, [3, 3], [7, 7], [3, 3], [7, 7], 60, 1, [2, 1]]
 # testing_hyperparameters = [0.050, 20, 600, 1, [8], [4], [2], [4], 10, 3, [4, 1]] # trained lstmcnn (overnight run)
 # testing_hyperparameters = [0.02282, 13, 1120, 1, [1], [1], [1], [1],14,1,[1, 1]] #alexis best ones yet 0.09 cross validation 
-testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [1, 6, 12, 18, 24, 1]] # 0.06 kfold loss 
-testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [24, 18, 12, 6, 1]] # 0.06 kfold loss 
+# testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [1, 6, 12, 18, 24, 1]] # 0.06 kfold loss 
+# testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [24, 18, 12, 6, 1]] # 0.06 kfold loss 
 # testing_hyperparameters = [0.024, 14, 1612, 4, [1, 1, 2, 3], [1, 2, 3, 4], [1, 1, 1, 1], [1, 2, 3, 4], 22, 1, [1, 2, 4, 6, 1]]
-print(run_model_cv(testing_hyperparameters, 'hybrid', 4, True))
+# print(run_model_cv(testing_hyperparameters, 'hybrid', 4, True))
