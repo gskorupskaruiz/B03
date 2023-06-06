@@ -21,7 +21,7 @@ def load_data_normalise_cv(battery, which_model):
     elif which_model == "hybrid":
         for i in battery:
             data.append(pd.read_csv("data/" + i + "_TTD - with SOC.csv"))
-            
+      
     data = pd.concat(data)  
     time_mean, time_std = data["TTD"].mean(axis=0), data["TTD"].std(axis=0)
     # normalize the data
@@ -36,7 +36,7 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
         X = data.drop(["TTD"], axis=1)
         input_lstm = 7
     elif which_model == "hybrid":
-        X = data.drop(["TTD"], axis=1).drop(["Voltage_measured"], axis=1)
+        X = data.drop(['TTD'], axis=1).drop(["Voltage_measured"], axis=1)
         input_lstm = 8
     
     x_train, x_val, y_train, y_val = train_test_split(X, y, test_size=0.1, shuffle=False)
@@ -85,7 +85,8 @@ def load_gpu_data_with_batches_cv(data, seq_length, which_model):
 #     return basis
 
 def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
-    save_for_plots = False
+    print(f'why are you running')
+    save_for_plots = True
     torch.manual_seed(124)
     
     all_losses = []
@@ -117,7 +118,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         print(f'hyperparameters = {hyperparams}')
         lr, seq, batch_size, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense = hyperparams
         
-        n_epoch = 50
+        n_epoch = 25
         test_size = 0.1
         cv_size = 0.1
 
@@ -165,6 +166,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         # print(f"batch size =  {batch_size}")
         
         torch.manual_seed(100)
+        torch.manual_seed(100)
         model = ParametricLSTMCNN(num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense, seq, input_lstm).double()
         if not model.hyperparameter_check():
             loss = 100
@@ -173,6 +175,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
             break
         
         model.to(device)
+        model.weights_init
         
         criterion = torch.nn.MSELoss() 
         optimizer = torch.optim.Adam(model.parameters(), lr = lr)
@@ -210,6 +213,13 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
             
             plt.legend()
             plt.show()
+        
+        if i==2:
+            save_model = True
+            if save_model:
+                print(f'this model will now be saved')
+                torch.save(model.state_dict(), f'{which_model}model_B0007.pt')
+                print('Model saved')
     
     # for i in range(4):
     #     plt.subplot(2, 2, i+1)
@@ -227,10 +237,13 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
     if loss != 'nan':
     #    print(f'no wayy sooo cooool the model predicts! :)')
         print(f'btw the mean of all losses is {loss.round(5)}')
-    save_model = False
-    if save_model:
-        torch.save(model.state_dict(), f'{which_model}{i}model.pt')
-        print(f'Model {i} saved')
+    # print(f'the values of i is {i}')
+    # if i==2:
+    #     save_model = True
+    #     if save_model:
+    #         print(f'this model will now be saved')
+    #         torch.save(model.state_dict(), f'{which_model}model_B0007.pt')
+    #         print('Model saved')
 
     
     # UNCOMMENT IF YOU WANT TO SAVE THE LOSSES
@@ -260,4 +273,8 @@ Define the hyperparameters to be tested
 # testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [1, 6, 12, 18, 24, 1]] # 0.06 kfold loss 
 # testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [24, 18, 12, 6, 1]] # 0.06 kfold loss 
 # testing_hyperparameters = [0.024, 14, 1612, 4, [1, 1, 2, 3], [1, 2, 3, 4], [1, 1, 1, 1], [1, 2, 3, 4], 22, 1, [1, 2, 4, 6, 1]]
-# print(run_model_cv(testing_hyperparameters, 'hybrid', 4, True))
+# testing_hyperparameters = [0.01851, 12, 723, 1, [1], [1], [1], [1], 3, 1, [1, 1]] # 0.08
+
+# testing_hyperparameters = [0.01264, 12, 425, 1, [1], [1], [1], [1], 22, 1, [1, 1]] 
+# amount of training data not sufficient to learn rul? multiple neural networks for rul? - different models have different accuracy at different parts of the graph 
+# print(run_model_cv(testing_hyperparameters, 'LSTM-CNN', 4, True))
