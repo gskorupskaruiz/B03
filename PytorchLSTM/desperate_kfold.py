@@ -114,7 +114,7 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
         data, time_mean_d, time_std_m = load_data_normalise_cv(battery, which_model)
         print('Test battery:', kfold_test[i])
         
-
+        test_battery = test_battery[:340]
         print(f'hyperparameters = {hyperparams}')
         lr, seq, batch_size, num_layers_conv, output_channels, kernel_sizes, stride_sizes, padding_sizes, hidden_size_lstm, num_layers_lstm, hidden_neurons_dense = hyperparams
         
@@ -213,6 +213,8 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
             
             plt.legend()
             plt.show()
+
+            
         
         if i==2:
             save_model = True
@@ -259,6 +261,9 @@ def run_model_cv(hyperparams, which_model, k_fold, save_for_plots):
 
     return loss
 
+
+
+
 """
 Define the hyperparameters to be tested
 
@@ -271,10 +276,10 @@ Define the hyperparameters to be tested
 # testing_hyperparameters = [0.050, 20, 600, 1, [8], [4], [2], [4], 10, 3, [4, 1]] # trained lstmcnn (overnight run)
 # testing_hyperparameters = [0.02282, 13, 1120, 1, [1], [1], [1], [1],14,1,[1, 1]] #alexis best ones yet 0.09 cross validation 
 # testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [1, 6, 12, 18, 24, 1]] # 0.06 kfold loss 
-# testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [24, 18, 12, 6, 1]] # 0.06 kfold loss 
+testing_hyperparameters = [0.00167, 8, 2000, 5, [1, 9, 18, 27, 36], [1, 5, 2.0, 7.0, 9.0], [1, 1, 1, 1, 1], [1, 1, 2, 3, 4], 14, 3, [24, 18, 12, 6, 1]] # 0.06 kfold loss 
 # testing_hyperparameters = [0.024, 14, 1612, 4, [1, 1, 2, 3], [1, 2, 3, 4], [1, 1, 1, 1], [1, 2, 3, 4], 22, 1, [1, 2, 4, 6, 1]]
 # testing_hyperparameters = [0.01851, 12, 723, 1, [1], [1], [1], [1], 3, 1, [1, 1]] # 0.08
 
 # testing_hyperparameters = [0.01264, 12, 425, 1, [1], [1], [1], [1], 22, 1, [1, 1]] 
 # amount of training data not sufficient to learn rul? multiple neural networks for rul? - different models have different accuracy at different parts of the graph 
-# print(run_model_cv(testing_hyperparameters, 'LSTM-CNN', 4, True))
+print(run_model_cv(testing_hyperparameters, 'hybrid', 4, True))
