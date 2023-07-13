@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 k_1 = 0
 k_2 = 340
 
-alpha = 0.1
+alpha = 0.10
 df2 = pd.read_csv(r"Mark\data_alambda_plotssss.csv").to_numpy()[k_1:k_2,:]
 
 pred_hybrid = df2[:,0]
@@ -39,7 +39,7 @@ ax.spines['right'].set_color('none')
 ax.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
 
 xaxis = np.linspace(0,1, indices[1]-indices[0])
-ax1.plot(xaxis, pred_hybrid,color = 'black', linewidth=2,label = r'$y_{pred}$ (hybrid)')
+ax1.plot(xaxis, (1+alpha)*pred_hybrid,color = 'black', linewidth=2,label = r'$y_{pred}$ (hybrid)')
 ax2.plot(xaxis, pred_dd,color = 'black', linewidth=2, label = r'$y_{pred}$ (data-driven)')
 
 ax1.plot(xaxis, test2,'-.', color = 'blue', label = r'$y_{true}$')
@@ -48,13 +48,18 @@ ax2.plot(xaxis, test2,'-.', color = 'blue', label = r'$y_{true}$')
 # ax1.vlines(xaxis[PHHyrbid_index], 0, 300, color = 'red', label = f'PH')
 # ax2.vlines(xaxis[PHdatadriven_index], 0, 1, color = 'red', label = f'PH')
 
-ax1.fill_between(xaxis, test2+alpha*test2,test2-alpha*test2, facecolor='orchid', alpha=0.4,label = r'$\alpha = 10$ %')
-ax2.fill_between(xaxis, test2+alpha*test2,test2-alpha*test2, facecolor='orchid', alpha=0.4,label = r'$\alpha = 10$ %')
+ax1.fill_between(xaxis, test2+alpha*test2, test2-alpha*test2, facecolor='orchid', alpha=0.4 ,label = r'$\epsilon = 10$ %')
+ax2.fill_between(xaxis, test2+alpha*test2, test2-alpha*test2, facecolor='orchid', alpha=0.4 ,label = r'$\epsilon = 10$ %')
 # fig.tight_layout()
 
-
-ax1.legend()
-ax2.legend()
+ax1.legend(fontsize=12)
+ax2.legend(fontsize=12)
+# title subplots at bottom
+# ax1.set_title('Hybrid model', fontsize=14)
+# ax2.set_title('Data-driven model', fontsize=14)
 ax.set_xlabel(r'$\lambda$ [$t/t_{TTD}$]')
-ax.set_ylabel('Time to discharge [s]')
+ax.set_ylabel('Time to discharge [s]', loc = 'center')
+
+ax.yaxis.set_label_coords(-0.1,0.5)
+
 plt.show()

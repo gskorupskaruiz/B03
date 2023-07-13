@@ -73,13 +73,13 @@ def train_evaluate(ga_individual_solution):
     lstm_sequential_length = int(np.interp(lstm_sequential_length, [0, 255], [1, 30]))
     lstm_neurons = int(np.interp(lstm_neurons, [0, 255], [1, 30]))
     learning_rate = round(np.interp(learning_rate, [0, 255], [0.0001, 0.1]), 5)
-    cnn_layers =int( np.interp(cnn_layers, [0, 255], [1, 5]))
+    cnn_layers =int( np.interp(cnn_layers, [0, 255], [1, 10]))
     cnn_kernel_size =int( np.interp(cnn_kernel_size, [0, 255], [1, 10]))
     cnn_stride = int(np.interp(cnn_stride, [0, 255], [1, 1]))
     cnn_padding = int(np.interp(cnn_padding, [0, 255], [1, 10]))
-    cnn_output_size = int(np.interp(cnn_output_size, [0, 255], [1, 10]))
+    cnn_output_size = int(np.interp(cnn_output_size, [0, 255], [1, 100]))
     hidden_neurons_dense = int(np.interp(hidden_neurons_dense, [0, 255], [1, 7]))
-    batch_size = int(np.interp(batch_size, [0, 255], [150, 2000]))
+    batch_size = int(np.interp(batch_size, [0, 255], [150, 3000]))
     # seed = int(np.interp(seed, [0, 255], [10, 100]))
     
     # ensure lists are the correct length
